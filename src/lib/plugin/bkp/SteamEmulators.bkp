@@ -1,0 +1,309 @@
+'use strict';
+
+import {IGameData, IGameMetadata, ISteamLanguage, IUnlockedAchievement} from '../../types';
+// const { remote } = require('electron');
+// @ts-ignore
+import {Parser} from './lib/Parser';
+import {SteamUtils} from './lib/SteamUtils';
+
+const path = require('path');
+const glob = require('fast-glob');
+const normalize = require('normalize-path');
+const ini = require('ini');
+const omit = require('lodash.omit');
+// const moment = require('moment');
+// const request = require('request-zero');
+// const urlParser = require('url');
+const {ffs} = require('../util/feverFileSystem');
+// const htmlParser = require('node-html-parser').parse;
+const regedit = require('regodit');
+// const steamID = require('../util/steamID');
+const steamLanguages = require('../../../locale/steam.json');
+const sse = require('../util/sse');
+
+// TODO CHECK LOGS / THROWS
+
+class SteamEmulatorsParser extends Parser {
+    // TODO MOVE TO STEAM UTILS
+    private static readonly publicDataPath: string = <string>process.env['Public'];
+    private static readonly appDataPath: string = <string>process.env['APPDATA'];
+    private static readonly localAppDataPath: string = <string>process.env['LOCALAPPDATA'];
+    private static readonly programDataPath: string = <string>process.env['PROGRAMDATA'];
+
+    // todo static?
+    constructor() {
+        super();
+    }
+
+    // TODO MOVE TO STEAM UTILS
+    private static async getFoldersToScan(additionalFoldersToScan: string[]): Promise<string[]> {
+        let foldersToScan: string[] = [
+            path.join(this.publicDataPath, 'Documents/Steam/CODEX'),
+            path.join(this.appDataPath, 'Goldberg SteamEmu Saves'),
+            path.join(this.appDataPath, 'Steam/CODEX'),
+            path.join(this.programDataPath, 'Steam') + '/*',
+            path.join(this.localAppDataPath, 'SKIDROW'),
+            path.join(this.appDataPath, 'SmartSteamEmu'),
+            path.join(this.appDataPath, 'CreamAPI')
+        ];
+
+        const DocsFolderPath: string = await regedit.promises.RegQueryStringValue('HKCU',
+            'Software/Microsoft/Windows/CurrentVersion/Explorer/User Shell Folders', 'Personal');
+        if (DocsFolderPath) {
+            foldersToScan = foldersToScan.concat([
+                path.join(DocsFolderPath, 'Skidrow')
+            ]);
+        }
+
+        if (additionalFoldersToScan.length > 0) {
+            foldersToScan = foldersToScan.concat(additionalFoldersToScan);
+        }
+
+        foldersToScan = foldersToScan.map((dir) => {
+            return normalize(dir) + '/([0-9]+)';
+        });
+
+        return foldersToScan;
+    }
+
+    // TODO MOVE TO STEAM UTILS
+    private static getGameCachePath(appId: string, language: string): string {
+        const cachePath: string = path.join(this.achievementWatcherRootPath, 'steam_cache/schema', language);
+        return path.join(`${cachePath}`, `${appId}.db`);
+    }
+
+    // TODO MOVE TO STEAM UTILS
+    private static async getAchievementListFromGameFolder(gameFolder: string) {
+        const achievementLocationFiles: string[] = [
+            'achievements.ini',
+            'achievements.json',
+            'achiev.ini',
+            'stats.ini',
+            'Achievements.Bin',
+            'achieve.dat',
+            'Achievements.ini',
+            'stats/achievements.ini',
+            'stats.bin',
+            'stats/CreamAPI.Achievements.cfg'
+        ];
+
+        let local: any;
+        for (let file of achievementLocationFiles) {
+            try {
+                const achievementFile: string = path.join(gameFolder, file);
+                if (path.parse(file).ext == '.json') {
+                    local = JSON.parse(await ffs.promises.readFile(achievementFile, 'utf8'));
+                } else if (file === 'stats.bin') {
+                    local = sse.parse(await ffs.promises.readFile(achievementFile));
+                } else {
+                    local = ini.parse(await ffs.promises.readFile(achievementFile, 'utf8'));
+                }
+                break;
+            } catch (e) {
+                // TODO ADD DEBUG VERBOSE
+                // console.log(e);
+            }
+        }
+        if (!local) {
+            throw `No achievement files found in '${gameFolder}'`;
+        }
+
+        return local;
+    }
+
+    // TODO MOVE TO STEAM UTILS
+    private static normalizeUnlockedAchievementList(achievementList: any): IUnlockedAchievement[] {
+        let unlockedAchievementList: IUnlockedAchievement[] = [];
+        // if (achievementList.AchievementsUnlockTimes && achievementList.Achievements) { // TODO hoodlum DARKSiDERS function
+        //     for (let i in achievementList.Achievements) {
+        //         if (achievementList.Achievements[i] == 1) {
+        //             unlockedAchievementList[`${i}`] = {Achieved: '1', UnlockTime: achievementList.AchievementsUnlockTimes[i] || null};
+        //         }
+        //     }
+        // } else if (achievementList.State && achievementList.Time) { // TODO 3DM function
+        //     for (let i in achievementList.State) {
+        //         if (achievementList.State[i] == '0101') {
+        //             unlockedAchievementList[i] = {
+        //                 Achieved: '1',
+        //                 UnlockTime: new DataView(new Uint8Array(Buffer.from(achievementList.Time[i].toString(), 'hex')).buffer).getUint32(0, true) || null
+        //             };
+        //         }
+        //     }
+        // } else {
+
+        const filter: string[] = ['SteamAchievements', 'Steam64', 'Steam'];
+        achievementList = omit(achievementList.ACHIEVE_DATA || achievementList, filter);
+
+        Object.keys(achievementList).forEach((achievementName) => {
+            const achievementData: any = achievementList[achievementName];
+
+            let currentProgress: number, maxProgress: number;
+            if (Number.parseInt(achievementData.MaxProgress) === 0) {
+                currentProgress = 0;
+                maxProgress = 0;
+            } else {
+                currentProgress = Math.floor(Number.parseFloat(achievementData.CurProgress) /
+                    Number.parseFloat(achievementData.MaxProgress) * 100);
+                maxProgress = 100
+            }
+
+            unlockedAchievementList.push({
+                name: achievementName,
+                achieved: achievementData.Achieved === "1",
+                currentProgress: currentProgress,
+                maxProgress: maxProgress,
+                unlockTime: achievementData.UnlockTime,
+            })
+        });
+
+
+        // for (let i in unlockedAchievementList) {
+        //     if (unlockedAchievementList[i].State) { // TODO RLD! function
+        //         try {
+        //             //uint32 little endian
+        //             unlockedAchievementList[i].State = new DataView(new Uint8Array(Buffer.from(unlockedAchievementList[i].State.toString(), 'hex')).buffer).getUint32(0, true);
+        //             unlockedAchievementList[i].CurProgress = new DataView(new Uint8Array(Buffer.from(unlockedAchievementList[i].CurProgress.toString(), 'hex')).buffer).getUint32(0, true);
+        //             unlockedAchievementList[i].MaxProgress = new DataView(new Uint8Array(Buffer.from(unlockedAchievementList[i].MaxProgress.toString(), 'hex')).buffer).getUint32(0, true);
+        //             unlockedAchievementList[i].Time = new DataView(new Uint8Array(Buffer.from(unlockedAchievementList[i].Time.toString(), 'hex')).buffer).getUint32(0, true);
+        //         } catch (e) {
+        //         }
+        //     } else if (unlockedAchievementList[i].unlocktime && unlockedAchievementList[i].unlocktime.length === 7) { // todo creamAPI
+        //         unlockedAchievementList[i].unlocktime = + unlockedAchievementList[i].unlocktime * 1000; //cf: https://cs.rin.ru/forum/viewtopic.php?p=2074273#p2074273 | timestamp is invalid/incomplete
+        //     }
+        // }
+
+        return unlockedAchievementList;
+    }
+
+    async scan(additionalFoldersToScan: string[] = []): Promise<IGameMetadata[]> {
+        const foldersToScan: string[] = await SteamEmulatorsParser.getFoldersToScan(additionalFoldersToScan);
+
+        const gamesMetadata: IGameMetadata[] = [];
+        for (let dir of await glob(foldersToScan, {onlyDirectories: true, absolute: true})) {
+
+            const gameMetadata: IGameMetadata = {
+                appId: path.parse(dir).name,
+                data: {
+                    type: 'file',
+                    path: dir
+                }
+            };
+
+            if (dir.includes('CODEX')) {
+                gameMetadata.source = 'Codex';
+            } else if (dir.includes('Goldberg')) {
+                gameMetadata.source = 'Goldberg';
+            } else if (dir.includes('SKIDROW')) {
+                gameMetadata.source = 'Skidrow';
+            } else if (dir.includes('SmartSteamEmu')) {
+                gameMetadata.source = 'SmartSteamEmu';
+            } else if (dir.includes('ProgramData/Steam')) {
+                gameMetadata.source = 'Reloaded - 3DM';
+            } else if (dir.includes('CreamAPI')) {
+                gameMetadata.source = 'CreamAPI';
+            }
+
+            gamesMetadata.push(gameMetadata);
+        }
+
+        return gamesMetadata;
+    }
+
+    async getGameData(appId: string, lang: string, key?: string | undefined): Promise<IGameData> {
+        if (!steamLanguages.some((language: ISteamLanguage) => {
+            return language.api === lang;
+        })) {
+            throw 'Unsupported API language code';
+        }
+
+        // @ts-ignore TODO FIXME PATCH FOR TS
+        const keyUsage = key;
+
+        let gameData: IGameData;
+        const gameCachePath = SteamEmulatorsParser.getGameCachePath(appId, lang);
+
+        if (await SteamUtils.validSteamGameDataCacheExists(gameCachePath)) {
+            gameData = await SteamUtils.getGameDataFromCache(gameCachePath);
+        } else {
+            // if (key) {
+            // TODO DEBATE WITH ANTHONY
+            //     gameData = await SteamUtils.getGameDataUsingOwnApiKey(appId, lang, key);
+            // } else {
+            gameData = await SteamUtils.getGameDataFromServer(appId, lang);
+            // }
+            await SteamUtils.updateGameDataCache(gameCachePath, gameData);
+        }
+
+        return gameData;
+    }
+
+    // TODO
+    async getAchievements(gameFolder: string): Promise<any> {
+
+        const achievementList: Object = await SteamEmulatorsParser.getAchievementListFromGameFolder(gameFolder);
+        return SteamEmulatorsParser.normalizeUnlockedAchievementList(achievementList);
+    }
+}
+
+//******************************************************************************
+//******************************************************************************
+//******************************************************************************
+//******************************************************************************
+//******************************************************************************
+//******************************************************************************
+//******************************************************************************
+//******************************************************************************
+//******************************************************************************
+//******************************************************************************
+//******************************************************************************
+//******************************************************************************
+//******************************************************************************
+//******************************************************************************
+//******************************************************************************
+//******************************************************************************
+//******************************************************************************
+
+const steamEmulatorParser = new SteamEmulatorsParser();
+// steamEmulatorParser.scan().then((res) => console.log(res));
+// steamEmulatorParser.getGameData('460790', 'english', undefined).then((res) => {
+//     console.log(res);
+// });
+// steamEmulatorParser.getGameData('552700', 'english', undefined).then((res) => {
+//     console.log(res);
+// });
+// steamEmulatorParser.getGameData('779340', 'english', undefined).then((res) => {
+//     console.log(res);
+// });
+// steamEmulatorParser.getGameData('814380', 'english', undefined).then((res) => {
+//     console.log(res);
+// });
+steamEmulatorParser.getAchievements('C:/Users/Marc/AppData/Roaming/Steam/CODEX/382900')
+    .then((res) => {
+        console.log(res);
+    }).catch((res) => {
+    console.log(res);
+});
+// steamEmulatorParser.getAchievements('C:/Users/Public/Documents/Steam/CODEX/779340')
+//     .then((res) => {
+//         console.log(res);
+//     }).catch((res) => {
+//     console.log(res);
+// });
+// steamEmulatorParser.getAchievements('C:/ProgramData/Steam/RLD!/311210')
+//     .then((res) => {
+//         console.log(res);
+//     }).catch((res) => {
+//     console.log(res);
+// });
+// steamEmulatorParser.getAchievements('C:/Users/Public/Documents/Steam/CODEX/814380')
+//     .then((res) => {
+//         console.log(res);
+//     }).catch((res) => {
+//     console.log(res);
+// });
+
+//C:/Users/Public/Documents/Steam/CODEX/779340
+//C:/ProgramData/Steam/RLD!/311210
+//C:/Users/Public/Documents/Steam/CODEX/814380
+
+export = {SteamParser: SteamEmulatorsParser};
