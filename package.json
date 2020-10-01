@@ -1,12 +1,12 @@
 {
   "name": "achievement-watcher-celes",
   "version": "0.1.0",
-  "description": "An achievements scrapper",
+  "description": "An achievement scrapper",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "lint": "tslint -c tslint.json 'src/**/*.ts'",
-    "lint:fix": "tslint --fix -c tslint.json 'src/**/*.ts'",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
     "watch:build": "tsc --watch"
   },
   "contributors": [
@@ -21,7 +21,6 @@
   ],
   "license": "LGPL-3.0-only",
   "dependencies": {
-    "@types/got": "^9.6.11",
     "accountpicture-ms-extractor": "^1.1.0",
     "adm-zip": "0.4.13",
     "argv-split": "^2.0.1",
@@ -48,9 +47,12 @@
     "xml2js": "^0.4.23"
   },
   "devDependencies": {
+    "@types/got": "^9.6.11",
     "@types/node": "^13.13.5",
+    "@typescript-eslint/eslint-plugin": "^4.3.0",
+    "@typescript-eslint/parser": "^4.3.0",
+    "eslint": "^7.10.0",
     "ts-node": "^8.10.1",
-    "tslint": "^6.1.2",
-    "typescript": "^3.8.3"
+    "typescript": "^3.9.7"
   }
 }

@@ -31,6 +31,15 @@ class Reloaded extends SteamEmulatorParser {
             if (achievementData.State === '0100000001') {
                 unlockedAchievementList.push({
                     name: achievementName,
+                    achieved: 1,
+                    currentProgress: normalizedProgress.currentProgress,
+                    maxProgress: normalizedProgress.maximProgress,
+                    unlockTime: normalizeTimestamp(achievementData.Time)
+                });
+            } else if (normalizedProgress.maximProgress > 0) {
+                unlockedAchievementList.push({
+                    name: achievementName,
+                    achieved: 0,
                     currentProgress: normalizedProgress.currentProgress,
                     maxProgress: normalizedProgress.maximProgress,
                     unlockTime: normalizeTimestamp(achievementData.Time)

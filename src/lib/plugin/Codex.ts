@@ -32,6 +32,15 @@ class Codex extends SteamEmulatorParser {
             if (achievementData.Achieved === '1') {
                 unlockedAchievementList.push({
                     name: achievementName,
+                    achieved: 1,
+                    currentProgress: normalizedProgress.currentProgress,
+                    maxProgress: normalizedProgress.maximProgress,
+                    unlockTime: achievementData.UnlockTime,
+                });
+            } else if (normalizedProgress.maximProgress > 0) {
+                unlockedAchievementList.push({
+                    name: achievementName,
+                    achieved: 0,
                     currentProgress: normalizedProgress.currentProgress,
                     maxProgress: normalizedProgress.maximProgress,
                     unlockTime: achievementData.UnlockTime,

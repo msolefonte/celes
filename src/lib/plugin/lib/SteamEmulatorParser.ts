@@ -1,18 +1,22 @@
 'use strict';
 
-import {IGameData, IGameMetadata, ISteamLanguage, IUnlockedAchievement} from '../../../types';
+import {IGameData, IGameMetadata, IUnlockedAchievement} from '../../../types';
 // @ts-ignore
 import {Parser} from './Parser';
 import {SteamUtils} from './SteamUtils';
 
 const glob = require('fast-glob');
 const path = require('path');
-const steamLanguages = require('../../../../locale/steam.json');
 
 // TODO CHECK LOGS / THROWS
 
 abstract class SteamEmulatorParser implements Parser {
     abstract readonly source: string;
+    readonly steamLanguages: string[] = [
+        'arabic', 'bulgarian', 'schinese', 'tchinese', 'czech', 'danish', 'dutch', 'english', 'finnish', 'french',
+        'german', 'greek', 'hungarian', 'italian', 'japanese', 'korean', 'norwegian', 'polish', 'portuguese',
+        'brazilian', 'romanian', 'russian', 'spanish', 'latam', 'swedish', 'thai', 'turkish', 'ukrainian', 'vietnamese'
+    ];
 
     abstract normalizeUnlockedAchievementList(achievementList: any): IUnlockedAchievement[];
 
@@ -41,9 +45,7 @@ abstract class SteamEmulatorParser implements Parser {
     }
 
     async getGameData(appId: string, lang: string, key?: string | undefined): Promise<IGameData> {
-        if (!steamLanguages.some((language: ISteamLanguage) => {
-            return language.api === lang;
-        })) {
+        if (!this.steamLanguages.includes('lang')) {
             throw 'Unsupported API language code';
         }
 
@@ -60,7 +62,7 @@ abstract class SteamEmulatorParser implements Parser {
             // TODO DEBATE WITH ANTHONY
             //     gameData = await SteamUtils.getGameDataUsingOwnApiKey(appId, lang, key);
             // } else {
-            gameData = await SteamUtils.getGameDataFromServer(appId, lang);
+            gameData = await SteamUtils.getGameDataFromServer(appId, lang, this.source);
             // }
             await SteamUtils.updateGameDataCache(gameCachePath, gameData);
         }
@@ -69,7 +71,7 @@ abstract class SteamEmulatorParser implements Parser {
     }
 
     async getAchievements(game: IGameMetadata): Promise<IUnlockedAchievement[]> {
-        const achievementList: Object = await SteamUtils.getAchievementListFromGameFolder(<string> game.data.path);
+        const achievementList: Object = await SteamUtils.getAchievementListFromGameFolder(<string>game.data.path);
         return this.normalizeUnlockedAchievementList(achievementList);
     }
 }

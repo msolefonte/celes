@@ -1,12 +1,13 @@
 import {IGameData} from '../../../types';
 
 const got = require('got');
-const {ffs} = require('../../util/feverFileSystem');
 const regedit = require('regodit');
 const sse = require('../../util/sse');
 const path = require('path');
 const normalize = require('normalize-path');
 const ini = require('ini');
+const fs = require('fs').promises;
+const Common = require('Common')
 
 // const htmlParser = require('node-html-parser').parse;
 
@@ -15,14 +16,19 @@ class SteamUtils {
         'Achievement Watcher');
 
     static async getGameDataFromCache(gameCachePath: string): Promise<IGameData> {
-        return JSON.parse(await ffs.promises.readFile(gameCachePath));
+        return JSON.parse(await fs.readFile(gameCachePath));
     }
 
-    static async getGameDataFromServer(appId: string, lang: string): Promise<IGameData> {
+    static async getGameDataFromServer(appId: string, lang: string, source: string): Promise<IGameData> {
         const url = `https://api.xan105.com/steam/ach/${appId}?lang=${lang}`;
+        const response = (await got(url)).body;
 
-        const response = await got(url);
-        return <IGameData>response.body;
+        const gameData: any = JSON.parse(response).data;
+
+        gameData.platform = "Steam";
+        gameData.source = source;
+
+        return <IGameData>gameData;
     }
 
     // TODO DEBATE WITH ANTHONY
@@ -70,11 +76,11 @@ class SteamUtils {
     // }
 
     static async updateGameDataCache(gameCachePath: string, gameData: IGameData): Promise<void> {
-        await ffs.promises.writeFile(gameCachePath, JSON.stringify(gameData, null, 2));
+        await fs.writeFile(gameCachePath, JSON.stringify(gameData, null, 2));
     }
 
     static async validSteamGameDataCacheExists(gameCachePath: string): Promise<boolean> {
-        return await ffs.promises.existsAndIsYoungerThan(gameCachePath, {timeUnit: 'month', time: 1});
+        return await Common.existsAndIsYoungerThan(gameCachePath, {timeUnit: 'month', time: 1});
     }
 
     static getGameCachePath(appId: string, language: string): string {
@@ -123,11 +129,11 @@ class SteamUtils {
             try {
                 const achievementFile: string = path.join(gameFolder, file);
                 if (path.parse(file).ext == '.json') {
-                    local = JSON.parse(await ffs.promises.readFile(achievementFile, 'utf8'));
+                    local = JSON.parse(await fs.readFile(achievementFile, 'utf8'));
                 } else if (file === 'stats.bin') {
-                    local = sse.parse(await ffs.promises.readFile(achievementFile));
+                    local = sse.parse(await fs.readFile(achievementFile));
                 } else {
-                    local = ini.parse(await ffs.promises.readFile(achievementFile, 'utf8'));
+                    local = ini.parse(await fs.readFile(achievementFile, 'utf8'));
                 }
                 break;
             } catch (e) {

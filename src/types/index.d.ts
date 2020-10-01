@@ -1,13 +1,12 @@
-// TODO IScanResult?
 export interface IGameMetadata {
     appId: string;
     data: {
-        type: "file" | "steamAPI";
+        type: 'file' | 'steamAPI';
         cachePath?: string;
         path?: string;
         userId?: ISteamUser;
     }
-    source?: string;
+    source: string;
 }
 
 export interface ILegitSteamGameMetadata {
@@ -29,14 +28,9 @@ export interface ISteamUser {
     name: string;
 }
 
-// TODO
-export interface IGetAchievementsConfig {
-
-}
-
 export interface IUnlockedAchievement {
     name: string;
-    // achieved: 0 | 1;
+    achieved: 0 | 1;
     currentProgress: number;
     maxProgress: number;
     unlockTime: number;
@@ -54,6 +48,8 @@ export interface IGameData {
     name: string;
     appid: string;
     binary: string;
+    platform: string;
+    source: string;
     img: {
         header: string;
         background: string;
@@ -84,10 +80,12 @@ export interface INormalizedProgress {
     maximProgress: number
 }
 
-export interface IScrappedGame {
+export interface IExportableGameData {
     name: string;
     appid: string;
     binary: string;
+    platform: string;
+    source: string;
     img: {
         header: string;
         background: string;
