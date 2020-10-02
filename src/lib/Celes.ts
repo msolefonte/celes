@@ -1,9 +1,12 @@
-import {IExportableGameData, IGameData, IGameMetadata, IUnlockedAchievement} from '../types';
-import {Parser} from './plugin/lib/Parser';
+'use strict';
 
+import {IExportableGameData, IGameData, IGameMetadata, IUnlockedAchievement} from '../types';
+import {Parser} from './plugins/lib/Parser';
+
+const fs = require('fs').promises;
 const path = require('path');
 const mkdirp = require('mkdirp');
-const fs = require('fs').promises;
+import plugins from './plugins/plugins.json';
 
 class Celes {
     private readonly additionalFoldersToScan: string[];
@@ -24,6 +27,36 @@ class Celes {
         this.ignoreSourceAtMerge = ignoreSourceAtMerge;
         this.systemLanguage = systemLanguage;
         this.useOldestUnlockTime = useOldestUnlockTime;
+    }
+
+    async load(callbackProgress?: Function): Promise<IExportableGameData[]> {
+        const databaseData: IExportableGameData[] = await this.loadLocalDatabase(callbackProgress);
+        const scrappedData: IExportableGameData[] = await this.scrapLocalFolders(callbackProgress);
+
+        const mergedData: IExportableGameData[] = this.mergeExportableGameData(scrappedData, databaseData);
+        await this.updateLocalDatabase(mergedData);
+
+        return mergedData;
+    }
+
+    async export(filePath: string): Promise<void> {
+        const exportableGameData: IExportableGameData[] = await this.load();
+
+        await mkdirp(path.dirname(filePath));
+        await fs.writeFile(filePath, JSON.stringify(exportableGameData, undefined, 2));
+    }
+
+    async import(filePath: string, force: boolean = false): Promise<void> {
+        const importedData: IExportableGameData[] = await JSON.parse(await fs.readFile(filePath));
+
+        if (!force) {
+            const localData: IExportableGameData[] = await this.loadLocalDatabase();
+            const mergedData: IExportableGameData[] = this.mergeExportableGameData(localData, importedData);
+
+            await this.updateLocalDatabase(mergedData);
+        } else {
+            await this.updateLocalDatabase(importedData);
+        }
     }
 
     private mergeUnlockedAchievements(ua1: IUnlockedAchievement[], ua2: IUnlockedAchievement[]): IUnlockedAchievement[] {
@@ -54,34 +87,6 @@ class Celes {
         return Object.keys(mergedUnlockedAchievements).map(function (name) {
             return mergedUnlockedAchievements[name];
         });
-    }
-
-    async load(callbackProgress?: Function): Promise<IExportableGameData[]> {
-        const databaseData: IExportableGameData[] = await this.loadLocalDatabase(callbackProgress);
-        const scrappedData: IExportableGameData[] = await this.scrapLocalFolders(callbackProgress);
-
-        const mergedData: IExportableGameData[] = this.mergeExportableGameData(scrappedData, databaseData);
-        await this.updateLocalDatabase(mergedData);
-
-        return mergedData;
-    }
-
-    async export(path: string) {
-        const exportableGameData: IExportableGameData[] = await this.load();
-        await fs.writeFile(path, JSON.stringify(exportableGameData, undefined, 2));
-    }
-
-    async import(path: string, force: boolean = false) {
-        const importedData: IExportableGameData[] = await JSON.parse(await fs.readFile(path));
-
-        if (!force) {
-            const localData: IExportableGameData[] = await this.loadLocalDatabase();
-            const mergedData: IExportableGameData[] = this.mergeExportableGameData(localData, importedData);
-
-            await this.updateLocalDatabase(mergedData);
-        } else {
-            await this.updateLocalDatabase(importedData);
-        }
     }
 
     private mergeExportableGameData(egd1: IExportableGameData[], egd2: IExportableGameData[]): IExportableGameData[] {
@@ -125,35 +130,30 @@ class Celes {
     }
 
     private async scrapLocalFolders(callbackProgress?: Function): Promise<IExportableGameData[]> {
-        const pluginsFolder = path.join(__dirname, 'plugin');
         const exportableGames: IExportableGameData[] = [];
 
-        const pluginsFolderFiles: string[] = await fs.readdir(pluginsFolder);
-
-        for (let i = 0; i < pluginsFolderFiles.length; i++) {
-            const progressPercentage: number = 50 + Math.floor((i / pluginsFolderFiles.length) * 50);
+        for (let i = 0; i < plugins.length; i++) {
+            const progressPercentage: number = 50 + Math.floor((i / plugins.length) * 50);
 
             try {
-                if (pluginsFolderFiles[i].endsWith('.js')) {
-                    const plugin = require('./plugin/' + pluginsFolderFiles[i]);
-                    const parser: Parser = new plugin[Object.keys(plugin)[0]]();
+                const plugin = require('./plugins/' + plugins[i]);
+                const parser: Parser = new plugin[Object.keys(plugin)[0]]();
 
-                    const listOfGames: IGameMetadata[] = await parser.scan(this.additionalFoldersToScan);
+                const listOfGames: IGameMetadata[] = await parser.scan(this.additionalFoldersToScan);
 
-                    for (let j = 0; j < listOfGames.length; j++) {
-                        const gameData: IGameData = await parser.getGameData(listOfGames[j].appId, this.systemLanguage);
-                        const unlockedAchievements: IUnlockedAchievement[] = await parser.getAchievements(listOfGames[j]);
+                for (let j = 0; j < listOfGames.length; j++) {
+                    const gameData: IGameData = await parser.getGameData(listOfGames[j].appId, this.systemLanguage);
+                    const unlockedAchievements: IUnlockedAchievement[] = await parser.getAchievements(listOfGames[j]);
 
-                        const exportableGameDataSkeleton: any = gameData;
-                        exportableGameDataSkeleton.achievement.unlocked = unlockedAchievements;
+                    const exportableGameDataSkeleton: any = gameData;
+                    exportableGameDataSkeleton.achievement.unlocked = unlockedAchievements;
 
-                        const exportableGameData: IExportableGameData = exportableGameDataSkeleton;
+                    const exportableGameData: IExportableGameData = exportableGameDataSkeleton;
 
-                        exportableGames.push(exportableGameData);
-                    }
+                    exportableGames.push(exportableGameData);
                 }
             } catch (error) {
-                console.debug('DEBUG: Error loading plugin', pluginsFolderFiles[i] + ':', error);
+                console.debug('DEBUG: Error loading plugin', plugins[i] + ':', error);
             }
 
             if (callbackProgress instanceof Function) {

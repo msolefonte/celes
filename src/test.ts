@@ -1,7 +1,8 @@
-import {Celes} from './lib/Celes';
+import {Celes} from '.';
+import {IExportableGameData} from './types';
 
 const celes = new Celes();
 
-celes.export('tmp/export.json').then(() => {
-    console.log("Export Completed");
+celes.load().then((data: IExportableGameData[]) => {
+    console.log(data);
 });

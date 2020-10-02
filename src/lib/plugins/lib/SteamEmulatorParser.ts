@@ -45,8 +45,8 @@ abstract class SteamEmulatorParser implements Parser {
     }
 
     async getGameData(appId: string, lang: string, key?: string | undefined): Promise<IGameData> {
-        if (!this.steamLanguages.includes('lang')) {
-            throw 'Unsupported API language code';
+        if (!this.steamLanguages.includes(lang)) {
+            throw 'Language selected not supported by Steam API'; // TODO Should this default to english?
         }
 
         // @ts-ignore TODO FIXME PATCH FOR TS

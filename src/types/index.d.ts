@@ -99,3 +99,10 @@ export interface IExportableGameData {
         unlocked: IUnlockedAchievement[];
     }
 }
+
+export interface ICelesConfig {
+    additionalFoldersToScan: string[];
+    ignoreSourceAtMerge: boolean;
+    systemLanguage: string;
+    useOldestUnlockTime: boolean;
+}

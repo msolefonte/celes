@@ -5,7 +5,6 @@ import {IUnlockedAchievement} from '../../types';
 // @ts-ignore
 import {SteamEmulatorParser} from './lib/SteamEmulatorParser';
 
-const omit = require('lodash.omit');
 const path = require('path');
 
 class SSE extends SteamEmulatorParser {

@@ -7,7 +7,7 @@ const path = require('path');
 const normalize = require('normalize-path');
 const ini = require('ini');
 const fs = require('fs').promises;
-const Common = require('Common')
+const Common = require('./Common')
 
 // const htmlParser = require('node-html-parser').parse;
 
