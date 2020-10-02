@@ -10,7 +10,7 @@ const mkdirp = require('mkdirp');
 
 class CelesLauncher {
     private achievementWatcherRootPath: string = path.join(<string>process.env['APPDATA'], 'Achievement Watcher');
-    private configFilePath: string = path.join(this.achievementWatcherRootPath, 'celes/config.json');
+    private configFilePath: string = path.join(this.achievementWatcherRootPath, 'config/celes.json');
 
     private async generateDefaultCelesConfig(): Promise<void> {
         const defaultCelesConfig: ICelesConfig = {
