@@ -46,7 +46,8 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
 
     async getGameSchema(appId: string, lang: string): Promise<IGameSchema> {
         if (!this.steamLanguages.includes(lang)) {
-            throw 'Language selected not supported by Steam API'; // TODO Should this default to english?
+            // TODO Add debug log here
+            lang = "english";
         }
 
         let gameSchema: IGameSchema;
