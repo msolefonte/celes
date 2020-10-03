@@ -5,6 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
+    "depcheck": "npm-check",
+    "depcheck:update": "npm-check --update",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "test": "node dist/test.js",
@@ -22,42 +24,22 @@
   ],
   "license": "LGPL-3.0-only",
   "dependencies": {
-    "accountpicture-ms-extractor": "^1.1.0",
-    "adm-zip": "0.4.13",
-    "argv-split": "^2.0.1",
-    "commander": "^6.1.0",
-    "crc": "^3.8.0",
-    "deepmerge": "^4.2.2",
     "fast-glob": "^3.2.4",
-    "find-up": "^4.1.0",
     "got": "^11.7.0",
     "ini": "^1.3.5",
-    "js-yaml": "^3.13.1",
     "lodash.omit": "^4.5.0",
-    "minimist": "^1.2.5",
     "mkdirp": "^1.0.4",
     "moment": "^2.29.0",
-    "node-html-parser": "^1.2.21",
     "normalize-path": "^3.0.0",
-    "oclif": "^1.16.1",
-    "regodit": "^1.0.1",
-    "request-promise": "^4.2.6",
-    "request-zero": "^0.2.9",
-    "rimraf": "^2.7.1",
-    "steamid": "^1.1.3",
-    "url": "^0.11.0",
-    "windows-focus-assist": "^1.2.1",
-    "xml2js": "^0.4.23",
-    "yargs": "^16.0.3"
+    "regodit": "^1.0.1"
   },
   "devDependencies": {
     "@types/got": "^9.6.11",
-    "@types/node": "^13.13.5",
-    "@types/yargs": "^15.0.7",
+    "@types/node": "^14.11.2",
     "@typescript-eslint/eslint-plugin": "^4.3.0",
     "@typescript-eslint/parser": "^4.3.0",
     "eslint": "^7.10.0",
-    "ts-node": "^8.10.1",
-    "typescript": "^3.9.7"
+    "npm-check": "^5.9.2",
+    "typescript": "^4.0.3"
   }
 }
