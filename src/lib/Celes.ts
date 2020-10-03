@@ -1,12 +1,13 @@
 'use strict';
 
-import {IExportableGameData, IGameData, IGameMetadata, IUnlockedAchievement} from '../types';
-import {Parser} from './plugins/lib/Parser';
+import {IExportableGameData, IGameSchema, IGameMetadata, IUnlockedAchievement} from '../types';
+import {AchievementsScraper} from './plugins/lib/AchievementsScraper';
 
 const fs = require('fs').promises;
+const mkdirp = require('util/filesystem').mkdirp;
 const path = require('path');
-const mkdirp = require('mkdirp');
-import plugins from './plugins/plugins.json';
+const plugins = require('./plugins/plugins.json');
+
 
 class Celes {
     private readonly additionalFoldersToScan: string[];
@@ -141,15 +142,15 @@ class Celes {
 
             try {
                 const plugin = require('./plugins/' + plugins[i]);
-                const parser: Parser = new plugin[Object.keys(plugin)[0]]();
+                const scraper: AchievementsScraper = new plugin[Object.keys(plugin)[0]]();
 
-                const listOfGames: IGameMetadata[] = await parser.scan(this.additionalFoldersToScan);
+                const listOfGames: IGameMetadata[] = await scraper.scan(this.additionalFoldersToScan);
 
                 for (let j = 0; j < listOfGames.length; j++) {
-                    const gameData: IGameData = await parser.getGameData(listOfGames[j].appId, this.systemLanguage);
-                    const unlockedAchievements: IUnlockedAchievement[] = await parser.getAchievements(listOfGames[j]);
+                    const gameSchema: IGameSchema = await scraper.getGameSchema(listOfGames[j].appId, this.systemLanguage);
+                    const unlockedAchievements: IUnlockedAchievement[] = await scraper.getUnlockedAchievements(listOfGames[j]);
 
-                    const exportableGameDataSkeleton: any = gameData;
+                    const exportableGameDataSkeleton: any = gameSchema;
                     exportableGameDataSkeleton.achievement.unlocked = unlockedAchievements;
 
                     const exportableGameData: IExportableGameData = exportableGameDataSkeleton;

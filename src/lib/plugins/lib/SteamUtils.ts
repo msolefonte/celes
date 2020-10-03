@@ -1,4 +1,4 @@
-import {IGameData} from '../../../types';
+import {IGameSchema} from '../../../types';
 
 const got = require('got');
 const regedit = require('regodit');
@@ -7,19 +7,17 @@ const path = require('path');
 const normalize = require('normalize-path');
 const ini = require('ini');
 const fs = require('fs').promises;
-const Common = require('./Common')
-
-// const htmlParser = require('node-html-parser').parse;
+const existsAndIsYoungerThan = require('../../util/filesystem').existsAndIsYoungerThan;
 
 class SteamUtils {
     private static readonly achievementWatcherRootPath: string = path.join(<string>process.env['APPDATA'],
         'Achievement Watcher');
 
-    static async getGameDataFromCache(gameCachePath: string): Promise<IGameData> {
+    static async getGameSchemaFromCache(gameCachePath: string): Promise<IGameSchema> {
         return JSON.parse(await fs.readFile(gameCachePath));
     }
 
-    static async getGameDataFromServer(appId: string, lang: string, source: string): Promise<IGameData> {
+    static async getGameSchemaFromServer(appId: string, lang: string, source: string): Promise<IGameSchema> {
         const url = `https://api.xan105.com/steam/ach/${appId}?lang=${lang}`;
         const response = (await got(url)).body;
 
@@ -28,59 +26,15 @@ class SteamUtils {
         gameData.platform = "Steam";
         gameData.source = source;
 
-        return <IGameData>gameData;
+        return <IGameSchema>gameData;
     }
 
-    // TODO DEBATE WITH ANTHONY
-    // static async getGameDataUsingOwnApiKey(appId: string, lang: string, key: string): Promise<IGameData> {
-    //     const url = {
-    //         api: `https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v0002/?key=${key}&appid=${appId}&l=${lang}&format=json`,
-    //         store: `https://store.steampowered.com/api/appdetails?appids=${appId}`
-    //     };
-    //
-    //     return new Promise((resolve, reject) => {
-    //
-    //         Promise.all([request.getJson(url.api), request.getJson(url.store, {headers: {'Accept-Language': 'en-US;q=1.0'}}), this.scrapSteamDb(appId)]).then(function (data) {
-    //
-    //             try {
-    //
-    //                 let schema = data[0].game.availableGameStats;
-    //                 let appdetail = data[1][appId].data;
-    //                 let steamdb = data[2];
-    //
-    //                 let result = {
-    //                     name: (data[1][appId].success) ? appdetail.name : steamdb.name, //If the game is no longer available in the store fallback to steamdb
-    //                     appid: appId,
-    //                     binary: path.parse(steamdb.binary).base,
-    //                     img: {
-    //                         header: (data[1][appId].success) ? appdetail.header_image.split('?')[0] : steamdb.header, //If the game is no longer available in the store fallback to steamdb
-    //                         background: (data[1][appId].success) ? appdetail.background.split('?')[0] : null,
-    //                         icon: steamdb.icon
-    //                     },
-    //                     achievement: {
-    //                         total: schema.achievements.length,
-    //                         list: schema.achievements
-    //                     }
-    //                 };
-    //
-    //                 return resolve(result);
-    //
-    //             } catch (err) {
-    //                 return reject(err);
-    //             }
-    //
-    //         }).catch((err) => {
-    //             return reject(err);
-    //         });
-    //     });
-    // }
-
-    static async updateGameDataCache(gameCachePath: string, gameData: IGameData): Promise<void> {
+    static async updateGameSchemaCache(gameCachePath: string, gameData: IGameSchema): Promise<void> {
         await fs.writeFile(gameCachePath, JSON.stringify(gameData, null, 2));
     }
 
-    static async validSteamGameDataCacheExists(gameCachePath: string): Promise<boolean> {
-        return await Common.existsAndIsYoungerThan(gameCachePath, {timeUnit: 'month', time: 1});
+    static async validSteamGameSchemaCacheExists(gameCachePath: string): Promise<boolean> {
+        return await existsAndIsYoungerThan(gameCachePath, {timeUnit: 'month', time: 1});
     }
 
     static getGameCachePath(appId: string, language: string): string {
@@ -149,33 +103,6 @@ class SteamUtils {
 
         return local;
     }
-
-    // TODO DEBATE WITH ANTHONY
-    // Note this one does not work anymore
-    // private static async scrapSteamDb(appId: string): Promise<ISteamDbData> {
-    //     const url = `https://steamdb.info/app/${appId}/`
-    //
-    //     const response = await got(url);
-    //     const html = htmlParser(response.body);
-    //
-    //     const binaries = html.querySelector('#config table tbody').innerHTML.split('</tr>\n<tr>').map((tr: string) => {
-    //         const data = tr.split('</td>\n');
-    //
-    //         return <ISteamDbBinary>{
-    //             executable: data[1].replace(/<\/?[^>]+>/gi, '').replace(/[\r\n]/g, ''),
-    //             windows: data[4].includes(`aria-label="windows"`) || (!data[4].includes(`aria-label="macOS"`) && !data[4].includes(`aria-label="Linux"`)),
-    //         };
-    //     });
-    //
-    //     return <ISteamDbData>{
-    //         binary: binaries.find((binary: ISteamDbBinary) => {
-    //             return binary.windows
-    //         }).executable.match(/([^\\\/:*?"<>|])+$/)[0],
-    //         icon: html.querySelector('.app-icon.avatar').attributes.src,
-    //         header: html.querySelector('.app-logo').attributes.src,
-    //         name: html.querySelector('.css-truncate').innerHTML
-    //     };
-    // }
 }
 
 export {

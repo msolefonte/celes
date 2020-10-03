@@ -3,12 +3,12 @@
 import {IUnlockedAchievement} from '../../types';
 
 // @ts-ignore
-import {SteamEmulatorParser} from './lib/SteamEmulatorParser';
+import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
 
 // const omit = require('lodash.omit');
 const path = require('path');
 
-class Skidrow extends SteamEmulatorParser {
+class Skidrow extends SteamEmulatorScraper {
     readonly source: string = 'Skidrow';
 
     private readonly localAppDataPath: string = <string>process.env['LOCALAPPDATA'];

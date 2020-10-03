@@ -1,8 +1,8 @@
 'use strict';
 
-import {IGameData, IGameMetadata, IUnlockedAchievement} from '../../../types';
+import {IGameMetadata, IGameSchema, IUnlockedAchievement} from '../../../types';
 // @ts-ignore
-import {Parser} from './Parser';
+import {AchievementsScraper} from './AchievementsScraper';
 import {SteamUtils} from './SteamUtils';
 
 const glob = require('fast-glob');
@@ -10,7 +10,7 @@ const path = require('path');
 
 // TODO CHECK LOGS / THROWS
 
-abstract class SteamEmulatorParser implements Parser {
+abstract class SteamEmulatorScraper implements AchievementsScraper {
     abstract readonly source: string;
     readonly steamLanguages: string[] = [
         'arabic', 'bulgarian', 'schinese', 'tchinese', 'czech', 'danish', 'dutch', 'english', 'finnish', 'french',
@@ -44,36 +44,28 @@ abstract class SteamEmulatorParser implements Parser {
         return gamesMetadata;
     }
 
-    async getGameData(appId: string, lang: string, key?: string | undefined): Promise<IGameData> {
+    async getGameSchema(appId: string, lang: string): Promise<IGameSchema> {
         if (!this.steamLanguages.includes(lang)) {
             throw 'Language selected not supported by Steam API'; // TODO Should this default to english?
         }
 
-        // @ts-ignore TODO FIXME PATCH FOR TS
-        const keyUsage = key;
-
-        let gameData: IGameData;
+        let gameSchema: IGameSchema;
         const gameCachePath = SteamUtils.getGameCachePath(appId, lang);
 
-        if (await SteamUtils.validSteamGameDataCacheExists(gameCachePath)) {
-            gameData = await SteamUtils.getGameDataFromCache(gameCachePath);
+        if (await SteamUtils.validSteamGameSchemaCacheExists(gameCachePath)) {
+            gameSchema = await SteamUtils.getGameSchemaFromCache(gameCachePath);
         } else {
-            // if (key) {
-            // TODO DEBATE WITH ANTHONY
-            //     gameData = await SteamUtils.getGameDataUsingOwnApiKey(appId, lang, key);
-            // } else {
-            gameData = await SteamUtils.getGameDataFromServer(appId, lang, this.source);
-            // }
-            await SteamUtils.updateGameDataCache(gameCachePath, gameData);
+            gameSchema = await SteamUtils.getGameSchemaFromServer(appId, lang, this.source);
+            await SteamUtils.updateGameSchemaCache(gameCachePath, gameSchema);
         }
 
-        return gameData;
+        return gameSchema;
     }
 
-    async getAchievements(game: IGameMetadata): Promise<IUnlockedAchievement[]> {
+    async getUnlockedAchievements(game: IGameMetadata): Promise<IUnlockedAchievement[]> {
         const achievementList: Object = await SteamUtils.getAchievementListFromGameFolder(<string>game.data.path);
         return this.normalizeUnlockedAchievementList(achievementList);
     }
 }
 
-export {SteamEmulatorParser};
+export {SteamEmulatorScraper};
