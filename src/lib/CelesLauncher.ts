@@ -5,7 +5,7 @@ import {Celes} from './Celes';
 
 const fs = require('fs');
 const path = require('path');
-const mkdirp = require('mkdirp');
+const mkdirp = require('util/filesystem').mkdirp;
 
 
 class CelesLauncher {

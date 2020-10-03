@@ -4,12 +4,12 @@ import {IUnlockedAchievement} from '../../types';
 import {normalizeProgress} from './lib/Common';
 
 // @ts-ignore
-import {SteamEmulatorParser} from './lib/SteamEmulatorParser';
+import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
 
 const omit = require('lodash.omit');
 const path = require('path');
 
-class Codex extends SteamEmulatorParser {
+class Codex extends SteamEmulatorScraper {
     readonly source: string = 'Codex';
 
     private readonly publicDataPath: string = <string>process.env['Public'];

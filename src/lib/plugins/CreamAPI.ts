@@ -3,11 +3,11 @@
 import {IUnlockedAchievement} from '../../types';
 
 // @ts-ignore
-import {SteamEmulatorParser} from './lib/SteamEmulatorParser';
+import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
 
 const path = require('path');
 
-class CreamAPI extends SteamEmulatorParser {
+class CreamAPI extends SteamEmulatorScraper {
     readonly source: string = 'CreamAPI';
 
     private readonly appDataPath: string = <string>process.env['APPDATA'];

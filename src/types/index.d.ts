@@ -44,7 +44,7 @@ export interface IAchievement {
     icongray: string;
 }
 
-export interface IGameData {
+export interface IGameSchema {
     name: string;
     appid: string;
     binary: string;

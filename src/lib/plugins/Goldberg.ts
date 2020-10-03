@@ -3,11 +3,11 @@
 import {IUnlockedAchievement} from '../../types';
 
 // @ts-ignore
-import {SteamEmulatorParser} from './lib/SteamEmulatorParser';
+import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
 
 const path = require('path');
 
-class Goldberg extends SteamEmulatorParser {
+class Goldberg extends SteamEmulatorScraper {
     readonly source: string = 'Goldberg';
 
     private readonly appDataPath: string = <string>process.env['APPDATA'];

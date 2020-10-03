@@ -4,12 +4,12 @@ import {IUnlockedAchievement} from '../../types';
 import {normalizeProgress, normalizeTimestamp} from './lib/Common';
 
 // @ts-ignore
-import {SteamEmulatorParser} from './lib/SteamEmulatorParser';
+import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
 
 const omit = require('lodash.omit');
 const path = require('path');
 
-class Reloaded extends SteamEmulatorParser {
+class Reloaded extends SteamEmulatorScraper {
     readonly source: string = 'Reloaded - 3DM';
 
     private readonly programDataPath: string = <string>process.env['PROGRAMDATA'];

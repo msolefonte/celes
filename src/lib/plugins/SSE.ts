@@ -3,11 +3,11 @@
 import {IUnlockedAchievement} from '../../types';
 
 // @ts-ignore
-import {SteamEmulatorParser} from './lib/SteamEmulatorParser';
+import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
 
 const path = require('path');
 
-class SSE extends SteamEmulatorParser {
+class SSE extends SteamEmulatorScraper {
     readonly source: string = 'SmartSteamEmu';
 
     private readonly appDataPath: string = <string>process.env['APPDATA'];
