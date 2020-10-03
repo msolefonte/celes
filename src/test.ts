@@ -1,8 +1,8 @@
-import {Celes} from '.';
+import {CelesLauncher} from '.';
 import {IExportableGameData} from './types';
 
-const celes = new Celes();
+const celes = new CelesLauncher();
 
-celes.load().then((data: IExportableGameData[]) => {
+celes.scrap().then((data: IExportableGameData[]) => {
     console.log(data);
 });

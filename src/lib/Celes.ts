@@ -29,14 +29,18 @@ class Celes {
         this.useOldestUnlockTime = useOldestUnlockTime;
     }
 
-    async load(callbackProgress?: Function): Promise<IExportableGameData[]> {
-        const databaseData: IExportableGameData[] = await this.loadLocalDatabase(callbackProgress);
+    async scrap(callbackProgress?: Function): Promise<IExportableGameData[]> {
+        const databaseData: IExportableGameData[] = await this.loadLocalDatabase(callbackProgress, 50);
         const scrappedData: IExportableGameData[] = await this.scrapLocalFolders(callbackProgress);
 
         const mergedData: IExportableGameData[] = this.mergeExportableGameData(scrappedData, databaseData);
         await this.updateLocalDatabase(mergedData);
 
         return mergedData;
+    }
+
+    async load(callbackProgress?: Function): Promise<IExportableGameData[]> {
+        return this.loadLocalDatabase(callbackProgress, 100);
     }
 
     async export(filePath: string): Promise<void> {
@@ -46,17 +50,17 @@ class Celes {
         await fs.writeFile(filePath, JSON.stringify(exportableGameData, undefined, 2));
     }
 
-    async import(filePath: string, force: boolean = false): Promise<void> {
+    async import(filePath: string, force: boolean = false): Promise<IExportableGameData[]> {
         const importedData: IExportableGameData[] = await JSON.parse(await fs.readFile(filePath));
 
+        let newData: IExportableGameData[] = importedData;
         if (!force) {
             const localData: IExportableGameData[] = await this.loadLocalDatabase();
-            const mergedData: IExportableGameData[] = this.mergeExportableGameData(localData, importedData);
-
-            await this.updateLocalDatabase(mergedData);
-        } else {
-            await this.updateLocalDatabase(importedData);
+            newData = this.mergeExportableGameData(localData, importedData);
         }
+
+        await this.updateLocalDatabase(newData);
+        return newData;
     }
 
     private mergeUnlockedAchievements(ua1: IUnlockedAchievement[], ua2: IUnlockedAchievement[]): IUnlockedAchievement[] {
@@ -164,14 +168,14 @@ class Celes {
         return exportableGames;
     }
 
-    private async loadLocalDatabase(callbackProgress?: Function): Promise<IExportableGameData[]> {
+    private async loadLocalDatabase(callbackProgress?: Function, maxProgress: number = 100): Promise<IExportableGameData[]> {
         let localData: IExportableGameData[] = [];
 
         try {
             const localDatabaseFiles: string[] = await fs.readdir(this.celesDatabasePath);
 
             for (let i = 0; i < localDatabaseFiles.length; i++) {
-                const progressPercentage: number = Math.floor((i / localDatabaseFiles.length) * 50);
+                const progressPercentage: number = Math.floor((i / localDatabaseFiles.length) * maxProgress);
 
                 try {
                     const localGameData: IExportableGameData = JSON.parse(await fs.readFile(this.celesDatabasePath + localDatabaseFiles[i]));

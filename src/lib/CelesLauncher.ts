@@ -1,6 +1,6 @@
 'use strict';
 
-import {ICelesConfig} from '../types';
+import {ICelesConfig, IExportableGameData} from '../types';
 import {Celes} from './Celes';
 
 const fs = require('fs');
@@ -42,24 +42,24 @@ class CelesLauncher {
         );
     }
 
-    async import(filePath: string, force: boolean = false): Promise<void> {
+    async import(filePath: string, force: boolean = false): Promise<IExportableGameData[]> {
         const celes: Celes = await this.getCeles();
         return celes.import(filePath, force);
     }
 
     async export(filePath: string): Promise<void> {
         const celes: Celes = await this.getCeles();
-        await celes.export(filePath);
+        return celes.export(filePath);
     }
 
-    async load(showPercentage: boolean = false): Promise<void> {
+    async load(callbackProgress?: Function): Promise<IExportableGameData[]> {
         const celes: Celes = await this.getCeles();
+        return celes.load(callbackProgress);
+    }
 
-        if (showPercentage) {
-            await celes.load((percent: number) => console.log(percent));
-        } else {
-            await celes.load();
-        }
+    async scrap(callbackProgress?: Function): Promise<IExportableGameData[]> {
+        const celes: Celes = await this.getCeles();
+        return celes.scrap(callbackProgress);
     }
 }
 
