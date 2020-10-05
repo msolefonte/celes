@@ -1,6 +1,6 @@
 'use strict';
 
-import {ISource, IUnlockedAchievement} from '../../types';
+import {Source, UnlockedOrInProgressAchievement} from '../../types';
 import {normalizeProgress, normalizeTimestamp} from './lib/Common';
 
 // @ts-ignore
@@ -10,7 +10,7 @@ const omit = require('lodash.omit');
 const path = require('path');
 
 class Reloaded extends SteamEmulatorScraper {
-    readonly source: ISource = 'Reloaded - 3DM';
+    readonly source: Source = 'Reloaded - 3DM';
 
     private readonly programDataPath: string = <string>process.env['PROGRAMDATA'];
 
@@ -18,8 +18,8 @@ class Reloaded extends SteamEmulatorScraper {
         super();
     }
 
-    normalizeUnlockedAchievementList(achievementList: any): IUnlockedAchievement[] {
-        const unlockedAchievementList: IUnlockedAchievement[] = [];
+    normalizeUnlockedOrInProgressAchievementList(achievementList: any): UnlockedOrInProgressAchievement[] {
+        const UnlockedOrInProgressAchievementList: UnlockedOrInProgressAchievement[] = [];
 
         const filter: string[] = ['SteamAchievements', 'Steam64', 'Steam'];
         achievementList = omit(achievementList.ACHIEVE_DATA || achievementList, filter);
@@ -29,7 +29,7 @@ class Reloaded extends SteamEmulatorScraper {
             const normalizedProgress = normalizeProgress(achievementData.CurProgress, achievementData.MaxProgress);
 
             if (achievementData.State === '0100000001') {
-                unlockedAchievementList.push({
+                UnlockedOrInProgressAchievementList.push({
                     name: achievementName,
                     achieved: 1,
                     currentProgress: normalizedProgress.currentProgress,
@@ -37,7 +37,7 @@ class Reloaded extends SteamEmulatorScraper {
                     unlockTime: normalizeTimestamp(achievementData.Time)
                 });
             } else if (normalizedProgress.maximProgress > 0) {
-                unlockedAchievementList.push({
+                UnlockedOrInProgressAchievementList.push({
                     name: achievementName,
                     achieved: 0,
                     currentProgress: normalizedProgress.currentProgress,
@@ -47,7 +47,7 @@ class Reloaded extends SteamEmulatorScraper {
             }
         });
 
-        return unlockedAchievementList;
+        return UnlockedOrInProgressAchievementList;
     }
 
     getSpecificFoldersToScan(): string[] {

@@ -1,4 +1,4 @@
-import {IGameSchema} from '../../../types';
+import {GameSchema} from '../../../types';
 
 const got = require('got');
 const regedit = require('regodit');
@@ -13,11 +13,11 @@ class SteamUtils {
     private static readonly achievementWatcherRootPath: string = path.join(<string>process.env['APPDATA'],
         'Achievement Watcher');
 
-    static async getGameSchemaFromCache(gameCachePath: string): Promise<IGameSchema> {
+    static async getGameSchemaFromCache(gameCachePath: string): Promise<GameSchema> {
         return JSON.parse(await fs.readFile(gameCachePath));
     }
 
-    static async getGameSchemaFromServer(appId: string, lang: string, source: string): Promise<IGameSchema> {
+    static async getGameSchemaFromServer(appId: string, lang: string, source: string): Promise<GameSchema> {
         const url = `https://api.xan105.com/steam/ach/${appId}?lang=${lang}`;
         const response = (await got(url)).body;
 
@@ -26,10 +26,10 @@ class SteamUtils {
         gameData.platform = "Steam";
         gameData.source = source;
 
-        return <IGameSchema>gameData;
+        return <GameSchema>gameData;
     }
 
-    static async updateGameSchemaCache(gameCachePath: string, gameData: IGameSchema): Promise<void> {
+    static async updateGameSchemaCache(gameCachePath: string, gameData: GameSchema): Promise<void> {
         await fs.writeFile(gameCachePath, JSON.stringify(gameData, null, 2));
     }
 

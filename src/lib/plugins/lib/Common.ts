@@ -1,5 +1,5 @@
 import {unitOfTime} from 'moment';
-import {INormalizedProgress} from '../../../types';
+import {NormalizedProgress} from '../../../types';
 
 const fs = require('fs').promises;
 const moment = require('moment');
@@ -19,7 +19,7 @@ async function existsAndIsYoungerThan(path: string, time = 7, timeUnit: unitOfTi
     }
 }
 
-function normalizeProgress(curProgress: string, maxProgress: string): INormalizedProgress {
+function normalizeProgress(curProgress: string, maxProgress: string): NormalizedProgress {
     let currentProgress: number, maximProgress: number;
     if (Number.parseInt(maxProgress) === 0) {
         currentProgress = 0;

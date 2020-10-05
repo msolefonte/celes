@@ -3,7 +3,7 @@
 // 'use strict';
 //
 // // const { remote } = require('electron');
-// import {IGameMetadata, ILegitSteamGameMetadata, ISteamLanguage, ISteamUser} from '../../types';
+// import {ScanResult, ILegitSteamGameMetadata, ISteamLanguage, SteamUser} from '../../types';
 //
 // const path = require('path');
 // const glob = require('fast-glob');
@@ -32,8 +32,8 @@
 //     constructor() {
 //     }
 //
-//     async scan(listingType: 0 | 1 | 2 = 0): Promise<IGameMetadata[]> {
-//         const gamesMetadata: IGameMetadata[] = [];
+//     async scan(listingType: 0 | 1 | 2 = 0): Promise<ScanResult[]> {
+//         const gamesMetadata: ScanResult[] = [];
 //
 //         if (regedit.RegKeyExists('HKCU', 'Software/Valve/Steam') && listingType > 0) {
 //             const steamPath = await this.getSteamPath();
@@ -58,7 +58,7 @@
 //                     isInstalled = (await regedit.promises.RegQueryIntegerValue('HKCU',
 //                         `Software/Valve/Steam/Apps/${game.appId}`, 'Installed') === '1');
 //                 }
-//                 const user: ISteamUser = <ISteamUser> publicUsers.find(user => user.user == game.userId);
+//                 const user: SteamUser = <SteamUser> publicUsers.find(user => user.user == game.userId);
 //
 //                 if (user && isInstalled) {
 //                     gamesMetadata.push({
@@ -272,8 +272,8 @@
 //         return steamPath;
 //     }
 //
-//     private async getSteamUsers(steamPath: string): Promise<ISteamUser[]> {
-//         let steamUsers: ISteamUser[] = [];
+//     private async getSteamUsers(steamPath: string): Promise<SteamUser[]> {
+//         let steamUsers: SteamUser[] = [];
 //
 //         let users = await regedit.promises.RegListAllSubkeys('HKCU', 'Software/Valve/Steam/Users');
 //         if (!users) {
@@ -335,7 +335,7 @@
 //
 //     async getSteamUserStats(cfg) {
 //
-//         const url = `http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid=${cfg.appID}&key=${cfg.key}&steamid=${cfg.user.id}"`;
+//         const url = `http://api.steampowered.com/SteamUserStats/GetPlayerAchievements/v0001/?appid=${cfg.appID}&key=${cfg.key}&steamid=${cfg.user.id}"`;
 //
 //         try {
 //
@@ -374,7 +374,7 @@
 //     getSteamData(cfg) {
 //
 //         const url = {
-//             api: `https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v0002/?key=${cfg.key}&appid=${cfg.appID}&l=${cfg.lang}&format=json`,
+//             api: `https://api.steampowered.com/SteamUserStats/GetSchemaForGame/v0002/?key=${cfg.key}&appid=${cfg.appID}&l=${cfg.lang}&format=json`,
 //             store: `https://store.steampowered.com/api/appdetails?appids=${cfg.appID}`
 //         };
 //
@@ -482,8 +482,8 @@
 // TODO DRAFT HERE
 
 // // TODO LEGIT
-// async scanLegitSteam(listingType: 0 | 1 | 2 = 0): Promise<IGameMetadata[]> {
-//     const gamesMetadata: IGameMetadata[] = [];
+// async scanLegitSteam(listingType: 0 | 1 | 2 = 0): Promise<ScanResult[]> {
+//     const gamesMetadata: ScanResult[] = [];
 //
 //     if (regedit.RegKeyExists('HKCU', 'Software/Valve/Steam') && listingType > 0) {
 //         const steamPath = await this.getSteamPath();
@@ -508,7 +508,7 @@
 //                 isInstalled = (await regedit.promises.RegQueryIntegerValue('HKCU',
 //                     `Software/Valve/Steam/Apps/${game.appId}`, 'Installed') === '1');
 //             }
-//             const user: ISteamUser = <ISteamUser> publicUsers.find(user => user.user == game.userId);
+//             const user: SteamUser = <SteamUser> publicUsers.find(user => user.user == game.userId);
 //
 //             if (user && isInstalled) {
 //                 gamesMetadata.push({
@@ -611,8 +611,8 @@
 //     return steamPath;
 // }
 //
-// private async getSteamUsers(steamPath: string): Promise<ISteamUser[]> {
-//     let steamUsers: ISteamUser[] = [];
+// private async getSteamUsers(steamPath: string): Promise<SteamUser[]> {
+//     let steamUsers: SteamUser[] = [];
 //
 //     let users = await regedit.promises.RegListAllSubkeys('HKCU', 'Software/Valve/Steam/Users');
 //     if (!users) {
@@ -674,7 +674,7 @@
 //
 // async getSteamUserStats(cfg) {
 //
-//     const url = `http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid=${cfg.appID}&key=${cfg.key}&steamid=${cfg.user.id}"`;
+//     const url = `http://api.steampowered.com/SteamUserStats/GetPlayerAchievements/v0001/?appid=${cfg.appID}&key=${cfg.key}&steamid=${cfg.user.id}"`;
 //
 //     try {
 //

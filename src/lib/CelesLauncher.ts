@@ -1,6 +1,6 @@
 'use strict';
 
-import {ICelesConfig, IExportableGameData, IExportableUnlockedAchievements} from '../types';
+import {CelesConfig, GameData, GameStats} from '../types';
 import {Celes} from './Celes';
 
 const fs = require('fs');
@@ -13,8 +13,8 @@ class CelesLauncher {
     private configFilePath: string = path.join(this.achievementWatcherRootPath, 'config/celes.json');
     private readonly configVersion: string = "v1";
 
-    private async generateDefaultCelesConfig(): Promise<ICelesConfig> {
-        const defaultCelesConfig: ICelesConfig = {
+    private async generateDefaultCelesConfig(): Promise<CelesConfig> {
+        const defaultCelesConfig: CelesConfig = {
             apiVersion: this.configVersion,
             additionalFoldersToScan: [
                 "D:\\Games\\Sparrow\\Final Fantasy X X-2 HD Remaster",
@@ -31,10 +31,10 @@ class CelesLauncher {
         return defaultCelesConfig;
     }
 
-    private async getCelesConfig(): Promise<ICelesConfig> {
+    private async getCelesConfig(): Promise<CelesConfig> {
         if (fs.existsSync(this.configFilePath)) {
             try {
-                const celesConfig: ICelesConfig = <ICelesConfig>JSON.parse(await fs.promises.readFile(this.configFilePath));
+                const celesConfig: CelesConfig = <CelesConfig>JSON.parse(await fs.promises.readFile(this.configFilePath));
 
                 if (celesConfig.apiVersion === this.configVersion) {
                     return celesConfig;
@@ -53,7 +53,7 @@ class CelesLauncher {
     }
 
     private async getCeles(): Promise<Celes> {
-        const celesConfig: ICelesConfig = await this.getCelesConfig();
+        const celesConfig: CelesConfig = await this.getCelesConfig();
         return new Celes(
             celesConfig.additionalFoldersToScan,
             celesConfig.systemLanguage,
@@ -62,7 +62,7 @@ class CelesLauncher {
         );
     }
 
-    async import(filePath: string, force = false): Promise<IExportableGameData[]> {
+    async import(filePath: string, force = false): Promise<GameData[]> {
         const celes: Celes = await this.getCeles();
         return celes.import(filePath, force);
     }
@@ -72,17 +72,17 @@ class CelesLauncher {
         return celes.export(filePath);
     }
 
-    async load(callbackProgress?: Function): Promise<IExportableGameData[]> {
+    async load(callbackProgress?: Function): Promise<GameData[]> {
         const celes: Celes = await this.getCeles();
         return celes.load(callbackProgress);
     }
 
-    async scrap(callbackProgress?: Function): Promise<IExportableUnlockedAchievements[]> {
+    async scrap(callbackProgress?: Function): Promise<GameStats[]> {
         const celes: Celes = await this.getCeles();
         return celes.scrap(callbackProgress);
     }
 
-    async pull(callbackProgress?: Function): Promise<IExportableGameData[]> {
+    async pull(callbackProgress?: Function): Promise<GameData[]> {
         const celes: Celes = await this.getCeles();
         return celes.pull(callbackProgress);
     }

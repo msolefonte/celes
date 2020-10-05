@@ -1,6 +1,6 @@
 'use strict';
 
-import {ISource, IUnlockedAchievement} from '../../types';
+import {Source, UnlockedOrInProgressAchievement} from '../../types';
 
 // @ts-ignore
 import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
@@ -8,7 +8,7 @@ import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
 const path = require('path');
 
 class SSE extends SteamEmulatorScraper {
-    readonly source: ISource = 'SmartSteamEmu';
+    readonly source: Source = 'SmartSteamEmu';
 
     private readonly appDataPath: string = <string>process.env['APPDATA'];
 
@@ -17,12 +17,12 @@ class SSE extends SteamEmulatorScraper {
     }
 
     // TODO
-    normalizeUnlockedAchievementList(achievementList: any): IUnlockedAchievement[] {
-        const unlockedAchievementList: IUnlockedAchievement[] = [];
+    normalizeUnlockedOrInProgressAchievementList(achievementList: any): UnlockedOrInProgressAchievement[] {
+        const UnlockedOrInProgressAchievementList: UnlockedOrInProgressAchievement[] = [];
 
         console.log(achievementList);
 
-        return unlockedAchievementList;
+        return UnlockedOrInProgressAchievementList;
     }
 
     getSpecificFoldersToScan(): string[] {

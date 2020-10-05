@@ -1,11 +1,11 @@
-import {IGameMetadata, IGameSchema, IUnlockedAchievement} from '../../../types';
+import {ScanResult, GameSchema, UnlockedOrInProgressAchievement} from '../../../types';
 
 interface AchievementsScraper {
-    getUnlockedAchievements(game: IGameMetadata): Promise<IUnlockedAchievement[]>;
+    getUnlockedOrInProgressAchievements(game: ScanResult): Promise<UnlockedOrInProgressAchievement[]>;
 
-    getGameSchema(appId: string, lang?: string, key?: string): Promise<IGameSchema>;
+    getGameSchema(appId: string, lang?: string, key?: string): Promise<GameSchema>;
 
-    scan(additionalFoldersToScan?: string[]): Promise<IGameMetadata[]>;
+    scan(additionalFoldersToScan?: string[]): Promise<ScanResult[]>;
 }
 
 export {AchievementsScraper};

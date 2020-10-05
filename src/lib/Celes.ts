@@ -1,11 +1,11 @@
 'use strict';
 
 import {
-    IExportableGameData,
-    IExportableUnlockedAchievements,
-    IGameMetadata,
-    IGameSchema,
-    IUnlockedAchievement
+    GameData,
+    GameStats,
+    ScanResult,
+    GameSchema,
+    UnlockedOrInProgressAchievement
 } from '../types';
 import {AchievementsScraper} from './plugins/lib/AchievementsScraper';
 import plugins from './plugins/plugins.json';
@@ -45,11 +45,11 @@ class Celes {
      *
      * @param callbackProgress
      */
-    async pull(callbackProgress?: Function): Promise<IExportableGameData[]> {
-        const databaseData: IExportableGameData[] = await this.loadLocalDatabase(callbackProgress, 50);
-        const scrappedData: IExportableGameData[] = await this.scrapGameDataFromLocalFolders(callbackProgress, 50, 50);
+    async pull(callbackProgress?: Function): Promise<GameData[]> {
+        const databaseData: GameData[] = await this.loadLocalDatabase(callbackProgress, 50);
+        const scrappedData: GameData[] = await this.scrapGameDataFromLocalFolders(callbackProgress, 50, 50);
 
-        const mergedData: IExportableGameData[] = this.mergeExportableGameData(scrappedData, databaseData);
+        const mergedData: GameData[] = this.mergeExportableGameData(scrappedData, databaseData);
         await this.updateLocalDatabase(mergedData);
 
         return mergedData;
@@ -60,8 +60,8 @@ class Celes {
      *
      * @param callbackProgress
      */
-    async scrap(callbackProgress?: Function): Promise<IExportableUnlockedAchievements[]> {
-        return this.scrapUnlockedAchievementsFromLocalFolders(callbackProgress, 100);
+    async scrap(callbackProgress?: Function): Promise<GameStats[]> {
+        return this.scrapUnlockedOrInProgressAchievementsFromLocalFolders(callbackProgress, 100);
     }
 
     /**
@@ -71,7 +71,7 @@ class Celes {
      *
      * @param callbackProgress
      */
-    async load(callbackProgress?: Function): Promise<IExportableGameData[]> {
+    async load(callbackProgress?: Function): Promise<GameData[]> {
         return this.loadLocalDatabase(callbackProgress, 100);
     }
 
@@ -85,7 +85,7 @@ class Celes {
      * @param filePath
      */
     async export(filePath: string): Promise<void> {
-        const exportableGameData: IExportableGameData[] = await this.load();
+        const exportableGameData: GameData[] = await this.load();
 
         await mkdirp(path.dirname(filePath));
         await fs.writeFile(filePath, JSON.stringify(exportableGameData, undefined, 2));
@@ -106,12 +106,12 @@ class Celes {
      * @param filePath
      * @param force
      */
-    async import(filePath: string, force = false): Promise<IExportableGameData[]> {
-        const importedData: IExportableGameData[] = await JSON.parse(await fs.readFile(filePath));
+    async import(filePath: string, force = false): Promise<GameData[]> {
+        const importedData: GameData[] = await JSON.parse(await fs.readFile(filePath));
 
-        let newData: IExportableGameData[] = importedData;
+        let newData: GameData[] = importedData;
         if (!force) {
-            const localData: IExportableGameData[] = await this.loadLocalDatabase();
+            const localData: GameData[] = await this.loadLocalDatabase();
             newData = this.mergeExportableGameData(localData, importedData);
         }
 
@@ -119,38 +119,38 @@ class Celes {
         return newData;
     }
 
-    private mergeUnlockedAchievements(ua1: IUnlockedAchievement[], ua2: IUnlockedAchievement[]): IUnlockedAchievement[] {
-        const mergedUnlockedAchievements: { [key: string]: IUnlockedAchievement } = {};
+    private mergeUnlockedOrInProgressAchievements(ua1: UnlockedOrInProgressAchievement[], ua2: UnlockedOrInProgressAchievement[]): UnlockedOrInProgressAchievement[] {
+        const mergedUnlockedOrInProgressAchievements: { [key: string]: UnlockedOrInProgressAchievement } = {};
 
         for (let k = 0; k < ua1.length; k++) {
-            mergedUnlockedAchievements[ua1[k].name] = ua1[k];
+            mergedUnlockedOrInProgressAchievements[ua1[k].name] = ua1[k];
         }
 
         for (let j = 0; j < ua2.length; j++) {
-            if (!(ua2[j].name in mergedUnlockedAchievements)) {
-                mergedUnlockedAchievements[ua2[j].name] = ua2[j];
+            if (!(ua2[j].name in mergedUnlockedOrInProgressAchievements)) {
+                mergedUnlockedOrInProgressAchievements[ua2[j].name] = ua2[j];
             } else {
-                if (ua2[j].currentProgress > mergedUnlockedAchievements[ua2[j].name].currentProgress) {
-                    mergedUnlockedAchievements[ua2[j].name] = ua2[j];
+                if (ua2[j].currentProgress > mergedUnlockedOrInProgressAchievements[ua2[j].name].currentProgress) {
+                    mergedUnlockedOrInProgressAchievements[ua2[j].name] = ua2[j];
                 } else if (this.useOldestUnlockTime) {
-                    if (ua2[j].unlockTime < mergedUnlockedAchievements[ua2[j].name].unlockTime) {
-                        mergedUnlockedAchievements[ua2[j].name] = ua2[j];
+                    if (ua2[j].unlockTime < mergedUnlockedOrInProgressAchievements[ua2[j].name].unlockTime) {
+                        mergedUnlockedOrInProgressAchievements[ua2[j].name] = ua2[j];
                     }
                 } else {
-                    if (ua2[j].unlockTime > mergedUnlockedAchievements[ua2[j].name].unlockTime) {
-                        mergedUnlockedAchievements[ua2[j].name] = ua2[j];
+                    if (ua2[j].unlockTime > mergedUnlockedOrInProgressAchievements[ua2[j].name].unlockTime) {
+                        mergedUnlockedOrInProgressAchievements[ua2[j].name] = ua2[j];
                     }
                 }
             }
         }
 
-        return Object.keys(mergedUnlockedAchievements).map(function (name) {
-            return mergedUnlockedAchievements[name];
+        return Object.keys(mergedUnlockedOrInProgressAchievements).map(function (name) {
+            return mergedUnlockedOrInProgressAchievements[name];
         });
     }
 
-    private mergeExportableGameData(egd1: IExportableGameData[], egd2: IExportableGameData[]): IExportableGameData[] {
-        const mergedGames: { [key: string]: IExportableGameData } = {};
+    private mergeExportableGameData(egd1: GameData[], egd2: GameData[]): GameData[] {
+        const mergedGames: { [key: string]: GameData } = {};
 
         for (let i = 0; i < egd1.length; i++) {
             let sortKey: string = egd1[i].appid + egd1[i].platform;
@@ -175,9 +175,9 @@ class Celes {
                     mergedGames[sortKey].achievement.list = egd2[j].achievement.list;
                 }
 
-                mergedGames[sortKey].achievement.unlocked = this.mergeUnlockedAchievements(
-                    mergedGames[sortKey].achievement.unlocked,
-                    egd2[j].achievement.unlocked
+                mergedGames[sortKey].achievement.active = this.mergeUnlockedOrInProgressAchievements(
+                    mergedGames[sortKey].achievement.active,
+                    egd2[j].achievement.active
                 );
             }
         }
@@ -187,9 +187,9 @@ class Celes {
         });
     }
 
-    // TODO THIS METHOD AND scrapUnlockedAchievementsFromLocalFolders ARE TOO SIMILAR
-    private async scrapGameDataFromLocalFolders(callbackProgress?: Function, maxProgress = 100, baseProgress = 0): Promise<IExportableGameData[]> {
-        const exportableGames: IExportableGameData[] = [];
+    // TODO THIS METHOD AND scrapUnlockedOrInProgressAchievementsFromLocalFolders ARE TOO SIMILAR
+    private async scrapGameDataFromLocalFolders(callbackProgress?: Function, maxProgress = 100, baseProgress = 0): Promise<GameData[]> {
+        const exportableGames: GameData[] = [];
 
         for (let i = 0; i < plugins.length; i++) {
             const progressPercentage: number = baseProgress + Math.floor((i / plugins.length) * maxProgress);
@@ -198,16 +198,16 @@ class Celes {
                 const plugin = require('./plugins/' + plugins[i]);
                 const scraper: AchievementsScraper = new plugin[Object.keys(plugin)[0]]();
 
-                const listOfGames: IGameMetadata[] = await scraper.scan(this.additionalFoldersToScan);
+                const listOfGames: ScanResult[] = await scraper.scan(this.additionalFoldersToScan);
 
                 for (let j = 0; j < listOfGames.length; j++) {
-                    const gameSchema: IGameSchema = await scraper.getGameSchema(listOfGames[j].appId, this.systemLanguage);
-                    const unlockedAchievements: IUnlockedAchievement[] = await scraper.getUnlockedAchievements(listOfGames[j]);
+                    const gameSchema: GameSchema = await scraper.getGameSchema(listOfGames[j].appId, this.systemLanguage);
+                    const UnlockedOrInProgressAchievements: UnlockedOrInProgressAchievement[] = await scraper.getUnlockedOrInProgressAchievements(listOfGames[j]);
 
                     const exportableGameDataSkeleton: any = gameSchema;
-                    exportableGameDataSkeleton.achievement.unlocked = unlockedAchievements;
+                    exportableGameDataSkeleton.achievement.active = UnlockedOrInProgressAchievements;
 
-                    const exportableGameData: IExportableGameData = exportableGameDataSkeleton;
+                    const exportableGameData: GameData = exportableGameDataSkeleton;
 
                     exportableGames.push(exportableGameData);
                 }
@@ -224,8 +224,8 @@ class Celes {
     }
 
     // TODO THIS METHOD AND scrapGameDataFromLocalFolders ARE TOO SIMILAR
-    private async scrapUnlockedAchievementsFromLocalFolders(callbackProgress?: Function, maxProgress = 100, baseProgress = 0): Promise<IExportableUnlockedAchievements[]> {
-        const exportableUnlockedAchievementsCollection: IExportableUnlockedAchievements[] = [];
+    private async scrapUnlockedOrInProgressAchievementsFromLocalFolders(callbackProgress?: Function, maxProgress = 100, baseProgress = 0): Promise<GameStats[]> {
+        const exportableUnlockedOrInProgressAchievementsCollection: GameStats[] = [];
 
         for (let i = 0; i < plugins.length; i++) {
             const progressPercentage: number = baseProgress + Math.floor((i / plugins.length) * maxProgress);
@@ -234,18 +234,18 @@ class Celes {
                 const plugin = require('./plugins/' + plugins[i]);
                 const scraper: AchievementsScraper = new plugin[Object.keys(plugin)[0]]();
 
-                const listOfGames: IGameMetadata[] = await scraper.scan(this.additionalFoldersToScan);
+                const listOfGames: ScanResult[] = await scraper.scan(this.additionalFoldersToScan);
 
                 for (let j = 0; j < listOfGames.length; j++) {
-                    const unlockedAchievements: IUnlockedAchievement[] = await scraper.getUnlockedAchievements(listOfGames[j]);
-                    const exportableUnlockedAchievements: IExportableUnlockedAchievements = {
+                    const UnlockedOrInProgressAchievements: UnlockedOrInProgressAchievement[] = await scraper.getUnlockedOrInProgressAchievements(listOfGames[j]);
+                    const exportableUnlockedOrInProgressAchievements: GameStats = {
                         appid: listOfGames[j].appId,
                         source: listOfGames[j].source,
                         platform: listOfGames[j].platform,
-                        unlockedAchievements: unlockedAchievements
+                        UnlockedOrInProgressAchievements: UnlockedOrInProgressAchievements
                     };
 
-                    exportableUnlockedAchievementsCollection.push(exportableUnlockedAchievements);
+                    exportableUnlockedOrInProgressAchievementsCollection.push(exportableUnlockedOrInProgressAchievements);
                 }
             } catch (error) {
                 console.debug('DEBUG: Error loading plugin', plugins[i] + ':', error);
@@ -256,12 +256,12 @@ class Celes {
             }
         }
 
-        return exportableUnlockedAchievementsCollection;
+        return exportableUnlockedOrInProgressAchievementsCollection;
     }
 
     // TODO SEPARE SCHEMAS AND ACHIEVEMENTS
-    private async loadLocalDatabase(callbackProgress?: Function, maxProgress = 100): Promise<IExportableGameData[]> {
-        const localData: IExportableGameData[] = [];
+    private async loadLocalDatabase(callbackProgress?: Function, maxProgress = 100): Promise<GameData[]> {
+        const localData: GameData[] = [];
 
         try {
             const localDatabaseFiles: string[] = await fs.readdir(this.celesDatabasePath);
@@ -270,7 +270,7 @@ class Celes {
                 const progressPercentage: number = Math.floor((i / localDatabaseFiles.length) * maxProgress);
 
                 try {
-                    const localGameData: IExportableGameData = JSON.parse(await fs.readFile(this.celesDatabasePath + localDatabaseFiles[i]));
+                    const localGameData: GameData = JSON.parse(await fs.readFile(this.celesDatabasePath + localDatabaseFiles[i]));
                     localData.push(localGameData);
                 } catch (error) {
                     console.debug('DEBUG: Error loading local database', localDatabaseFiles[i] + ':', error);
@@ -292,7 +292,7 @@ class Celes {
     }
 
     // TODO SEPARE SCHEMAS AND ACHIEVEMENTS
-    private async updateLocalDatabase(gameData: IExportableGameData[]): Promise<void> {
+    private async updateLocalDatabase(gameData: GameData[]): Promise<void> {
         try {
             await mkdirp(this.celesDatabasePath);
 

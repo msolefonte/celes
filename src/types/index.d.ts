@@ -1,4 +1,4 @@
-export interface IAchievement {
+export interface Achievement {
     name: string;
     defaultvalue: number;
     hidden: 0 | 1;
@@ -6,7 +6,7 @@ export interface IAchievement {
     icongray: string;
 }
 
-export interface ICelesConfig {
+export interface CelesConfig {
     apiVersion: string;
     additionalFoldersToScan: string[];
     ignoreSourceAtMerge: boolean;
@@ -14,84 +14,85 @@ export interface ICelesConfig {
     useOldestUnlockTime: boolean;
 }
 
-// TODO IGameData
-export interface IExportableGameData {
-    name: string;
+export interface GameData {
+    apiVersion: string;
     appid: string;
+    source: Source[];
+    platform: Platform;
+    name: string;
     binary?: string;
-    platform: IPlatform;
-    source: ISource;
     img: {
-        header: string;
-        background: string;
-        portrait: string;
-        hero: string;
-        icon: string;
+        header?: string;
+        background?: string;
+        portrait?: string;
+        hero?: string;
+        icon?: string;
     }
     achievement: {
         total: number;
-        list: IAchievement[];
-        unlocked: IUnlockedAchievement[];
+        list: Achievement[];
+        active: UnlockedOrInProgressAchievement[];
     }
+    playtime: number;
 }
 
-export interface IGameSchema {
+export interface GameSchema {
+    apiVersion: string;
+    appid: string;
+    source: Source;
+    platform: Platform;
     name: string;
-    appid: string;
-    binary: string;
-    platform: IPlatform;
-    source: ISource;
+    binary?: string;
     img: {
-        header: string;
-        background: string;
-        portrait: string;
-        hero: string;
-        icon: string;
+        header?: string;
+        background?: string;
+        portrait?: string;
+        hero?: string;
+        icon?: string;
     }
     achievement: {
         total: number;
-        list: IAchievement[];
+        list: Achievement[];
     }
 }
 
-// TODO IGameStats
-// TODO Add playtime
-export interface IExportableUnlockedAchievements {
+export interface GameStats {
+    apiVersion: string;
     appid: string;
-    platform: IPlatform;
-    source: ISource;
-    unlockedAchievements: IUnlockedAchievement[];
+    source: Source;
+    platform: Platform;
+    UnlockedOrInProgressAchievements: UnlockedOrInProgressAchievement[];
+    playtime: number;
 }
 
-export interface INormalizedProgress {
+export interface NormalizedProgress {
     currentProgress: number,
     maximProgress: number
 }
 
-export type IPlatform = 'Steam';
+export type Platform = 'Steam';
 
-// TODO IScanResult
-export interface IGameMetadata {
+export interface ScanResult {
     appId: string;
+    source: Source;
+    platform: Platform;
     data: {
         type: 'file' | 'steamAPI';
         cachePath?: string;
         path?: string;
-        userId?: ISteamUser;
+        userId?: SteamUser;
     }
-    source: ISource;
-    platform: IPlatform;
 }
 
-export type ISource = 'Codex' | 'CreamAPI' | 'Goldberg' | 'Reloaded - 3DM' | 'Skidrow' | 'SmartSteamEmu';
+export type Source = 'Codex' | 'CreamAPI' | 'Goldberg' | 'Reloaded - 3DM' | 'Skidrow' | 'SmartSteamEmu';
 
-export interface ISteamUser {
+export interface SteamUser {
     user: string;
     id: string;
     name: string;
 }
 
-export interface IUnlockedAchievement {
+export interface UnlockedOrInProgressAchievement {
     name: string;
     achieved: 0 | 1;
     currentProgress: number;
