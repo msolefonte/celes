@@ -1,6 +1,6 @@
 'use strict';
 
-import {IGameMetadata, IGameSchema, IUnlockedAchievement} from '../../../types';
+import {IGameMetadata, IGameSchema, ISource, IUnlockedAchievement} from '../../../types';
 // @ts-ignore
 import {AchievementsScraper} from './AchievementsScraper';
 import {SteamUtils} from './SteamUtils';
@@ -11,7 +11,7 @@ const path = require('path');
 // TODO CHECK LOGS / THROWS
 
 abstract class SteamEmulatorScraper implements AchievementsScraper {
-    abstract readonly source: string;
+    abstract readonly source: ISource;
     readonly steamLanguages: string[] = [
         'arabic', 'bulgarian', 'schinese', 'tchinese', 'czech', 'danish', 'dutch', 'english', 'finnish', 'french',
         'german', 'greek', 'hungarian', 'italian', 'japanese', 'korean', 'norwegian', 'polish', 'portuguese',
@@ -27,7 +27,7 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
         const foldersToScan: string[] = await SteamUtils.getFoldersToScan(specificFoldersToScan, additionalFoldersToScan);
 
         const gamesMetadata: IGameMetadata[] = [];
-        for (let dir of await glob(foldersToScan, {onlyDirectories: true, absolute: true})) {
+        for (const dir of await glob(foldersToScan, {onlyDirectories: true, absolute: true})) {
 
             const gameMetadata: IGameMetadata = {
                 appId: path.parse(dir).name,
@@ -35,7 +35,8 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
                     type: 'file',
                     path: dir
                 },
-                source: this.source
+                source: this.source,
+                platform: "Steam"
             };
 
             gamesMetadata.push(gameMetadata);

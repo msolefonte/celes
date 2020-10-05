@@ -2,10 +2,10 @@
 
 import {BinaryLike, Cipher} from 'crypto';
 
-const crypto = require('crypto');
+import crypto = require('crypto');
 
-const ENCRYPTION_KEY: string = "xfW!+Bn3E@Luu#^vj3$7wZRqRgACQeCu"; // Must be 256 bytes (32 characters)
-const IV_LENGTH: number = 16; // For AES, this is always 16
+const ENCRYPTION_KEY = "xfW!+Bn3E@Luu#^vj3$7wZRqRgACQeCu"; // Must be 256 bytes (32 characters)
+const IV_LENGTH = 16; // For AES, this is always 16
 
 function encrypt(str: BinaryLike): string {
     const iv: Buffer = crypto.randomBytes(IV_LENGTH);
@@ -17,7 +17,7 @@ function encrypt(str: BinaryLike): string {
     return iv.toString('hex') + ':' + encrypted.toString('hex');
 }
 
-function decrypt(str: string) {
+function decrypt(str: string): string {
     const split: string[] = str.split(':');
     const head: string = <string> split.shift();
     const tail: string = split.join(':')
@@ -25,7 +25,7 @@ function decrypt(str: string) {
     const iv = Buffer.from(head, 'hex');
     const encrypted = Buffer.from(tail, 'hex');
 
-    let decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
+    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
     decipher.setAutoPadding(true);
 
     let decrypted = decipher.update(encrypted);

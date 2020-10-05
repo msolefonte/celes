@@ -11,12 +11,12 @@ function parse(buffer: any) {
             throw 'Unexpected file content';
         }
 
-        let result = [];
+        const result = [];
 
-        for (let entry of data) {
+        for (const entry of data) {
             try {
 
-                let value = parseInt(entry.slice(20, 21).toString('hex'), 16);
+                const value = parseInt(entry.slice(20, 21).toString('hex'), 16);
 
                 if (value === 1) { //if stat has a value of 1 well then ACH_NOT_FOUND_IN_SCHEMA will be triggered
 
@@ -44,7 +44,7 @@ function parse(buffer: any) {
 
 function bufferSplit(buffer: any, n: any) {
 
-    let result = [];
+    const result = [];
     for (let i = 0, j = 1; i < buffer.length; i += n, j++) {
         result.push(buffer.slice(i, n * j));
     }

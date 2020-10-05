@@ -1,6 +1,6 @@
 'use strict';
 
-import {IUnlockedAchievement} from '../../types';
+import {ISource, IUnlockedAchievement} from '../../types';
 import {normalizeProgress} from './lib/Common';
 
 // @ts-ignore
@@ -10,7 +10,7 @@ const omit = require('lodash.omit');
 const path = require('path');
 
 class Codex extends SteamEmulatorScraper {
-    readonly source: string = 'Codex';
+    readonly source: ISource = 'Codex';
 
     private readonly publicDataPath: string = <string>process.env['Public'];
     private readonly appDataPath: string = <string>process.env['APPDATA'];

@@ -7,7 +7,7 @@ const path = require('path');
 const normalize = require('normalize-path');
 const ini = require('ini');
 const fs = require('fs').promises;
-const existsAndIsYoungerThan = require('../../util/filesystem').existsAndIsYoungerThan;
+const existsAndIsYoungerThan = require('./Common').existsAndIsYoungerThan;
 
 class SteamUtils {
     private static readonly achievementWatcherRootPath: string = path.join(<string>process.env['APPDATA'],
@@ -79,7 +79,7 @@ class SteamUtils {
         ];
 
         let local: any;
-        for (let file of achievementLocationFiles) {
+        for (const file of achievementLocationFiles) {
             try {
                 const achievementFile: string = path.join(gameFolder, file);
                 if (path.parse(file).ext == '.json') {

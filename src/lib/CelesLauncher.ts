@@ -1,35 +1,55 @@
 'use strict';
 
-import {ICelesConfig, IExportableGameData} from '../types';
+import {ICelesConfig, IExportableGameData, IExportableUnlockedAchievements} from '../types';
 import {Celes} from './Celes';
 
 const fs = require('fs');
 const path = require('path');
-const mkdirp = require('util/filesystem').mkdirp;
+const mkdirp = require('mkdirp');
 
 
 class CelesLauncher {
     private achievementWatcherRootPath: string = path.join(<string>process.env['APPDATA'], 'Achievement Watcher');
     private configFilePath: string = path.join(this.achievementWatcherRootPath, 'config/celes.json');
+    private readonly configVersion: string = "v1";
 
-    private async generateDefaultCelesConfig(): Promise<void> {
+    private async generateDefaultCelesConfig(): Promise<ICelesConfig> {
         const defaultCelesConfig: ICelesConfig = {
-            additionalFoldersToScan: [],
+            apiVersion: this.configVersion,
+            additionalFoldersToScan: [
+                "D:\\Games\\Sparrow\\Final Fantasy X X-2 HD Remaster",
+                "D:\\Games\\Sparrow\\FINAL FANTASY VIII REMASTERED"
+            ],
             systemLanguage: 'english',
             ignoreSourceAtMerge: true,
             useOldestUnlockTime: true
         }
 
         await mkdirp(path.dirname(this.configFilePath));
-        await fs.promises.writeFile(this.configFilePath, JSON.stringify(defaultCelesConfig));
+        await fs.promises.writeFile(this.configFilePath, JSON.stringify(defaultCelesConfig, undefined, 2));
+
+        return defaultCelesConfig;
     }
 
     private async getCelesConfig(): Promise<ICelesConfig> {
-        if (!fs.existsSync(this.configFilePath)) {
-            await this.generateDefaultCelesConfig();
+        if (fs.existsSync(this.configFilePath)) {
+            try {
+                const celesConfig: ICelesConfig = <ICelesConfig>JSON.parse(await fs.promises.readFile(this.configFilePath));
+
+                if (celesConfig.apiVersion === this.configVersion) {
+                    return celesConfig;
+                } else {
+                    console.warn("Config version not valid. Expected " + this.configVersion + ", found " + celesConfig.apiVersion + ".");
+                }
+            } catch (error) {
+                console.debug('Celes config not valid. Generating a new file.')
+            }
+        } else {
+            console.debug('Celes config not found. Generating a new file.')
         }
 
-        return <ICelesConfig>JSON.parse(await fs.promises.readFile(this.configFilePath));
+
+        return this.generateDefaultCelesConfig();
     }
 
     private async getCeles(): Promise<Celes> {
@@ -42,7 +62,7 @@ class CelesLauncher {
         );
     }
 
-    async import(filePath: string, force: boolean = false): Promise<IExportableGameData[]> {
+    async import(filePath: string, force = false): Promise<IExportableGameData[]> {
         const celes: Celes = await this.getCeles();
         return celes.import(filePath, force);
     }
@@ -57,9 +77,14 @@ class CelesLauncher {
         return celes.load(callbackProgress);
     }
 
-    async scrap(callbackProgress?: Function): Promise<IExportableGameData[]> {
+    async scrap(callbackProgress?: Function): Promise<IExportableUnlockedAchievements[]> {
         const celes: Celes = await this.getCeles();
         return celes.scrap(callbackProgress);
+    }
+
+    async pull(callbackProgress?: Function): Promise<IExportableGameData[]> {
+        const celes: Celes = await this.getCeles();
+        return celes.pull(callbackProgress);
     }
 }
 

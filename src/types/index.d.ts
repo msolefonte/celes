@@ -1,41 +1,3 @@
-export interface IGameMetadata {
-    appId: string;
-    data: {
-        type: 'file' | 'steamAPI';
-        cachePath?: string;
-        path?: string;
-        userId?: ISteamUser;
-    }
-    source: string;
-}
-
-export interface ILegitSteamGameMetadata {
-    userId: string;
-    appId: string;
-}
-
-export interface ISteamLanguage {
-    displayName: string;
-    api: string;
-    webapi: string;
-    native: string;
-    iso?: string;
-}
-
-export interface ISteamUser {
-    user: string;
-    id: string;
-    name: string;
-}
-
-export interface IUnlockedAchievement {
-    name: string;
-    achieved: 0 | 1;
-    currentProgress: number;
-    maxProgress: number;
-    unlockTime: number;
-}
-
 export interface IAchievement {
     name: string;
     defaultvalue: number;
@@ -44,48 +6,21 @@ export interface IAchievement {
     icongray: string;
 }
 
-export interface IGameSchema {
-    name: string;
-    appid: string;
-    binary: string;
-    platform: string;
-    source: string;
-    img: {
-        header: string;
-        background: string;
-        portrait: string;
-        hero: string;
-        icon: string;
-    }
-    achievement: {
-        total: number;
-        list: IAchievement[];
-    }
+export interface ICelesConfig {
+    apiVersion: string;
+    additionalFoldersToScan: string[];
+    ignoreSourceAtMerge: boolean;
+    systemLanguage: string;
+    useOldestUnlockTime: boolean;
 }
 
-export interface ISteamDbData {
-    binary: string;
-    icon: string;
-    header: string;
-    name: string;
-}
-
-export interface ISteamDbBinary {
-    executable: string;
-    windows: boolean;
-}
-
-export interface INormalizedProgress {
-    currentProgress: number,
-    maximProgress: number
-}
-
+// TODO IGameData
 export interface IExportableGameData {
     name: string;
     appid: string;
-    binary: string;
-    platform: string;
-    source: string;
+    binary?: string;
+    platform: IPlatform;
+    source: ISource;
     img: {
         header: string;
         background: string;
@@ -100,9 +35,66 @@ export interface IExportableGameData {
     }
 }
 
-export interface ICelesConfig {
-    additionalFoldersToScan: string[];
-    ignoreSourceAtMerge: boolean;
-    systemLanguage: string;
-    useOldestUnlockTime: boolean;
+export interface IGameSchema {
+    name: string;
+    appid: string;
+    binary: string;
+    platform: IPlatform;
+    source: ISource;
+    img: {
+        header: string;
+        background: string;
+        portrait: string;
+        hero: string;
+        icon: string;
+    }
+    achievement: {
+        total: number;
+        list: IAchievement[];
+    }
+}
+
+// TODO IGameStats
+// TODO Add playtime
+export interface IExportableUnlockedAchievements {
+    appid: string;
+    platform: IPlatform;
+    source: ISource;
+    unlockedAchievements: IUnlockedAchievement[];
+}
+
+export interface INormalizedProgress {
+    currentProgress: number,
+    maximProgress: number
+}
+
+export type IPlatform = 'Steam';
+
+// TODO IScanResult
+export interface IGameMetadata {
+    appId: string;
+    data: {
+        type: 'file' | 'steamAPI';
+        cachePath?: string;
+        path?: string;
+        userId?: ISteamUser;
+    }
+    source: ISource;
+    platform: IPlatform;
+}
+
+export type ISource = 'Codex' | 'CreamAPI' | 'Goldberg' | 'Reloaded - 3DM' | 'Skidrow' | 'SmartSteamEmu';
+
+export interface ISteamUser {
+    user: string;
+    id: string;
+    name: string;
+}
+
+export interface IUnlockedAchievement {
+    name: string;
+    achieved: 0 | 1;
+    currentProgress: number;
+    maxProgress: number;
+    unlockTime: number;
 }

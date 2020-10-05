@@ -1,6 +1,6 @@
 'use strict';
 
-import {IUnlockedAchievement} from '../../types';
+import {ISource, IUnlockedAchievement} from '../../types';
 import {normalizeProgress, normalizeTimestamp} from './lib/Common';
 
 // @ts-ignore
@@ -10,7 +10,7 @@ const omit = require('lodash.omit');
 const path = require('path');
 
 class Reloaded extends SteamEmulatorScraper {
-    readonly source: string = 'Reloaded - 3DM';
+    readonly source: ISource = 'Reloaded - 3DM';
 
     private readonly programDataPath: string = <string>process.env['PROGRAMDATA'];
 

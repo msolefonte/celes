@@ -4,13 +4,13 @@
   "description": "An achievement scrapper",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && ncp src/types dist/types",
+    "build:clean": "rimraf dist && tsc && ncp src/types dist/types",
     "check-dependencies": "npm-check",
     "check-dependencies:update": "npm-check --update",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
-    "test": "node dist/test.js",
-    "watch:build": "tsc --watch"
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "test": "node dist/test.js"
   },
   "contributors": [
     {
@@ -28,6 +28,7 @@
     "got": "^11.7.0",
     "ini": "^1.3.5",
     "lodash.omit": "^4.5.0",
+    "mkdirp": "^1.0.4",
     "moment": "^2.29.0",
     "normalize-path": "^3.0.0",
     "regodit": "^1.0.1"
@@ -38,7 +39,9 @@
     "@typescript-eslint/eslint-plugin": "^4.3.0",
     "@typescript-eslint/parser": "^4.3.0",
     "eslint": "^7.10.0",
+    "ncp": "^2.0.0",
     "npm-check": "^5.9.2",
+    "rimraf": "^3.0.2",
     "typescript": "^4.0.3"
   }
 }

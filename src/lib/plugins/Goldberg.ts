@@ -1,6 +1,6 @@
 'use strict';
 
-import {IUnlockedAchievement} from '../../types';
+import {ISource, IUnlockedAchievement} from '../../types';
 
 // @ts-ignore
 import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
@@ -8,7 +8,7 @@ import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
 const path = require('path');
 
 class Goldberg extends SteamEmulatorScraper {
-    readonly source: string = 'Goldberg';
+    readonly source: ISource = 'Goldberg';
 
     private readonly appDataPath: string = <string>process.env['APPDATA'];
 
