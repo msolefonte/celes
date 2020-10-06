@@ -2,7 +2,7 @@ import {GameSchema} from '../../../types';
 
 const got = require('got');
 const regedit = require('regodit');
-const sse = require('../../util/sse');
+const sse = require('./sse');
 const path = require('path');
 const normalize = require('normalize-path');
 const ini = require('ini');
@@ -17,16 +17,28 @@ class SteamUtils {
         return JSON.parse(await fs.readFile(gameCachePath));
     }
 
-    static async getGameSchemaFromServer(appId: string, lang: string, source: string): Promise<GameSchema> {
+    static async getGameSchemaFromServer(appId: string, lang: string): Promise<GameSchema> {
         const url = `https://api.xan105.com/steam/ach/${appId}?lang=${lang}`;
         const response = (await got(url)).body;
 
-        const gameData: any = JSON.parse(response).data;
+        const gameSchema: any = JSON.parse(response).data;
+        gameSchema.platform = "Steam";
 
-        gameData.platform = "Steam";
-        gameData.source = source;
+        return <GameSchema>gameSchema;
+    }
 
-        return <GameSchema>gameData;
+    static async getGameSchema(appId: string, lang: string): Promise<GameSchema> {
+        let gameSchema: GameSchema;
+        const gameCachePath = SteamUtils.getGameCachePath(appId, lang);
+
+        if (await SteamUtils.validSteamGameSchemaCacheExists(gameCachePath)) {
+            gameSchema = await SteamUtils.getGameSchemaFromCache(gameCachePath);
+        } else {
+            gameSchema = await SteamUtils.getGameSchemaFromServer(appId, lang);
+            await SteamUtils.updateGameSchemaCache(gameCachePath, gameSchema);
+        }
+
+        return gameSchema;
     }
 
     static async updateGameSchemaCache(gameCachePath: string, gameData: GameSchema): Promise<void> {
@@ -34,7 +46,7 @@ class SteamUtils {
     }
 
     static async validSteamGameSchemaCacheExists(gameCachePath: string): Promise<boolean> {
-        return await existsAndIsYoungerThan(gameCachePath, {timeUnit: 'month', time: 1});
+        return await existsAndIsYoungerThan(gameCachePath, 1, 'month');
     }
 
     static getGameCachePath(appId: string, language: string): string {

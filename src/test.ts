@@ -1,11 +1,19 @@
-import {CelesLauncher} from '.';
+import {Celes} from '.';
+// import {CelesLauncher} from '.';
 import {GameData} from './types';
 
-const celes = new CelesLauncher();
+const celes = new Celes();
+// const celes = new CelesLauncher();
 
-celes.pull().then((data: GameData[]) => {
-    console.log(data.length);
-    for (let i = 0; i < data.length; i++) {
-        console.log(data[i].source, data[i].name);
-    }
+celes.pull().then((gameData: GameData[]) => {
+    console.log(gameData.length);
+    // for (let i = 0; i < gameData.length; i++) {
+    //     console.log(gameData[i]);
+    // }
+    celes.export("dist/celesbkp.awb").then(() => {
+        console.log('Done');
+        celes.import("dist/celesbkp.awb").then((gameData: GameData[]) => {
+            console.log(gameData.length);
+        })
+    })
 });

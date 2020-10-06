@@ -51,22 +51,16 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
             lang = "english";
         }
 
-        let gameSchema: GameSchema;
-        const gameCachePath = SteamUtils.getGameCachePath(appId, lang);
-
-        if (await SteamUtils.validSteamGameSchemaCacheExists(gameCachePath)) {
-            gameSchema = await SteamUtils.getGameSchemaFromCache(gameCachePath);
-        } else {
-            gameSchema = await SteamUtils.getGameSchemaFromServer(appId, lang, this.source);
-            await SteamUtils.updateGameSchemaCache(gameCachePath, gameSchema);
-        }
-
-        return gameSchema;
+        return SteamUtils.getGameSchema(appId, lang);
     }
 
     async getUnlockedOrInProgressAchievements(game: ScanResult): Promise<UnlockedOrInProgressAchievement[]> {
         const achievementList: Object = await SteamUtils.getAchievementListFromGameFolder(<string>game.data.path);
         return this.normalizeUnlockedOrInProgressAchievementList(achievementList);
+    }
+
+    getSource() {
+        return this.source;
     }
 }
 

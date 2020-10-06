@@ -10,11 +10,12 @@ async function existsAndIsYoungerThan(path: string, time = 7, timeUnit: unitOfTi
         const stats = await fs.stat(path);
 
         if ((isDir) ? stats.isDirectory() : stats.isFile()) {
-            return moment().diff(moment(stats.mtime), timeUnit) <= time;
+            return moment().diff(moment(stats.mtime), timeUnit) < time;
         } else {
             return false;
         }
     } catch (e) {
+        console.debug(e);
         return false;
     }
 }

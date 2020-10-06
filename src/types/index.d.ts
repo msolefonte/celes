@@ -14,32 +14,25 @@ export interface CelesConfig {
     useOldestUnlockTime: boolean;
 }
 
+export interface ExportableGameStatsCollection {
+    apiVersion: string;
+    data: GameStats[]
+}
+
 export interface GameData {
     apiVersion: string;
     appid: string;
-    source: Source[];
     platform: Platform;
-    name: string;
-    binary?: string;
-    img: {
-        header?: string;
-        background?: string;
-        portrait?: string;
-        hero?: string;
-        icon?: string;
+    schema: GameSchemaBody,
+    stats: {
+        sources: SourceStats[];
+        playtime: number;
     }
-    achievement: {
-        total: number;
-        list: Achievement[];
-        active: UnlockedOrInProgressAchievement[];
-    }
-    playtime: number;
 }
 
 export interface GameSchema {
     apiVersion: string;
     appid: string;
-    source: Source;
     platform: Platform;
     name: string;
     binary?: string;
@@ -47,10 +40,24 @@ export interface GameSchema {
         header?: string;
         background?: string;
         portrait?: string;
-        hero?: string;
         icon?: string;
     }
     achievement: {
+        total: number;
+        list: Achievement[];
+    }
+}
+
+export interface GameSchemaBody  {
+    name: string;
+    binary?: string;
+    img: {
+        header?: string;
+        background?: string;
+        portrait?: string;
+        icon?: string;
+    }
+    achievements: {
         total: number;
         list: Achievement[];
     }
@@ -59,9 +66,7 @@ export interface GameSchema {
 export interface GameStats {
     apiVersion: string;
     appid: string;
-    source: Source;
-    platform: Platform;
-    UnlockedOrInProgressAchievements: UnlockedOrInProgressAchievement[];
+    sources: SourceStats[];
     playtime: number;
 }
 
@@ -84,7 +89,14 @@ export interface ScanResult {
     }
 }
 
-export type Source = 'Codex' | 'CreamAPI' | 'Goldberg' | 'Reloaded - 3DM' | 'Skidrow' | 'SmartSteamEmu';
+export type Source = 'Codex' | 'CreamAPI' | 'Goldberg' | 'Merge' | 'Reloaded - 3DM' | 'Skidrow' | 'SmartSteamEmu';
+
+export interface SourceStats {
+    source: Source;
+    achievements: {
+        active: UnlockedOrInProgressAchievement[];
+    }
+}
 
 export interface SteamUser {
     user: string;
