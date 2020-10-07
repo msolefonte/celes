@@ -1,6 +1,23 @@
-import {INormalizedProgress} from '../../../types';
+import {NormalizedProgress} from '../../../types';
+import {promises as fs} from 'fs';
+import moment from 'moment';
 
-function normalizeProgress(curProgress: string, maxProgress: string): INormalizedProgress {
+
+async function existsAndIsYoungerThan(path: string, time = 7, timeUnit: moment.unitOfTime.Diff = 'days', isDir = false): Promise<boolean> {
+    try {
+        const stats = await fs.stat(path);
+
+        if ((isDir) ? stats.isDirectory() : stats.isFile()) {
+            return moment().diff(moment(stats.mtime), timeUnit) < time;
+        } else {
+            return false;
+        }
+    } catch (e) {
+        return false;
+    }
+}
+
+function normalizeProgress(curProgress: string, maxProgress: string): NormalizedProgress {
     let currentProgress: number, maximProgress: number;
     if (Number.parseInt(maxProgress) === 0) {
         currentProgress = 0;
@@ -17,4 +34,4 @@ function normalizeTimestamp(time: string): number {
     return new DataView(new Uint8Array(Buffer.from(time, 'hex')).buffer).getUint32(0, true) || 0;
 }
 
-export {normalizeProgress, normalizeTimestamp};
+export {existsAndIsYoungerThan, normalizeProgress, normalizeTimestamp};

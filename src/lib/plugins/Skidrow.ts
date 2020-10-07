@@ -1,15 +1,12 @@
 'use strict';
 
-import {IUnlockedAchievement} from '../../types';
-
-// @ts-ignore
+import * as path from 'path';
+import {Source, UnlockedOrInProgressAchievement} from '../../types';
 import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
 
-// const omit = require('lodash.omit');
-const path = require('path');
 
 class Skidrow extends SteamEmulatorScraper {
-    readonly source: string = 'Skidrow';
+    readonly source: Source = 'Skidrow';
 
     private readonly localAppDataPath: string = <string>process.env['LOCALAPPDATA'];
 
@@ -18,8 +15,8 @@ class Skidrow extends SteamEmulatorScraper {
     }
 
     // TODO TEST
-    normalizeUnlockedAchievementList(achievementList: any): IUnlockedAchievement[] {
-        const unlockedAchievementList: IUnlockedAchievement[] = [];
+    normalizeUnlockedOrInProgressAchievementList(achievementList: any): UnlockedOrInProgressAchievement[] {
+        const UnlockedOrInProgressAchievementList: UnlockedOrInProgressAchievement[] = [];
 
         console.log(achievementList);
 
@@ -39,7 +36,7 @@ class Skidrow extends SteamEmulatorScraper {
         //         maxProgress = 100;
         //     }
         //
-        //     unlockedAchievementList.push({
+        //     UnlockedOrInProgressAchievementList.push({
         //         name: achievementName,
         //         achieved: <0 | 1>+(achievementData.Achieved === '1'),
         //         currentProgress: currentProgress,
@@ -48,7 +45,7 @@ class Skidrow extends SteamEmulatorScraper {
         //     });
         // });
 
-        return unlockedAchievementList;
+        return UnlockedOrInProgressAchievementList;
     }
 
     getSpecificFoldersToScan(): string[] {

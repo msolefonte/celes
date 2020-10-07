@@ -1,14 +1,11 @@
 'use strict';
 
-import {IUnlockedAchievement} from '../../types';
-
-// @ts-ignore
+import * as path from 'path';
+import {Source, UnlockedOrInProgressAchievement} from '../../types';
 import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
 
-const path = require('path');
-
 class CreamAPI extends SteamEmulatorScraper {
-    readonly source: string = 'CreamAPI';
+    readonly source: Source = 'CreamAPI';
 
     private readonly appDataPath: string = <string>process.env['APPDATA'];
 
@@ -17,12 +14,12 @@ class CreamAPI extends SteamEmulatorScraper {
     }
 
     // TODO
-    normalizeUnlockedAchievementList(achievementList: any): IUnlockedAchievement[] {
-        const unlockedAchievementList: IUnlockedAchievement[] = [];
+    normalizeUnlockedOrInProgressAchievementList(achievementList: any): UnlockedOrInProgressAchievement[] {
+        const UnlockedOrInProgressAchievementList: UnlockedOrInProgressAchievement[] = [];
 
         console.log(achievementList);
 
-        return unlockedAchievementList;
+        return UnlockedOrInProgressAchievementList;
     }
 
     getSpecificFoldersToScan(): string[] {

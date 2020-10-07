@@ -1,107 +1,55 @@
-import {IGameSchema} from '../../../types';
-
-const got = require('got');
-const regedit = require('regodit');
-const sse = require('../../util/sse');
-const path = require('path');
-const normalize = require('normalize-path');
-const ini = require('ini');
-const fs = require('fs').promises;
-const existsAndIsYoungerThan = require('../../util/filesystem').existsAndIsYoungerThan;
+import * as path from 'path';
+import * as sse from './SSEConfigParser'; // TODO REDO OR LOOK FOR ALTERNATIVES
+import {GameSchema} from '../../../types';
+import {existsAndIsYoungerThan} from './Common';
+import {promises as fs} from 'fs';
+import got from 'got';
+import ini from 'ini';
+import normalize from 'normalize-path';
 
 class SteamUtils {
     private static readonly achievementWatcherRootPath: string = path.join(<string>process.env['APPDATA'],
         'Achievement Watcher');
 
-    static async getGameSchemaFromCache(gameCachePath: string): Promise<IGameSchema> {
-        return JSON.parse(await fs.readFile(gameCachePath));
+    static async getGameSchemaFromCache(gameCachePath: string): Promise<GameSchema> {
+        return JSON.parse(await fs.readFile(gameCachePath, 'utf8'));
     }
 
-    static async getGameSchemaFromServer(appId: string, lang: string, source: string): Promise<IGameSchema> {
+    static async getGameSchemaFromServer(appId: string, lang: string): Promise<GameSchema> {
         const url = `https://api.xan105.com/steam/ach/${appId}?lang=${lang}`;
-        const response = (await got(url)).body;
+        const response: string = (await got(url)).body;
 
-        const gameData: any = JSON.parse(response).data;
+        const gameSchema = JSON.parse(response).data;
+        gameSchema.platform = 'Steam';
 
-        gameData.platform = "Steam";
-        gameData.source = source;
-
-        return <IGameSchema>gameData;
+        return <GameSchema>gameSchema;
     }
 
-    static async updateGameSchemaCache(gameCachePath: string, gameData: IGameSchema): Promise<void> {
+    static async getGameSchema(appId: string, lang: string): Promise<GameSchema> {
+        let gameSchema: GameSchema;
+        const gameCachePath = SteamUtils.getGameCachePath(appId, lang);
+
+        if (await SteamUtils.validSteamGameSchemaCacheExists(gameCachePath)) {
+            gameSchema = await SteamUtils.getGameSchemaFromCache(gameCachePath);
+        } else {
+            gameSchema = await SteamUtils.getGameSchemaFromServer(appId, lang);
+            await SteamUtils.updateGameSchemaCache(gameCachePath, gameSchema);
+        }
+
+        return gameSchema;
+    }
+
+    static async updateGameSchemaCache(gameCachePath: string, gameData: GameSchema): Promise<void> {
         await fs.writeFile(gameCachePath, JSON.stringify(gameData, null, 2));
     }
 
     static async validSteamGameSchemaCacheExists(gameCachePath: string): Promise<boolean> {
-        return await existsAndIsYoungerThan(gameCachePath, {timeUnit: 'month', time: 1});
+        return await existsAndIsYoungerThan(gameCachePath, 1, 'month');
     }
 
     static getGameCachePath(appId: string, language: string): string {
         const cachePath: string = path.join(SteamUtils.achievementWatcherRootPath, 'steam_cache/schema', language);
         return path.join(`${cachePath}`, `${appId}.db`);
-    }
-
-    static async getFoldersToScan(specificFolders: string[], additionalFolders: string[]): Promise<string[]> {
-        let foldersToScan: string[] = specificFolders;
-
-        const DocsFolderPath: string = await regedit.promises.RegQueryStringValue('HKCU',
-            'Software/Microsoft/Windows/CurrentVersion/Explorer/User Shell Folders', 'Personal');
-        if (DocsFolderPath) {
-            foldersToScan = foldersToScan.concat([
-                path.join(DocsFolderPath, 'Skidrow')
-            ]);
-        }
-
-        if (additionalFolders.length > 0) {
-            foldersToScan = foldersToScan.concat(additionalFolders);
-        }
-
-        foldersToScan = foldersToScan.map((dir) => {
-            return normalize(dir) + '/([0-9]+)';
-        });
-
-        return foldersToScan;
-    }
-
-    static async getAchievementListFromGameFolder(gameFolder: string) {
-        const achievementLocationFiles: string[] = [
-            'achievements.ini',
-            'achievements.json',
-            'achiev.ini',
-            'stats.ini',
-            'Achievements.Bin',
-            'achieve.dat',
-            'Achievements.ini',
-            'stats/achievements.ini',
-            'stats.bin',
-            'stats/CreamAPI.Achievements.cfg'
-        ];
-
-        let local: any;
-        for (let file of achievementLocationFiles) {
-            try {
-                const achievementFile: string = path.join(gameFolder, file);
-                if (path.parse(file).ext == '.json') {
-                    local = JSON.parse(await fs.readFile(achievementFile, 'utf8'));
-                } else if (file === 'stats.bin') {
-                    local = sse.parse(await fs.readFile(achievementFile));
-                } else {
-                    local = ini.parse(await fs.readFile(achievementFile, 'utf8'));
-                }
-                break;
-            } catch (e) {
-                // TODO ADD DEBUG VERBOSE
-                // console.debug(e);
-            }
-        }
-        if (!local) {
-            // TODO ADD PROPER LOGGER
-            // console.debug(`No achievement files found in '${gameFolder}'`);
-            local = {}
-        }
-
-        return local;
     }
 }
 

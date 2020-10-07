@@ -1,14 +1,12 @@
 'use strict';
 
-import {IUnlockedAchievement} from '../../types';
-
-// @ts-ignore
+import * as path from 'path';
+import {Source, UnlockedOrInProgressAchievement} from '../../types';
 import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
 
-const path = require('path');
 
 class Goldberg extends SteamEmulatorScraper {
-    readonly source: string = 'Goldberg';
+    readonly source: Source = 'Goldberg';
 
     private readonly appDataPath: string = <string>process.env['APPDATA'];
 
@@ -17,12 +15,12 @@ class Goldberg extends SteamEmulatorScraper {
     }
 
     // TODO
-    normalizeUnlockedAchievementList(achievementList: any): IUnlockedAchievement[] {
-        const unlockedAchievementList: IUnlockedAchievement[] = [];
+    normalizeUnlockedOrInProgressAchievementList(achievementList: any): UnlockedOrInProgressAchievement[] {
+        const UnlockedOrInProgressAchievementList: UnlockedOrInProgressAchievement[] = [];
 
         console.log(achievementList);
 
-        return unlockedAchievementList;
+        return UnlockedOrInProgressAchievementList;
     }
 
     getSpecificFoldersToScan(): string[] {

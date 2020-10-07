@@ -1,206 +1,251 @@
 'use strict';
 
-import {IExportableGameData, IGameSchema, IGameMetadata, IUnlockedAchievement} from '../types';
+import * as path from 'path';
+import {
+    ExportableGameStats,
+    ExportableGameStatsCollection,
+    GameData,
+    GameSchema,
+    Platform,
+    ScanResult,
+    Source,
+    UnlockedOrInProgressAchievement
+} from '../types';
 import {AchievementsScraper} from './plugins/lib/AchievementsScraper';
-
-const fs = require('fs').promises;
-const mkdirp = require('util/filesystem').mkdirp;
-const path = require('path');
-const plugins = require('./plugins/plugins.json');
+import {CelesDbConnector} from './util/CelesDbConnector';
+import {CelesMutex} from './util/CelesMutex';
+import {Merger} from './util/Merger';
+import {promises as fs} from 'fs';
+import {getGameSchema} from './util/utils';
+import mkdirp from 'mkdirp';
+import plugins from './plugins.json';
 
 
 class Celes {
     private readonly additionalFoldersToScan: string[];
-    private readonly ignoreSourceAtMerge: boolean;
     private readonly systemLanguage: string;
     private readonly useOldestUnlockTime: boolean;
 
-    private readonly achievementWatcherRootPath: string = path.join(<string>process.env['APPDATA'], 'Achievement Watcher');
-    private readonly celesDatabasePath: string = path.join(this.achievementWatcherRootPath, 'celes/db/');
+    private readonly apiVersion: string = 'v1';
 
     constructor(
         additionalFoldersToScan: string[] = [],
-        systemLanguage: string = 'english',
-        ignoreSourceAtMerge: boolean = true,
-        useOldestUnlockTime: boolean = true
+        systemLanguage = 'english',
+        useOldestUnlockTime = true
     ) {
         this.additionalFoldersToScan = additionalFoldersToScan;
-        this.ignoreSourceAtMerge = ignoreSourceAtMerge;
         this.systemLanguage = systemLanguage;
         this.useOldestUnlockTime = useOldestUnlockTime;
     }
 
-    async scrap(callbackProgress?: Function): Promise<IExportableGameData[]> {
-        const databaseData: IExportableGameData[] = await this.loadLocalDatabase(callbackProgress, 50);
-        const scrappedData: IExportableGameData[] = await this.scrapLocalFolders(callbackProgress);
+    /**
+     * Scraps the local filesystem to detect games and their unlocked achievements. For each game, its schema is also
+     * obtained from cache or downloaded from the server.
+     *
+     * Once the scrap ends, the local database is read and updated with the merge of the old and the new data.
+     *
+     * A collection of games, formed by schemas and unlocked achievements, result from the merge, is returned.
+     *
+     * @param callbackProgress
+     */
+    async pull(callbackProgress?: (progress:number) => void): Promise<GameData[]> {
+        const scrappedData: GameData[] = await this.scrapGameData(callbackProgress, 50, 0);
+        let mergedData: GameData[] = [];
 
-        const mergedData: IExportableGameData[] = this.mergeExportableGameData(scrappedData, databaseData);
-        await this.updateLocalDatabase(mergedData);
+        const lockId: number = CelesMutex.lock();
+        try {
+            const databaseData: GameData[] = await CelesDbConnector.getAll(this.systemLanguage, callbackProgress, 50, 50);
+            mergedData = Merger.mergeGameDataCollections([scrappedData, databaseData]);
+            await CelesDbConnector.updateAll(mergedData);
+        } finally {
+            CelesMutex.unlock(lockId);
+        }
 
         return mergedData;
     }
 
-    async load(callbackProgress?: Function): Promise<IExportableGameData[]> {
-        return this.loadLocalDatabase(callbackProgress, 100);
+    /**
+     * Reads the local database and return the stored collection of games, formed by schemas and unlocked achievements.
+     *
+     * Note that this call does not detect any filesystem changes.
+     *
+     * @param callbackProgress
+     */
+    async load(callbackProgress?: (progress:number) => void): Promise<GameData[]> {
+        return CelesDbConnector.getAll(this.systemLanguage, callbackProgress, 100);
     }
 
+    /**
+     * Reads the local database and stores the list of unlocked achievements into a defined path.
+     *
+     * Note that schemas are not exported.
+     *
+     * @param filePath
+     */
     async export(filePath: string): Promise<void> {
-        const exportableGameData: IExportableGameData[] = await this.load();
+        const gameDataCollection: GameData[] = await this.load();
 
-        await mkdirp(path.dirname(filePath));
-        await fs.writeFile(filePath, JSON.stringify(exportableGameData, undefined, 2));
-    }
-
-    async import(filePath: string, force: boolean = false): Promise<IExportableGameData[]> {
-        const importedData: IExportableGameData[] = await JSON.parse(await fs.readFile(filePath));
-
-        let newData: IExportableGameData[] = importedData;
-        if (!force) {
-            const localData: IExportableGameData[] = await this.loadLocalDatabase();
-            newData = this.mergeExportableGameData(localData, importedData);
+        const exportableGameData: ExportableGameStatsCollection = {
+            apiVersion: this.apiVersion,
+            data: gameDataCollection.map((gameData: GameData) => {
+                return {
+                    appId: gameData.appid,
+                    platform: gameData.platform,
+                    stats: {
+                        sources: gameData.stats.sources,
+                        playtime: gameData.stats.playtime
+                    }
+                }
+            })
         }
 
-        await this.updateLocalDatabase(newData);
+        await mkdirp(path.dirname(filePath));
+        await fs.writeFile(filePath, JSON.stringify(exportableGameData));
+    }
+
+    /**
+     * Given the path of an exported file, read its content and update the local database. Games schemas are downloaded
+     * if required.
+     *
+     * If the force boolean is enabled, local database is replaced with the new data. Else, the database is updated with
+     * the result of the merge of the old and the new lists.
+     *
+     * A collection of games, formed by schemas and unlocked achievements, result from the merge or the push, is
+     * returned.
+     *
+     * @param filePath
+     * @param force
+     */
+    async import(filePath: string, force = false): Promise<GameData[]> {
+        const importedData: ExportableGameStatsCollection = await JSON.parse(await fs.readFile(filePath, 'utf8'));
+        let newData: GameData[] = [];
+
+        if (importedData.apiVersion !== this.apiVersion) {
+            throw new Error('API version not valid. Expected ' + this.apiVersion + ', found ' + importedData.apiVersion + '.');
+        }
+
+        for (let i = 0; i < importedData.data.length; i++) {
+            const exportableGameStats: ExportableGameStats = importedData.data[i];
+
+            const gameData: GameData = {
+                apiVersion: this.apiVersion,
+                appid: exportableGameStats.appId,
+                platform: exportableGameStats.platform,
+                schema: await getGameSchema(
+                    exportableGameStats.appId,
+                    exportableGameStats.platform,
+                    this.systemLanguage
+                ),
+                stats: {
+                    sources: exportableGameStats.stats.sources,
+                    playtime: exportableGameStats.stats.playtime
+                }
+            }
+
+            newData.push(gameData);
+        }
+
+        const lockId: number = CelesMutex.lock();
+        try {
+            if (!force) {
+                const localData: GameData[] = await CelesDbConnector.getAll(this.systemLanguage);
+                newData = Merger.mergeGameDataCollections([localData, newData], this.useOldestUnlockTime);
+            }
+
+            await CelesDbConnector.updateAll(newData);
+        } finally {
+            CelesMutex.unlock(lockId);
+        }
         return newData;
     }
 
-    private mergeUnlockedAchievements(ua1: IUnlockedAchievement[], ua2: IUnlockedAchievement[]): IUnlockedAchievement[] {
-        const mergedUnlockedAchievements: { [key: string]: IUnlockedAchievement } = {};
-
-        for (let k = 0; k < ua1.length; k++) {
-            mergedUnlockedAchievements[ua1[k].name] = ua1[k];
-        }
-
-        for (let j = 0; j < ua2.length; j++) {
-            if (!(ua2[j].name in mergedUnlockedAchievements)) {
-                mergedUnlockedAchievements[ua2[j].name] = ua2[j];
-            } else {
-                if (ua2[j].currentProgress > mergedUnlockedAchievements[ua2[j].name].currentProgress) {
-                    mergedUnlockedAchievements[ua2[j].name] = ua2[j];
-                } else if (this.useOldestUnlockTime) {
-                    if (ua2[j].unlockTime < mergedUnlockedAchievements[ua2[j].name].unlockTime) {
-                        mergedUnlockedAchievements[ua2[j].name] = ua2[j];
-                    }
-                } else {
-                    if (ua2[j].unlockTime > mergedUnlockedAchievements[ua2[j].name].unlockTime) {
-                        mergedUnlockedAchievements[ua2[j].name] = ua2[j];
-                    }
-                }
-            }
-        }
-
-        return Object.keys(mergedUnlockedAchievements).map(function (name) {
-            return mergedUnlockedAchievements[name];
-        });
-    }
-
-    private mergeExportableGameData(egd1: IExportableGameData[], egd2: IExportableGameData[]): IExportableGameData[] {
-        const mergedGames: { [key: string]: IExportableGameData } = {};
-
-        for (let i = 0; i < egd1.length; i++) {
-            let sortKey: string = egd1[i].appid + egd1[i].platform;
-            if (!this.ignoreSourceAtMerge) {
-                sortKey += egd1[i].source;
-            }
-
-            mergedGames[sortKey] = egd1[i];
-        }
-
-        for (let j = 0; j < egd2.length; j++) {
-            let sortKey: string = egd2[j].appid + egd2[j].platform;
-            if (!this.ignoreSourceAtMerge) {
-                sortKey += egd2[j].source;
-            }
-
-            mergedGames[sortKey] = egd2[j];
-
-            if (!(egd2[j].appid in mergedGames)) {
-                mergedGames[egd2[j].appid] = egd2[j];
-            } else {
-                if (egd2[j].achievement.total > mergedGames[egd2[j].appid].achievement.total) {
-                    mergedGames[egd2[j].appid].achievement.total = egd2[j].achievement.total;
-                    mergedGames[egd2[j].appid].achievement.list = egd2[j].achievement.list;
-                }
-
-                mergedGames[egd2[j].appid].achievement.unlocked = this.mergeUnlockedAchievements(
-                    mergedGames[egd2[j].appid].achievement.unlocked,
-                    egd2[j].achievement.unlocked
-                );
-            }
-        }
-
-        return Object.keys(mergedGames).map(function (appId) {
-            return mergedGames[appId];
-        });
-    }
-
-    private async scrapLocalFolders(callbackProgress?: Function): Promise<IExportableGameData[]> {
-        const exportableGames: IExportableGameData[] = [];
+    private async scrapGameData(callbackProgress?: (progress:number) => void, maxProgress = 100, baseProgress = 0): Promise<GameData[]> {
+        const gameDataCollection: GameData[] = [];
 
         for (let i = 0; i < plugins.length; i++) {
-            const progressPercentage: number = 50 + Math.floor((i / plugins.length) * 50);
+            const progressPercentage: number = baseProgress + Math.floor(((i + 1) / plugins.length) * maxProgress);
 
             try {
-                const plugin = require('./plugins/' + plugins[i]);
+                const plugin = await import('./plugins/' + plugins[i]);
                 const scraper: AchievementsScraper = new plugin[Object.keys(plugin)[0]]();
 
-                const listOfGames: IGameMetadata[] = await scraper.scan(this.additionalFoldersToScan);
+                const listOfGames: ScanResult[] = await scraper.scan(this.additionalFoldersToScan);
 
                 for (let j = 0; j < listOfGames.length; j++) {
-                    const gameSchema: IGameSchema = await scraper.getGameSchema(listOfGames[j].appId, this.systemLanguage);
-                    const unlockedAchievements: IUnlockedAchievement[] = await scraper.getUnlockedAchievements(listOfGames[j]);
+                    const gameSchema: GameSchema = await scraper.getGameSchema(listOfGames[j].appId, this.systemLanguage);
+                    const unlockedOrInProgressAchievements: UnlockedOrInProgressAchievement[] = await scraper.getUnlockedOrInProgressAchievements(listOfGames[j]);
 
-                    const exportableGameDataSkeleton: any = gameSchema;
-                    exportableGameDataSkeleton.achievement.unlocked = unlockedAchievements;
+                    const gameData: GameData = {
+                        apiVersion: this.apiVersion,
+                        appid: gameSchema.appid,
+                        platform: gameSchema.platform,
+                        schema: {
+                            name: gameSchema.name,
+                            img: gameSchema.img,
+                            achievements: gameSchema.achievement
+                        },
+                        stats: {
+                            sources: [
+                                {
+                                    source: scraper.getSource(),
+                                    achievements: {
+                                        active: unlockedOrInProgressAchievements
+                                    }
+                                }
+                            ],
+                            playtime: 0
+                        }
+                    }
 
-                    const exportableGameData: IExportableGameData = exportableGameDataSkeleton;
-
-                    exportableGames.push(exportableGameData);
+                    gameDataCollection.push(gameData);
                 }
             } catch (error) {
-                console.debug('DEBUG: Error loading plugin', plugins[i] + ':', error);
+                console.debug('Error loading plugin', plugins[i] + ':', error);
             }
 
-            if (callbackProgress instanceof Function) {
+            if (typeof callbackProgress === 'function') {
                 callbackProgress(progressPercentage);
             }
         }
 
-        return exportableGames;
+        return gameDataCollection;
     }
 
-    private async loadLocalDatabase(callbackProgress?: Function, maxProgress: number = 100): Promise<IExportableGameData[]> {
-        let localData: IExportableGameData[] = [];
-
+    async setAchievementUnlockTime(appId: string, source: Source, platform: Platform, achievementId: string, unlockTime: number): Promise<void> {
+        const lockId: number = CelesMutex.lock();
         try {
-            const localDatabaseFiles: string[] = await fs.readdir(this.celesDatabasePath);
+            const gameData: GameData = await CelesDbConnector.getGame(appId, platform, this.systemLanguage);
 
-            for (let i = 0; i < localDatabaseFiles.length; i++) {
-                const progressPercentage: number = Math.floor((i / localDatabaseFiles.length) * maxProgress);
-
-                try {
-                    const localGameData: IExportableGameData = JSON.parse(await fs.readFile(this.celesDatabasePath + localDatabaseFiles[i]));
-                    localData.push(localGameData);
-                } catch (error) {
-                    console.debug('DEBUG: Error loading local database', localDatabaseFiles[i] + ':', error);
-                }
-
-                if (callbackProgress instanceof Function) {
-                    callbackProgress(progressPercentage);
+            for (let i = 0; i < gameData.stats.sources.length; i++) {
+                if (gameData.stats.sources[i].source === source) {
+                    for (let j = 0; j < gameData.stats.sources[i].achievements.active.length; j++) {
+                        if (gameData.stats.sources[i].achievements.active[j].name === achievementId) {
+                            gameData.stats.sources[i].achievements.active[j].unlockTime = unlockTime;
+                        }
+                    }
                 }
             }
-        } catch (error) {
-            console.debug('DEBUG: Error loading local database:', error);
-        }
 
-        return localData;
+            await CelesDbConnector.updateGame(gameData);
+        } finally {
+            CelesMutex.unlock(lockId);
+        }
     }
 
-    private async updateLocalDatabase(gameData: IExportableGameData[]): Promise<void> {
-        await mkdirp(this.celesDatabasePath);
+    async addGamePlaytime(appId: string, platform: Platform, playtime: number, force = false): Promise<void> {
+        const lockId: number = CelesMutex.lock();
+        try {
+            const gameData: GameData = await CelesDbConnector.getGame(appId, platform, this.systemLanguage);
 
-        for (let i = 0; i < gameData.length; i++) {
-            await fs.writeFile(path.join(this.celesDatabasePath, gameData[i].appid + '.json'), JSON.stringify(gameData[i]));
+            if (force) {
+                gameData.stats.playtime = playtime;
+            } else {
+                gameData.stats.playtime += playtime;
+            }
+
+            await CelesDbConnector.updateGame(gameData);
+        } finally {
+            CelesMutex.unlock(lockId);
         }
     }
 }

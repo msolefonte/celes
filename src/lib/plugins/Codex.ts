@@ -1,16 +1,14 @@
 'use strict';
 
-import {IUnlockedAchievement} from '../../types';
-import {normalizeProgress} from './lib/Common';
-
-// @ts-ignore
+import * as path from 'path';
+import {Source, UnlockedOrInProgressAchievement} from '../../types';
 import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
+import {normalizeProgress} from './lib/Common';
+import omit from 'lodash.omit';
 
-const omit = require('lodash.omit');
-const path = require('path');
 
 class Codex extends SteamEmulatorScraper {
-    readonly source: string = 'Codex';
+    readonly source: Source = 'Codex';
 
     private readonly publicDataPath: string = <string>process.env['Public'];
     private readonly appDataPath: string = <string>process.env['APPDATA'];
@@ -19,8 +17,9 @@ class Codex extends SteamEmulatorScraper {
         super();
     }
 
-    normalizeUnlockedAchievementList(achievementList: any): IUnlockedAchievement[] {
-        const unlockedAchievementList: IUnlockedAchievement[] = [];
+    // TODO FIX
+    normalizeUnlockedOrInProgressAchievementList(achievementList: any): UnlockedOrInProgressAchievement[] {
+        const UnlockedOrInProgressAchievementList: UnlockedOrInProgressAchievement[] = [];
 
         const filter: string[] = ['SteamAchievements', 'Steam64', 'Steam'];
         achievementList = omit(achievementList.ACHIEVE_DATA || achievementList, filter);
@@ -30,7 +29,7 @@ class Codex extends SteamEmulatorScraper {
             const normalizedProgress = normalizeProgress(achievementData.CurProgress, achievementData.MaxProgress);
 
             if (achievementData.Achieved === '1') {
-                unlockedAchievementList.push({
+                UnlockedOrInProgressAchievementList.push({
                     name: achievementName,
                     achieved: 1,
                     currentProgress: normalizedProgress.currentProgress,
@@ -38,7 +37,7 @@ class Codex extends SteamEmulatorScraper {
                     unlockTime: achievementData.UnlockTime,
                 });
             } else if (normalizedProgress.maximProgress > 0) {
-                unlockedAchievementList.push({
+                UnlockedOrInProgressAchievementList.push({
                     name: achievementName,
                     achieved: 0,
                     currentProgress: normalizedProgress.currentProgress,
@@ -48,7 +47,7 @@ class Codex extends SteamEmulatorScraper {
             }
         });
 
-        return unlockedAchievementList;
+        return UnlockedOrInProgressAchievementList;
     }
 
     getSpecificFoldersToScan(): string[] {
