@@ -14,9 +14,18 @@ export interface CelesConfig {
     useOldestUnlockTime: boolean;
 }
 
+export interface ExportableGameStats {
+    appId: string;
+    platform: Platform;
+    stats: {
+        sources: SourceStats[];
+        playtime: number;
+    };
+}
+
 export interface ExportableGameStatsCollection {
     apiVersion: string;
-    data: GameStats[]
+    data: ExportableGameStats[];
 }
 
 export interface GameData {
@@ -96,6 +105,12 @@ export interface SourceStats {
     achievements: {
         active: UnlockedOrInProgressAchievement[];
     }
+}
+
+export interface SSEAchievement {
+    crc: string;
+    Achieved: number;
+    UnlockTime: number;
 }
 
 export interface SteamUser {

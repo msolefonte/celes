@@ -1,13 +1,11 @@
 'use strict';
 
+import * as path from 'path';
 import {Source, UnlockedOrInProgressAchievement} from '../../types';
-import {normalizeProgress} from './lib/Common';
-
-// @ts-ignore
 import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
+import {normalizeProgress} from './lib/Common';
+import omit from 'lodash.omit';
 
-const omit = require('lodash.omit');
-const path = require('path');
 
 class Codex extends SteamEmulatorScraper {
     readonly source: Source = 'Codex';
@@ -19,6 +17,7 @@ class Codex extends SteamEmulatorScraper {
         super();
     }
 
+    // TODO FIX
     normalizeUnlockedOrInProgressAchievementList(achievementList: any): UnlockedOrInProgressAchievement[] {
         const UnlockedOrInProgressAchievementList: UnlockedOrInProgressAchievement[] = [];
 

@@ -1,11 +1,9 @@
-import {unitOfTime} from 'moment';
 import {NormalizedProgress} from '../../../types';
+import {promises as fs} from 'fs';
+import moment from 'moment';
 
-const fs = require('fs').promises;
-const moment = require('moment');
 
-
-async function existsAndIsYoungerThan(path: string, time = 7, timeUnit: unitOfTime.Diff = 'days', isDir = false) {
+async function existsAndIsYoungerThan(path: string, time = 7, timeUnit: moment.unitOfTime.Diff = 'days', isDir = false): Promise<boolean> {
     try {
         const stats = await fs.stat(path);
 
@@ -15,7 +13,6 @@ async function existsAndIsYoungerThan(path: string, time = 7, timeUnit: unitOfTi
             return false;
         }
     } catch (e) {
-        console.debug(e);
         return false;
     }
 }

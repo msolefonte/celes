@@ -1,7 +1,7 @@
 import {Achievement, GameData, Source, SourceStats, UnlockedOrInProgressAchievement} from '../../types';
 
 class Merger {
-    static mergeGameDataCollections(gameDataCollections: GameData[][], useOldestUnlockTime: boolean = true): GameData[] {
+    static mergeGameDataCollections(gameDataCollections: GameData[][], useOldestUnlockTime = true): GameData[] {
         const mergedGameDataCollection: { [key: string]: GameData } = {};
 
         for (let i = 0; i < gameDataCollections.length; i++) {

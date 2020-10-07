@@ -10,9 +10,9 @@ celes.pull().then((gameData: GameData[]) => {
     // for (let i = 0; i < gameData.length; i++) {
     //     console.log(gameData[i]);
     // }
-    celes.export("dist/celesbkp.awb").then(() => {
+    celes.export('dist/celesbkp.awb').then(() => {
         console.log('Done');
-        celes.import("dist/celesbkp.awb").then((gameData: GameData[]) => {
+        celes.import('dist/celesbkp.awb').then((gameData: GameData[]) => {
             console.log(gameData.length);
         })
     })

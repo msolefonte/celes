@@ -1,36 +1,37 @@
 'use strict';
 
+import * as path from 'path';
 import {
+    ExportableGameStats,
+    ExportableGameStatsCollection,
     GameData,
-    ScanResult,
     GameSchema,
-    GameStats,
-    UnlockedOrInProgressAchievement,
     Platform,
-    Achievement,
-    SourceStats, Source, ExportableGameStatsCollection
+    ScanResult,
+    Source,
+    UnlockedOrInProgressAchievement
 } from '../types';
 import {AchievementsScraper} from './plugins/lib/AchievementsScraper';
+import {CelesDbConnector} from './util/CelesDbConnector';
+import {CelesMutex} from './util/CelesMutex';
+import {Merger} from './util/Merger';
+import {promises as fs} from 'fs';
+import {getGameSchema} from './util/utils';
+import mkdirp from 'mkdirp';
 import plugins from './plugins.json';
 
-const path = require('path');
-const {CelesDb} = require('./util/CelesDb');
-const {Merger} = require('./util/Merger');
-
-const mkdirp = require('mkdirp');
-const fs = require('fs').promises;
 
 class Celes {
     private readonly additionalFoldersToScan: string[];
     private readonly systemLanguage: string;
     private readonly useOldestUnlockTime: boolean;
 
-    private readonly apiVersion: string = "v1";
+    private readonly apiVersion: string = 'v1';
 
     constructor(
         additionalFoldersToScan: string[] = [],
-        systemLanguage: string = 'english',
-        useOldestUnlockTime: boolean = true
+        systemLanguage = 'english',
+        useOldestUnlockTime = true
     ) {
         this.additionalFoldersToScan = additionalFoldersToScan;
         this.systemLanguage = systemLanguage;
@@ -48,13 +49,17 @@ class Celes {
      * @param callbackProgress
      */
     async pull(callbackProgress?: (progress:number) => void): Promise<GameData[]> {
-        const celesDb: typeof CelesDb = new CelesDb(this.systemLanguage);
+        const scrappedData: GameData[] = await this.scrapGameData(callbackProgress, 50, 0);
+        let mergedData: GameData[] = [];
 
-        const databaseData: GameData[] = await celesDb.load(callbackProgress, 50);
-        const scrappedData: GameData[] = await this.scrapGameData(callbackProgress, 50, 50);
-
-        const mergedData: GameData[] = Merger.mergeGameDataCollections([scrappedData, databaseData]);
-        await celesDb.update(mergedData);
+        const lockId: number = CelesMutex.lock();
+        try {
+            const databaseData: GameData[] = await CelesDbConnector.getAll(this.systemLanguage, callbackProgress, 50, 50);
+            mergedData = Merger.mergeGameDataCollections([scrappedData, databaseData]);
+            await CelesDbConnector.updateAll(mergedData);
+        } finally {
+            CelesMutex.unlock(lockId);
+        }
 
         return mergedData;
     }
@@ -67,7 +72,7 @@ class Celes {
      * @param callbackProgress
      */
     async load(callbackProgress?: (progress:number) => void): Promise<GameData[]> {
-        return new CelesDb(this.systemLanguage).load(callbackProgress, 100);
+        return CelesDbConnector.getAll(this.systemLanguage, callbackProgress, 100);
     }
 
     /**
@@ -84,10 +89,12 @@ class Celes {
             apiVersion: this.apiVersion,
             data: gameDataCollection.map((gameData: GameData) => {
                 return {
-                    apiVersion: gameData.apiVersion,
-                    appid: gameData.appid,
-                    sources: gameData.stats.sources,
-                    playtime: gameData.stats.playtime
+                    appId: gameData.appid,
+                    platform: gameData.platform,
+                    stats: {
+                        sources: gameData.stats.sources,
+                        playtime: gameData.stats.playtime
+                    }
                 }
             })
         }
@@ -96,8 +103,6 @@ class Celes {
         await fs.writeFile(filePath, JSON.stringify(exportableGameData));
     }
 
-    // TODO LOAD ONLY GAME STATS NOT GAME DATA
-    // TODO ADD VERSION
     /**
      * Given the path of an exported file, read its content and update the local database. Games schemas are downloaded
      * if required.
@@ -111,17 +116,46 @@ class Celes {
      * @param filePath
      * @param force
      */
-    async import(filePath: string, force: boolean = false): Promise<GameData[]> {
-        const importedData: GameData[] = await JSON.parse(await fs.readFile(filePath));
-        const celesDb: typeof CelesDb = new CelesDb(this.systemLanguage);
+    async import(filePath: string, force = false): Promise<GameData[]> {
+        const importedData: ExportableGameStatsCollection = await JSON.parse(await fs.readFile(filePath, 'utf8'));
+        let newData: GameData[] = [];
 
-        let newData: GameData[] = importedData;
-        if (!force) {
-            const localData: GameData[] = await celesDb.load();
-            newData = Merger.mergeGameDataCollections(localData, importedData);
+        if (importedData.apiVersion !== this.apiVersion) {
+            throw new Error('API version not valid. Expected ' + this.apiVersion + ', found ' + importedData.apiVersion + '.');
         }
 
-        await celesDb.update(newData);
+        for (let i = 0; i < importedData.data.length; i++) {
+            const exportableGameStats: ExportableGameStats = importedData.data[i];
+
+            const gameData: GameData = {
+                apiVersion: this.apiVersion,
+                appid: exportableGameStats.appId,
+                platform: exportableGameStats.platform,
+                schema: await getGameSchema(
+                    exportableGameStats.appId,
+                    exportableGameStats.platform,
+                    this.systemLanguage
+                ),
+                stats: {
+                    sources: exportableGameStats.stats.sources,
+                    playtime: exportableGameStats.stats.playtime
+                }
+            }
+
+            newData.push(gameData);
+        }
+
+        const lockId: number = CelesMutex.lock();
+        try {
+            if (!force) {
+                const localData: GameData[] = await CelesDbConnector.getAll(this.systemLanguage);
+                newData = Merger.mergeGameDataCollections([localData, newData], this.useOldestUnlockTime);
+            }
+
+            await CelesDbConnector.updateAll(newData);
+        } finally {
+            CelesMutex.unlock(lockId);
+        }
         return newData;
     }
 
@@ -132,7 +166,7 @@ class Celes {
             const progressPercentage: number = baseProgress + Math.floor(((i + 1) / plugins.length) * maxProgress);
 
             try {
-                const plugin = require('./plugins/' + plugins[i]);
+                const plugin = await import('./plugins/' + plugins[i]);
                 const scraper: AchievementsScraper = new plugin[Object.keys(plugin)[0]]();
 
                 const listOfGames: ScanResult[] = await scraper.scan(this.additionalFoldersToScan);
@@ -177,12 +211,42 @@ class Celes {
         return gameDataCollection;
     }
 
-    async setAchievementUnlockTime(appid: string, source: Source, platform: Platform, achievementId: string, unlockTime: number): Promise<void> {
-        return;
+    async setAchievementUnlockTime(appId: string, source: Source, platform: Platform, achievementId: string, unlockTime: number): Promise<void> {
+        const lockId: number = CelesMutex.lock();
+        try {
+            const gameData: GameData = await CelesDbConnector.getGame(appId, platform, this.systemLanguage);
+
+            for (let i = 0; i < gameData.stats.sources.length; i++) {
+                if (gameData.stats.sources[i].source === source) {
+                    for (let j = 0; j < gameData.stats.sources[i].achievements.active.length; j++) {
+                        if (gameData.stats.sources[i].achievements.active[j].name === achievementId) {
+                            gameData.stats.sources[i].achievements.active[j].unlockTime = unlockTime;
+                        }
+                    }
+                }
+            }
+
+            await CelesDbConnector.updateGame(gameData);
+        } finally {
+            CelesMutex.unlock(lockId);
+        }
     }
 
-    async addGamePlayTime(appid: string, source: Source, playTime: number, force: boolean = false): Promise<void> {
-        return;
+    async addGamePlaytime(appId: string, platform: Platform, playtime: number, force = false): Promise<void> {
+        const lockId: number = CelesMutex.lock();
+        try {
+            const gameData: GameData = await CelesDbConnector.getGame(appId, platform, this.systemLanguage);
+
+            if (force) {
+                gameData.stats.playtime = playtime;
+            } else {
+                gameData.stats.playtime += playtime;
+            }
+
+            await CelesDbConnector.updateGame(gameData);
+        } finally {
+            CelesMutex.unlock(lockId);
+        }
     }
 }
 

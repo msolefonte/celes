@@ -1,13 +1,10 @@
 'use strict';
 
+import * as path from 'path';
 import {Source, UnlockedOrInProgressAchievement} from '../../types';
 import {normalizeProgress, normalizeTimestamp} from './lib/Common';
-
-// @ts-ignore
 import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
-
-const omit = require('lodash.omit');
-const path = require('path');
+import omit from 'lodash.omit';
 
 class Reloaded extends SteamEmulatorScraper {
     readonly source: Source = 'Reloaded - 3DM';

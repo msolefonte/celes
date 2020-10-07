@@ -1,12 +1,9 @@
 'use strict';
 
+import * as path from 'path';
 import {Source, UnlockedOrInProgressAchievement} from '../../types';
-
-// @ts-ignore
 import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
 
-// const omit = require('lodash.omit');
-const path = require('path');
 
 class Skidrow extends SteamEmulatorScraper {
     readonly source: Source = 'Skidrow';
