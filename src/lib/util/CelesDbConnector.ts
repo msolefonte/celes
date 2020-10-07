@@ -1,10 +1,14 @@
 const fs = require('fs').promises;
 const path = require('path');
-import {GameData, GameStats, Platform} from '../../types';
+import {GameData, GameStats, Platform, Source} from '../../types';
 import {getGameSchema} from './utils';
 
 const mkdirp = require('mkdirp');
 
+/**
+ * Important note: CelesDb is not prepared to prevent concurrency problems. This may be addressed in the future but it
+ * is not a priority right now.
+ */
 class CelesDb {
     private readonly achievementWatcherRootPath: string = path.join(<string>process.env['APPDATA'], 'Achievement Watcher');
     private readonly apiVersion: string = "v1";
@@ -15,7 +19,7 @@ class CelesDb {
         this.systemLanguage = systemLanguage;
     }
 
-    async load(callbackProgress?: Function, maxProgress: number = 100): Promise<GameData[]> {
+    async pull(callbackProgress?: Function, maxProgress: number = 100): Promise<GameData[]> {
         const gameDataCollection: GameData[] = [];
 
         try {
@@ -64,7 +68,7 @@ class CelesDb {
         return gameDataCollection;
     }
 
-    async update(gameData: GameData[]): Promise<void> {
+    async push(gameData: GameData[]): Promise<void> {
         try {
             await mkdirp(this.celesDatabasePath);
 
