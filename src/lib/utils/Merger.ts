@@ -7,7 +7,7 @@ class Merger {
         for (let i = 0; i < gameDataCollections.length; i++) {
             for (let j = 0; j < gameDataCollections[i].length; j++) {
                 const gameData: GameData = gameDataCollections[i][j];
-                const gameDataUniqueKey: string = gameData.appid + gameData.platform;
+                const gameDataUniqueKey: string = gameData.appId + gameData.platform;
 
                 if (!(gameDataUniqueKey in mergedGameDataCollection)) {
                     mergedGameDataCollection[gameDataUniqueKey] = gameData;
@@ -24,7 +24,7 @@ class Merger {
         for (let i = 0; i < gameDataCollections.length; i++) {
             for (let j = 0; j < gameDataCollections[i].length; j++) {
                 const gameData: GameData = gameDataCollections[i][j];
-                const gameDataReference = mergedGameDataCollection[gameData.appid + gameData.platform];
+                const gameDataReference = mergedGameDataCollection[gameData.appId + gameData.platform];
 
                 gameDataReference.stats.sources = gameDataReference.stats.sources.filter(
                     (source: SourceStats) => {
@@ -130,7 +130,7 @@ class Merger {
 
         const mergedGameData: GameData = {
             apiVersion: gd1.apiVersion,
-            appid: gd1.appid,
+            appId: gd1.appId,
             platform: gd1.platform,
             schema: {
                 name: gd1.schema.name,

@@ -3,9 +3,9 @@
 import {GameSchema, GameSchemaBody, Platform} from '../../types';
 import {SteamUtils} from '../plugins/lib/SteamUtils';
 
-async function getGameSchema(appId: string, platform: Platform, language: string): Promise<GameSchemaBody> {
+async function getGameSchema(achievementWatcherRootPath: string, appId: string, platform: Platform, language: string): Promise<GameSchemaBody> {
     if (platform === 'Steam') {
-        const gameSchema: GameSchema = await SteamUtils.getGameSchema(appId, language);
+        const gameSchema: GameSchema = await SteamUtils.getGameSchema(achievementWatcherRootPath, appId, language);
         const gameSchemaBody: GameSchemaBody = {
             name: gameSchema.name,
             img: gameSchema.img,

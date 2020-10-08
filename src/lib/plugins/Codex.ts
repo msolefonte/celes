@@ -9,15 +9,19 @@ import omit from 'lodash.omit';
 
 class Codex extends SteamEmulatorScraper {
     readonly source: Source = 'Codex';
+    readonly achievementLocationFiles: string[] = [
+        'achievements.ini'
+    ];
+    readonly achievementWatcherRootPath: string;
 
     private readonly publicDataPath: string = <string>process.env['Public'];
     private readonly appDataPath: string = <string>process.env['APPDATA'];
 
-    constructor() {
+    constructor(achievementWatcherRootPath: string) {
         super();
+        this.achievementWatcherRootPath = achievementWatcherRootPath;
     }
 
-    // TODO FIX
     normalizeUnlockedOrInProgressAchievementList(achievementList: any): UnlockedOrInProgressAchievement[] {
         const UnlockedOrInProgressAchievementList: UnlockedOrInProgressAchievement[] = [];
 

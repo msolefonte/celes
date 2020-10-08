@@ -6,6 +6,23 @@ export interface Achievement {
     icongray: string;
 }
 
+export interface ApiServerSchema {
+    apiVersion: string;
+    appid: string;
+    name: string;
+    binary?: string;
+    img: {
+        header?: string;
+        background?: string;
+        portrait?: string;
+        icon?: string;
+    }
+    achievement: {
+        total: number;
+        list: Achievement[];
+    }
+}
+
 export interface CelesConfig {
     apiVersion: string;
     additionalFoldersToScan: string[];
@@ -30,7 +47,7 @@ export interface ExportableGameStatsCollection {
 
 export interface GameData {
     apiVersion: string;
-    appid: string;
+    appId: string;
     platform: Platform;
     schema: GameSchemaBody,
     stats: {
@@ -41,7 +58,7 @@ export interface GameData {
 
 export interface GameSchema {
     apiVersion: string;
-    appid: string;
+    appId: string;
     platform: Platform;
     name: string;
     binary?: string;
@@ -74,7 +91,7 @@ export interface GameSchemaBody  {
 
 export interface GameStats {
     apiVersion: string;
-    appid: string;
+    appId: string;
     sources: SourceStats[];
     playtime: number;
 }

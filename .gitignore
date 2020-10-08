@@ -120,3 +120,6 @@ dist
 # IDE
 .idea
 .vscode
+
+# Testing Temporal Files
+tests/tmp

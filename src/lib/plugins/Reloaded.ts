@@ -8,11 +8,16 @@ import omit from 'lodash.omit';
 
 class Reloaded extends SteamEmulatorScraper {
     readonly source: Source = 'Reloaded - 3DM';
+    readonly achievementWatcherRootPath: string;
+    readonly achievementLocationFiles: string[] = [
+        'stats/achievements.ini'
+    ];
 
     private readonly programDataPath: string = <string>process.env['PROGRAMDATA'];
 
-    constructor() {
+    constructor(achievementWatcherRootPath: string) {
         super();
+        this.achievementWatcherRootPath = achievementWatcherRootPath;
     }
 
     normalizeUnlockedOrInProgressAchievementList(achievementList: any): UnlockedOrInProgressAchievement[] {

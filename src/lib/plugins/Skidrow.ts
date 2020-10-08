@@ -7,18 +7,18 @@ import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
 
 class Skidrow extends SteamEmulatorScraper {
     readonly source: Source = 'Skidrow';
+    readonly achievementWatcherRootPath: string;
 
     private readonly localAppDataPath: string = <string>process.env['LOCALAPPDATA'];
 
-    constructor() {
+    constructor(achievementWatcherRootPath: string) {
         super();
+        this.achievementWatcherRootPath = achievementWatcherRootPath;
     }
 
     // TODO TEST
     normalizeUnlockedOrInProgressAchievementList(achievementList: any): UnlockedOrInProgressAchievement[] {
         const UnlockedOrInProgressAchievementList: UnlockedOrInProgressAchievement[] = [];
-
-        console.log(achievementList);
 
         // const filter: string[] = ['SteamAchievements', 'Steam64', 'Steam'];
         // achievementList = omit(achievementList.ACHIEVE_DATA || achievementList, filter);
