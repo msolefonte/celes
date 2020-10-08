@@ -17,14 +17,15 @@ import regedit from 'regodit'; // TODO LOOK FOR ALTERNATIVES
 // TODO PASS LOGGER TO PLUGINS
 
 abstract class SteamEmulatorScraper implements AchievementsScraper {
-    abstract readonly achievementWatcherRootPath: string;
-    protected abstract readonly achievementLocationFiles: string[];
-    protected abstract readonly source: Source;
     private readonly steamLanguages: string[] = [
         'arabic', 'bulgarian', 'schinese', 'tchinese', 'czech', 'danish', 'dutch', 'english', 'finnish', 'french',
         'german', 'greek', 'hungarian', 'italian', 'japanese', 'korean', 'norwegian', 'polish', 'portuguese',
         'brazilian', 'romanian', 'russian', 'spanish', 'latam', 'swedish', 'thai', 'turkish', 'ukrainian', 'vietnamese'
     ];
+abstract readonly achievementWatcherRootPath: string;
+    protected abstract readonly achievementLocationFiles: string[];
+    protected abstract readonly source: Source;
+    
 
     abstract normalizeUnlockedOrInProgressAchievementList(achievementList: unknown): UnlockedOrInProgressAchievement[];
 
