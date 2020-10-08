@@ -22,6 +22,7 @@ class Codex extends SteamEmulatorScraper {
         this.achievementWatcherRootPath = achievementWatcherRootPath;
     }
 
+    // TODO FIX
     normalizeUnlockedOrInProgressAchievementList(achievementList: any): UnlockedOrInProgressAchievement[] {
         const UnlockedOrInProgressAchievementList: UnlockedOrInProgressAchievement[] = [];
 
