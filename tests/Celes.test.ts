@@ -1,9 +1,9 @@
 import * as path from 'path';
-import {Celes} from '../src';
 import {GameData, SourceStats} from '../src/types';
-import {expect} from 'chai';
-import {Validator} from './utils/Validator';
 import {existsSync, unlinkSync} from 'fs';
+import {Celes} from '../src';
+import {Validator} from './utils/Validator';
+import {expect} from 'chai';
 
 const achievementWatcherTestRootPath: string = path.join(__dirname, 'tmp/appData/Achievement Watcher Test');
 const importExportFile: string = path.join(__dirname, 'tmp/export.awb');

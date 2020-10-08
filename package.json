@@ -10,7 +10,7 @@
     "check-dependencies:update": "npm-check --update",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
-    "test": "mocha -r ts-node/register 'tests/**/*.ts'",
+    "test": "mocha -r ts-node/register 'tests/**/*.ts' --timeout 30000",
     "test:coverage": "nyc mocha -r ts-node/register 'tests/**/*.ts'"
   },
   "contributors": [
