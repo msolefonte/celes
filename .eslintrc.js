@@ -2,7 +2,8 @@ module.exports = {
     root: true,
     parser: '@typescript-eslint/parser',
     plugins: [
-        '@typescript-eslint'
+        '@typescript-eslint',
+        'sort-class-members'
     ],
     extends: [
         'eslint:recommended',
@@ -16,6 +17,18 @@ module.exports = {
             'ignoreMemberSort': false,
             'memberSyntaxSortOrder': ['none', 'all', 'multiple', 'single'],
             'allowSeparatedGroups': false
+        }],
+        'sort-class-members/sort-class-members': [2, {
+            'order': [
+                '[static-properties]',
+                '[static-methods]',
+                '[properties]',
+                '[conventional-private-properties]',
+                'constructor',
+                '[methods]',
+                '[conventional-private-methods]'
+            ],
+            'accessorPairPositioning': 'getThenSet',
         }]
     }
 };

@@ -6,38 +6,26 @@ import {AchievementsScraper} from './AchievementsScraper';
 import {SSEConfigParser} from './SSEConfigParser';
 import {SteamUtils} from './SteamUtils';
 import {promises as fs} from 'fs';
-import glob from 'fast-glob'
+import glob from 'fast-glob';
 import ini from 'ini';
 import normalize from 'normalize-path';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import regedit from 'regodit'; // TODO LOOK FOR ALTERNATIVES
 
-
 // TODO CHECK LOGS / THROWS
 // TODO PASS LOGGER TO PLUGINS
 
 abstract class SteamEmulatorScraper implements AchievementsScraper {
-    abstract readonly source: Source;
-    readonly steamLanguages: string[] = [
+    private readonly steamLanguages: string[] = [
         'arabic', 'bulgarian', 'schinese', 'tchinese', 'czech', 'danish', 'dutch', 'english', 'finnish', 'french',
         'german', 'greek', 'hungarian', 'italian', 'japanese', 'korean', 'norwegian', 'polish', 'portuguese',
         'brazilian', 'romanian', 'russian', 'spanish', 'latam', 'swedish', 'thai', 'turkish', 'ukrainian', 'vietnamese'
     ];
-
-    // TODO MAKE ABSTRACT
-    achievementLocationFiles: string[] = [
-        'achievements.ini',
-        'achievements.json',
-        'achiev.ini',
-        'stats.ini',
-        'Achievements.Bin',
-        'achieve.dat',
-        'Achievements.ini',
-        'stats/achievements.ini',
-        'stats.bin',
-        'stats/CreamAPI.Achievements.cfg'
-    ];
+abstract readonly achievementWatcherRootPath: string;
+    protected abstract readonly achievementLocationFiles: string[];
+    protected abstract readonly source: Source;
+    
 
     abstract normalizeUnlockedOrInProgressAchievementList(achievementList: unknown): UnlockedOrInProgressAchievement[];
 
@@ -51,7 +39,7 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
         for (const dir of await glob(foldersToScan, {onlyDirectories: true, absolute: true})) {
 
             const gameMetadata: ScanResult = {
-                appId: path.parse(dir).name,
+                appId: path.parse(dir).name.toString(),
                 data: {
                     type: 'file',
                     path: dir
@@ -72,7 +60,7 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
             lang = 'english';
         }
 
-        return SteamUtils.getGameSchema(appId, lang);
+        return SteamUtils.getGameSchema(this.achievementWatcherRootPath, appId, lang);
     }
 
     async getUnlockedOrInProgressAchievements(game: ScanResult): Promise<UnlockedOrInProgressAchievement[]> {
@@ -128,7 +116,7 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
         if (!local) {
             // TODO ADD PROPER LOGGER
             // console.debug(`No achievement files found in '${gameFolder}'`);
-            local = {}
+            local = {};
         }
 
         return local;

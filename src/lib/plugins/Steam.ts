@@ -13,10 +13,10 @@
 // const moment = require('moment');
 // const request = require('request-zero');
 // // const urlParser = require('url');
-// const ffs = require('../util/feverFS.ts');
+// const ffs = require('../utils/feverFS.ts');
 // const htmlParser = require('node-html-parser').parse;
 // const regedit = require('regodit');
-// const steamID = require('../util/steamID');
+// const steamID = require('../utils/steamID');
 // const steamLanguages = require("../locale/steam.json");
 // const sse = require('./sse.js');
 //
@@ -27,7 +27,7 @@
 //     private readonly appDataPath: string = <string>process.env['APPDATA'];
 //     private readonly localAppDataPath: string = <string>process.env['LOCALAPPDATA'];
 //     private readonly programDataPath: string = <string>process.env['PROGRAMDATA'];
-//     private readonly achievementWatcherRootPath = path.join(<string>process.env['APPDATA'], 'Achievement Watcher');
+//     private readonly achievementWatcherRootPath;
 //
 //     constructor() {
 //     }
@@ -88,7 +88,7 @@
 //
 //         try {
 //
-//             let filePath = path.join(`${cache}`, `${config.appID}.db`);
+//             let filePath = path.join(`${cache}`, `${config.appId}.db`);
 //
 //             let result;
 //
@@ -98,7 +98,7 @@
 //                 if (config.key) {
 //                     result = await getSteamData(config);
 //                 } else {
-//                     result = await getSteamDataFromSRV(config.appID, config.lang);
+//                     result = await getSteamDataFromSRV(config.appId, config.lang);
 //                 }
 //                 ffs.promises.writeFile(filePath, JSON.stringify(result, null, 2)).catch((err) => {
 //                 });
@@ -200,8 +200,8 @@
 //             let result;
 //
 //             let cache = {
-//                 local: path.join(this.achievementWatcherRootPath, 'steam_cache/user', cfg.user.user, `${cfg.appID}.db`),
-//                 steam: path.join(`${cfg.path}`, `UserGameStats_${cfg.user.user}_${cfg.appID}.bin`)
+//                 local: path.join(this.achievementWatcherRootPath, 'steam_cache/user', cfg.user.user, `${cfg.appId}.db`),
+//                 steam: path.join(`${cfg.path}`, `UserGameStats_${cfg.user.user}_${cfg.appId}.bin`)
 //             };
 //
 //             let time = {
@@ -225,7 +225,7 @@
 //                 if (cfg.key) {
 //                     result = await getSteamUserStats(cfg);
 //                 } else {
-//                     result = await getSteamUserStatsFromSRV(cfg.user.id, cfg.appID);
+//                     result = await getSteamUserStatsFromSRV(cfg.user.id, cfg.appId);
 //                 }
 //                 ffs.promises.writeFile(cache.local, JSON.stringify(result, null, 2)).catch((err) => {
 //                 });
@@ -310,9 +310,9 @@
 //         }
 //     }
 //
-//     getSteamUserStatsFromSRV(user, appID) {
+//     getSteamUserStatsFromSRV(user, appId) {
 //
-//         const url = `https://api.xan105.com/steam/user/${user}/stats/${appID}`;
+//         const url = `https://api.xan105.com/steam/user/${user}/stats/${appId}`;
 //
 //         return new Promise((resolve, reject) => {
 //
@@ -335,7 +335,7 @@
 //
 //     async getSteamUserStats(cfg) {
 //
-//         const url = `http://api.steampowered.com/SteamUserStats/GetPlayerAchievements/v0001/?appid=${cfg.appID}&key=${cfg.key}&steamid=${cfg.user.id}"`;
+//         const url = `http://api.steampowered.com/SteamUserStats/GetPlayerAchievements/v0001/?appId=${cfg.appId}&key=${cfg.key}&steamid=${cfg.user.id}"`;
 //
 //         try {
 //
@@ -348,9 +348,9 @@
 //
 //     };
 //
-//     getSteamDataFromSRV(appID, lang) {
+//     getSteamDataFromSRV(appId, lang) {
 //
-//         const url = `https://api.xan105.com/steam/ach/${appID}?lang=${lang}`;
+//         const url = `https://api.xan105.com/steam/ach/${appId}?lang=${lang}`;
 //
 //         return new Promise((resolve, reject) => {
 //
@@ -374,27 +374,27 @@
 //     getSteamData(cfg) {
 //
 //         const url = {
-//             api: `https://api.steampowered.com/SteamUserStats/GetSchemaForGame/v0002/?key=${cfg.key}&appid=${cfg.appID}&l=${cfg.lang}&format=json`,
-//             store: `https://store.steampowered.com/api/appdetails?appids=${cfg.appID}`
+//             api: `https://api.steampowered.com/SteamUserStats/GetSchemaForGame/v0002/?key=${cfg.key}&appId=${cfg.appId}&l=${cfg.lang}&format=json`,
+//             store: `https://store.steampowered.com/api/appdetails?appIds=${cfg.appId}`
 //         };
 //
 //         return new Promise((resolve, reject) => {
 //
-//             Promise.all([request.getJson(url.api), request.getJson(url.store, {headers: {'Accept-Language': 'en-US;q=1.0'}}), scrapSteamDB(cfg.appID)]).then(function (data) {
+//             Promise.all([request.getJson(url.api), request.getJson(url.store, {headers: {'Accept-Language': 'en-US;q=1.0'}}), scrapSteamDB(cfg.appId)]).then(function (data) {
 //
 //                 try {
 //
 //                     let schema = data[0].game.availableGameStats;
-//                     let appdetail = data[1][cfg.appID].data;
+//                     let appdetail = data[1][cfg.appId].data;
 //                     let steamdb = data[2];
 //
 //                     let result = {
-//                         name: (data[1][cfg.appID].success) ? appdetail.name : steamdb.name, //If the game is no longer available in the store fallback to steamdb
-//                         appid: cfg.appID,
+//                         name: (data[1][cfg.appId].success) ? appdetail.name : steamdb.name, //If the game is no longer available in the store fallback to steamdb
+//                         appId: cfg.appId,
 //                         binary: path.parse(steamdb.binary).base,
 //                         img: {
-//                             header: (data[1][cfg.appID].success) ? appdetail.header_image.split('?')[0] : steamdb.header, //If the game is no longer available in the store fallback to steamdb
-//                             background: (data[1][cfg.appID].success) ? appdetail.background.split('?')[0] : null,
+//                             header: (data[1][cfg.appId].success) ? appdetail.header_image.split('?')[0] : steamdb.header, //If the game is no longer available in the store fallback to steamdb
+//                             background: (data[1][cfg.appId].success) ? appdetail.background.split('?')[0] : null,
 //                             icon: steamdb.icon
 //                         },
 //                         achievement: {
@@ -415,9 +415,9 @@
 //         });
 //     }
 //
-//     async scrapSteamDB(appID) {
+//     async scrapSteamDB(appId) {
 //         try {
-//             let data = await request(`https://steamdb.info/app/${appID}/`);
+//             let data = await request(`https://steamdb.info/app/${appId}/`);
 //             let html = htmlParser(data.body);
 //
 //             let binaries = html.querySelector('#config table tbody').innerHTML.split('</tr>\n<tr>').map((tr) => {
@@ -537,8 +537,8 @@
 //         let result;
 //
 //         let cache = {
-//             local: path.join(this.achievementWatcherRootPath, 'steam_cache/user', cfg.user.user, `${cfg.appID}.db`),
-//             steam: path.join(`${cfg.path}`, `UserGameStats_${cfg.user.user}_${cfg.appID}.bin`)
+//             local: path.join(this.achievementWatcherRootPath, 'steam_cache/user', cfg.user.user, `${cfg.appId}.db`),
+//             steam: path.join(`${cfg.path}`, `UserGameStats_${cfg.user.user}_${cfg.appId}.bin`)
 //         };
 //
 //         let time = {
@@ -562,7 +562,7 @@
 //             if (cfg.key) {
 //                 result = await getSteamUserStats(cfg);
 //             } else {
-//                 result = await getSteamUserStatsFromSRV(cfg.user.id, cfg.appID);
+//                 result = await getSteamUserStatsFromSRV(cfg.user.id, cfg.appId);
 //             }
 //             ffs.promises.writeFile(cache.local, JSON.stringify(result, null, 2)).catch((err) => {
 //             });
@@ -649,9 +649,9 @@
 //     }
 // }
 //
-// getSteamUserStatsFromSRV(user, appID) {
+// getSteamUserStatsFromSRV(user, appId) {
 //
-//     const url = `https://api.xan105.com/steam/user/${user}/stats/${appID}`;
+//     const url = `https://api.xan105.com/steam/user/${user}/stats/${appId}`;
 //
 //     return new Promise((resolve, reject) => {
 //
@@ -674,7 +674,7 @@
 //
 // async getSteamUserStats(cfg) {
 //
-//     const url = `http://api.steampowered.com/SteamUserStats/GetPlayerAchievements/v0001/?appid=${cfg.appID}&key=${cfg.key}&steamid=${cfg.user.id}"`;
+//     const url = `http://api.steampowered.com/SteamUserStats/GetPlayerAchievements/v0001/?appId=${cfg.appId}&key=${cfg.key}&steamid=${cfg.user.id}"`;
 //
 //     try {
 //
