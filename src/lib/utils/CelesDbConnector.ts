@@ -18,6 +18,7 @@ class CelesDbConnector {
     }
 
     async getAll(schemaLanguage: string, callbackProgress?: (progress:number) => void, maxProgress = 100, baseProgress = 0): Promise<GameData[]> {
+        console.log('i get in');
         const gameDataCollection: GameData[] = [];
 
         try {
@@ -35,6 +36,7 @@ class CelesDbConnector {
                     gameDataCollection.push(gameData);
 
                     if (callbackProgress instanceof Function) {
+                        console.log('in', progressPercentage);
                         callbackProgress(progressPercentage);
                     }
                 }
@@ -48,6 +50,7 @@ class CelesDbConnector {
             }
         }
 
+        console.log('i get out');
         return gameDataCollection;
     }
 

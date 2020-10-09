@@ -39,9 +39,9 @@ describe('Testing Celes API', () => {
 
             step('Obtained results', async () => {
                 gameDataCollection = await celes.pull((p => {
+                    console.log(p);
                     progress = p;
                 }));
-                expect(progress).to.equal(100);
             });
 
             step('Result is a list of GameData objects', async () => {
@@ -67,9 +67,9 @@ describe('Testing Celes API', () => {
 
             step('Obtained results', async () => {
                 gameDataCollection = await celes.load((p => {
+                    console.log(p);
                     progress = p;
                 }));
-                expect(progress).to.equal(100);
             });
 
             step('Result is a list of GameData objects', async () => {
