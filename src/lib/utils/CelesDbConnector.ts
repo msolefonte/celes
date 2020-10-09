@@ -49,7 +49,7 @@ class CelesDbConnector {
 
                 return [];
             } else {
-                console.debug('Error loading local database:', error);
+                console.debug('Error loading local database:', error); // TODO THROW
             }
         }
 

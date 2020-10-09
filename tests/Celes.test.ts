@@ -23,7 +23,7 @@ function areAllAppIdsInTheGameDataCollection(appIds: string[], gameDataCollectio
 
 describe('Testing Celes API', () => {
     context('Without samples', () => {
-        const celes = new Celes(achievementWatcherTestRootPath, validSamplesFolders);
+        const celes = new Celes(achievementWatcherTestRootPath);
         let gameDataCollection: GameData[];
         let referenceResult: GameData[];
         let progress = 0;
@@ -38,7 +38,6 @@ describe('Testing Celes API', () => {
             progress = 0;
             referenceResult = await celes.pull((p => {
                 progress = p;
-                console.log(progress);
             }));
         });
 
