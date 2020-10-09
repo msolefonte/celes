@@ -38,6 +38,7 @@ describe('Testing Celes API', () => {
             progress = 0;
             referenceResult = await celes.pull((p => {
                 progress = p;
+                console.log(progress);
             }));
         });
 
@@ -153,6 +154,7 @@ describe('Testing Celes API', () => {
 
         step('pull(): Obtained results', async () => {
             gameDataCollection = await celes.pull();
+            console.log(gameDataCollection.length);
         });
 
         step('pull(): Loaded all Codex games', async () => {
