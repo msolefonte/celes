@@ -1,18 +1,24 @@
 import * as path from 'path';
 import {flockSync} from 'fs-ext';
 import fs from 'fs';
+import mkdirp from 'mkdirp';
 
 class CelesMutex {
-    private static readonly lockPath: string = path.join(<string>process.env['APPDATA'], 'Achievement Watcher/celes/celes.lock');
+    private readonly lockPath: string;
 
-    static lock(): number {
-        const fileDescriptor: number = fs.openSync(CelesMutex.lockPath, 'w');
+    constructor(achievementWatcherRootPath: string) {
+        this.lockPath = path.join(achievementWatcherRootPath, 'celes/celes.lock');
+    }
+
+    async lock(): Promise<number> {
+        await mkdirp(path.dirname(this.lockPath));
+        const fileDescriptor: number = fs.openSync(this.lockPath, 'w');
         flockSync(fileDescriptor, 'ex');
 
         return fileDescriptor;
     }
 
-    static unlock(lockId: number): void {
+    unlock(lockId: number): void {
         fs.closeSync(lockId);
     }
 }

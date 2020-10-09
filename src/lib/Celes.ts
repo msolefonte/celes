@@ -25,6 +25,7 @@ class Celes {
     private readonly additionalFoldersToScan: string[];
     private readonly systemLanguage: string;
     private readonly useOldestUnlockTime: boolean;
+    private readonly celesMutex: CelesMutex;
 
     private readonly apiVersion: string = 'v1';
 
@@ -38,6 +39,8 @@ class Celes {
         this.additionalFoldersToScan = additionalFoldersToScan;
         this.systemLanguage = systemLanguage;
         this.useOldestUnlockTime = useOldestUnlockTime;
+
+        this.celesMutex = new CelesMutex(achievementWatcherRootPath);
     }
 
     /**
@@ -55,13 +58,13 @@ class Celes {
         const celesDbConnector = new CelesDbConnector(this.achievementWatcherRootPath);
         let mergedData: GameData[] = [];
 
-        const lockId: number = CelesMutex.lock();
+        const lockId: number = await this.celesMutex.lock();
         try {
             const databaseData: GameData[] = await celesDbConnector.getAll(this.systemLanguage, callbackProgress, 50, 50);
             mergedData = Merger.mergeGameDataCollections([scrappedData, databaseData]);
             await celesDbConnector.updateAll(mergedData);
         } finally {
-            CelesMutex.unlock(lockId);
+            this.celesMutex.unlock(lockId);
         }
 
         return mergedData;
@@ -151,7 +154,7 @@ class Celes {
             newData.push(gameData);
         }
 
-        const lockId: number = CelesMutex.lock();
+        const lockId: number = await this.celesMutex.lock();
         try {
             if (!force) {
                 const localData: GameData[] = await celesDbConnector.getAll(this.systemLanguage);
@@ -160,7 +163,7 @@ class Celes {
 
             await celesDbConnector.updateAll(newData);
         } finally {
-            CelesMutex.unlock(lockId);
+            this.celesMutex.unlock(lockId);
         }
         return newData;
     }
@@ -168,7 +171,7 @@ class Celes {
     async setAchievementUnlockTime(appId: string, source: Source, platform: Platform, achievementId: string, unlockTime: number): Promise<void> {
         const celesDbConnector = new CelesDbConnector(this.achievementWatcherRootPath);
 
-        const lockId: number = CelesMutex.lock();
+        const lockId: number = await this.celesMutex.lock();
         try {
             const gameData: GameData = await celesDbConnector.getGame(appId, platform, this.systemLanguage);
 
@@ -184,14 +187,14 @@ class Celes {
 
             await celesDbConnector.updateGame(gameData);
         } finally {
-            CelesMutex.unlock(lockId);
+            this.celesMutex.unlock(lockId);
         }
     }
 
     async addGamePlaytime(appId: string, platform: Platform, playtime: number, force = false): Promise<void> {
         const celesDbConnector = new CelesDbConnector(this.achievementWatcherRootPath);
 
-        const lockId: number = CelesMutex.lock();
+        const lockId: number = await this.celesMutex.lock();
         try {
             const gameData: GameData = await celesDbConnector.getGame(appId, platform, this.systemLanguage);
 
@@ -203,7 +206,7 @@ class Celes {
 
             await celesDbConnector.updateGame(gameData);
         } finally {
-            CelesMutex.unlock(lockId);
+            this.celesMutex.unlock(lockId);
         }
     }
 
