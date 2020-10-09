@@ -19,6 +19,7 @@ import {promises as fs} from 'fs';
 import {getGameSchema} from './utils/utils';
 import mkdirp from 'mkdirp';
 import plugins from './plugins.json';
+import base = Mocha.reporters.base;
 
 class Celes {
     private readonly achievementWatcherRootPath: string;
@@ -214,8 +215,6 @@ class Celes {
         const gameDataCollection: GameData[] = [];
 
         for (let i = 0; i < plugins.length; i++) {
-            const progressPercentage: number = baseProgress + Math.floor(((i + 1) / plugins.length) * maxProgress);
-
             try {
                 const plugin = await import('./plugins/' + plugins[i]);
                 const scraper: AchievementsScraper = new plugin[Object.keys(plugin)[0]](this.achievementWatcherRootPath);
@@ -223,6 +222,7 @@ class Celes {
                 const listOfGames: ScanResult[] = await scraper.scan(this.additionalFoldersToScan);
 
                 for (let j = 0; j < listOfGames.length; j++) {
+                    const progressPercentage: number = baseProgress + Math.floor(((i + 1) / plugins.length) * ((j + 1) / listOfGames.length) * maxProgress);
                     const gameSchema: GameSchema = await scraper.getGameSchema(listOfGames[j].appId, this.systemLanguage);
                     const unlockedOrInProgressAchievements: UnlockedOrInProgressAchievement[] = await scraper.getUnlockedOrInProgressAchievements(listOfGames[j]);
 
@@ -249,13 +249,17 @@ class Celes {
                     };
 
                     gameDataCollection.push(gameData);
+
+                    if (typeof callbackProgress === 'function') {
+                        callbackProgress(progressPercentage);
+                    }
                 }
             } catch (error) {
                 console.debug('Error loading plugin', plugins[i] + ':', error);
             }
 
             if (typeof callbackProgress === 'function') {
-                callbackProgress(progressPercentage);
+                callbackProgress(baseProgress + maxProgress);
             }
         }
 
