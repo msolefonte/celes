@@ -10,7 +10,7 @@
     "check-dependencies:update": "npm-check --update",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
-    "test": "mocha -r ts-node/register 'tests/**/*.ts' --timeout 30000",
+    "test": "mocha -r ts-node/register 'tests/**/*.ts' --timeout 30000 --require mocha-steps",
     "test:coverage": "nyc mocha -r ts-node/register 'tests/**/*.ts'"
   },
   "contributors": [
@@ -51,6 +51,7 @@
     "eslint": "^7.10.0",
     "eslint-plugin-sort-class-members": "^1.8.0",
     "mocha": "^8.1.3",
+    "mocha-steps": "^1.3.0",
     "ncp": "^2.0.0",
     "npm-check": "^5.9.2",
     "nyc": "^15.1.0",
