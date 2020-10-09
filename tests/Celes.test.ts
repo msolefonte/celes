@@ -9,8 +9,8 @@ import {step} from 'mocha-steps';
 const achievementWatcherTestRootPath: string = path.join(__dirname, 'tmp/appData/Achievement Watcher Test');
 const importExportFile: string = path.join(__dirname, 'tmp/export.awb');
 const validSamplesFolders: string[] = [
-    path.join(__dirname, 'samples/achievement_files/valid/codex/'),
-    path.join(__dirname, 'samples/achievement_files/valid/reloaded/')
+    path.join(__dirname, 'samples/achievements/valid/codex/'),
+    path.join(__dirname, 'samples/achievements/valid/reloaded/')
 ];
 
 function areAllAppIdsInTheGameDataCollection(appIds: string[], gameDataCollection: GameData[]) {
@@ -153,7 +153,6 @@ describe('Testing Celes API', () => {
 
         step('pull(): Obtained results', async () => {
             gameDataCollection = await celes.pull();
-            console.log(gameDataCollection.length);
         });
 
         step('pull(): Loaded all Codex games', async () => {

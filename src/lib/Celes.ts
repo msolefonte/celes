@@ -215,23 +215,16 @@ class Celes {
         const gameDataCollection: GameData[] = [];
 
         for (let i = 0; i < plugins.length; i++) {
-            console.log('Trying plugin', i);
             try {
                 const plugin = await import('./plugins/' + plugins[i]);
-                console.log('plugin loaded');
                 const scraper: AchievementsScraper = new plugin[Object.keys(plugin)[0]](this.achievementWatcherRootPath);
-                console.log('scraper loaded');
 
                 const listOfGames: ScanResult[] = await scraper.scan(this.additionalFoldersToScan);
-                console.log('scraper scanned:', listOfGames.length);
 
                 for (let j = 0; j < listOfGames.length; j++) {
                     const progressPercentage: number = baseProgress + Math.floor(((i + 1) / plugins.length) * ((j + 1) / listOfGames.length) * maxProgress);
-                    console.log('getting game schema of game', j);
                     const gameSchema: GameSchema = await scraper.getGameSchema(listOfGames[j].appId, this.systemLanguage);
-                    console.log('getting game stats of game', j);
                     const unlockedOrInProgressAchievements: UnlockedOrInProgressAchievement[] = await scraper.getUnlockedOrInProgressAchievements(listOfGames[j]);
-                    console.log('gotten game stats of game', j);
 
                     const gameData: GameData = {
                         apiVersion: this.apiVersion,

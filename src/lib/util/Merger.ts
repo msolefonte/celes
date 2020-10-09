@@ -2,7 +2,6 @@ import {Achievement, GameData, Source, SourceStats, UnlockedOrInProgressAchievem
 
 class Merger {
     static mergeGameDataCollections(gameDataCollections: GameData[][], useOldestUnlockTime = true): GameData[] {
-        console.log('gameDataCollections length:', gameDataCollections.length);
         const mergedGameDataCollection: { [key: string]: GameData } = {};
 
         for (let i = 0; i < gameDataCollections.length; i++) {

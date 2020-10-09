@@ -32,15 +32,11 @@ abstract readonly achievementWatcherRootPath: string;
     abstract getSpecificFoldersToScan(): string[];
 
     async scan(additionalFoldersToScan: string[] = []): Promise<ScanResult[]> {
-        console.log(this.source, 'scan called');
         const specificFoldersToScan: string[] = this.getSpecificFoldersToScan();
-        // const foldersToScan: string[] = await this.getFoldersToScan(specificFoldersToScan, additionalFoldersToScan);
-        const foldersToScan: string[] = await this.getFoldersToScan([], additionalFoldersToScan); // FIXME
-        console.log('folders to scan:', foldersToScan);
+        const foldersToScan: string[] = await this.getFoldersToScan(specificFoldersToScan, additionalFoldersToScan);
 
         const gamesMetadata: ScanResult[] = [];
         for (const dir of await glob(foldersToScan, {onlyDirectories: true, absolute: true})) {
-
             const gameMetadata: ScanResult = {
                 appId: path.parse(dir).name.toString(),
                 data: {
@@ -53,8 +49,6 @@ abstract readonly achievementWatcherRootPath: string;
 
             gamesMetadata.push(gameMetadata);
         }
-
-        console.log('game metadata generated. length:', gamesMetadata.length);
 
         return gamesMetadata;
     }
@@ -80,13 +74,13 @@ abstract readonly achievementWatcherRootPath: string;
     private async getFoldersToScan(specificFolders: string[], additionalFolders: string[]): Promise<string[]> {
         let foldersToScan: string[] = specificFolders;
 
-        const DocsFolderPath: string = await regedit.promises.RegQueryStringValue('HKCU',
-            'Software/Microsoft/Windows/CurrentVersion/Explorer/User Shell Folders', 'Personal');
-        if (DocsFolderPath) {
-            foldersToScan = foldersToScan.concat([
-                path.join(DocsFolderPath, 'Skidrow')
-            ]);
-        }
+        // const DocsFolderPath: string = await regedit.promises.RegQueryStringValue('HKCU',
+        //     'Software/Microsoft/Windows/CurrentVersion/Explorer/User Shell Folders', 'Personal');
+        // if (DocsFolderPath) {
+        //     foldersToScan = foldersToScan.concat([
+        //         path.join(DocsFolderPath, 'Skidrow')
+        //     ]);
+        // } // TODO SKIDROW SPECIFIC
 
         if (additionalFolders.length > 0) {
             foldersToScan = foldersToScan.concat(additionalFolders);
@@ -105,17 +99,18 @@ abstract readonly achievementWatcherRootPath: string;
         for (const file of this.achievementLocationFiles) {
             try {
                 const achievementFile: string = path.join(gameFolder, file);
-                if (path.parse(file).ext == '.json') {
-                    local = JSON.parse(await fs.readFile(achievementFile, 'utf8'));
-                } else if (file === 'stats.bin') {
+                if (this.source == 'SmartSteamEmu' && file === 'stats.bin') {
                     local = SSEConfigParser.parse(await fs.readFile(achievementFile));
+                } else if (path.parse(file).ext == '.json') {
+                    local = JSON.parse(await fs.readFile(achievementFile, 'utf8'));
                 } else {
                     local = ini.parse(await fs.readFile(achievementFile, 'utf8'));
                 }
                 break;
-            } catch (e) {
-                // TODO ADD DEBUG VERBOSE
-                // console.debug(e);
+            } catch (error) {
+                if (error.code !== 'ENOENT') {
+                    throw error;
+                }
             }
         }
         if (!local) {
