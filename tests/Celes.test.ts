@@ -28,13 +28,6 @@ describe('Testing Celes API', () => {
         let referenceResult: GameData[];
         let progress = 0;
 
-        before((done) => {
-            celes.pull().then((gdc: GameData[]) => {
-                referenceResult = gdc;
-                done();
-            });
-        });
-
         before(() => {
             if (existsSync(importExportFile)) {
                 unlinkSync(importExportFile);
@@ -43,7 +36,7 @@ describe('Testing Celes API', () => {
 
         step('pull(): Obtained results', async () => {
             progress = 0;
-            gameDataCollection = await celes.pull((p => {
+            referenceResult = await celes.pull((p => {
                 progress = p;
             }));
         });
@@ -52,7 +45,7 @@ describe('Testing Celes API', () => {
             let itWorked = true;
 
             for (let i = 0; i < gameDataCollection.length; i++) {
-                if (!Validator.isValidGameData(gameDataCollection[i])) {
+                if (!Validator.isValidGameData(referenceResult[i])) {
                     itWorked = false;
                 }
             }
