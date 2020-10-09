@@ -42,6 +42,11 @@ class CelesDbConnector {
         } catch (error) {
             if (error.code === 'ENOENT') {
                 console.debug('Local database does not exist');
+
+                if (callbackProgress instanceof Function) {
+                    callbackProgress(baseProgress + maxProgress);
+                }
+
                 return [];
             } else {
                 console.debug('Error loading local database:', error);
