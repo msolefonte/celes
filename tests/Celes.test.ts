@@ -44,7 +44,7 @@ describe('Testing Celes API', () => {
         step('pull(): Result is a list of GameData objects', async () => {
             let itWorked = true;
 
-            for (let i = 0; i < gameDataCollection.length; i++) {
+            for (let i = 0; i < referenceResult.length; i++) {
                 if (!Validator.isValidGameData(referenceResult[i])) {
                     itWorked = false;
                 }
