@@ -41,6 +41,7 @@ describe('Testing Celes API', () => {
                 gameDataCollection = await celes.pull((p => {
                     progress = p;
                 }));
+                expect(progress).to.equal(100);
             });
 
             step('Result is a list of GameData objects', async () => {
@@ -68,6 +69,7 @@ describe('Testing Celes API', () => {
                 gameDataCollection = await celes.load((p => {
                     progress = p;
                 }));
+                expect(progress).to.equal(100);
             });
 
             step('Result is a list of GameData objects', async () => {
