@@ -24,228 +24,250 @@ function areAllAppIdsInTheGameDataCollection(appIds: string[], gameDataCollectio
 describe('Testing Celes API', () => {
     context('Without samples', () => {
         const celes = new Celes(achievementWatcherTestRootPath);
-        let gameDataCollection: GameData[];
-        let referenceResult: GameData[];
-        let progress = 0;
 
-        before(() => {
+        before('Deleting exported file if existent', () => {
             if (existsSync(importExportFile)) {
                 unlinkSync(importExportFile);
             }
         });
 
-        step('pull(): Obtained results', async () => {
-            progress = 0;
-            referenceResult = await celes.pull((p => {
-                progress = p;
-            }));
+        describe('Pull', () => {
+            it('Progress has arrived to 100%', async () => {
+                let progress = 0;
+                await celes.pull((p => {
+                    progress = p;
+                }));
+                expect(progress).to.equal(100);
+            });
         });
 
-        step('pull(): Result is a list of GameData objects', async () => {
-            let itWorked = true;
-
-            for (let i = 0; i < referenceResult.length; i++) {
-                if (!Validator.isValidGameData(referenceResult[i])) {
-                    itWorked = false;
-                }
-            }
-
-            expect(itWorked).to.be.true;
+        describe('Load', () => {
+            it('Progress has arrived to 100%', async () => {
+                let progress = 0;
+                await celes.load((p => {
+                    progress = p;
+                }));
+                expect(progress).to.equal(100);
+            });
         });
 
-        step('pull(): Progress has arrived to 100%', async () => {
-            expect(progress).to.equal(100);
+        describe('Import/Export', () => {
+            step('Export worked', async () => {
+                await celes.export(importExportFile);
+            });
+
+            step('Exported file exists', async () => {
+                expect(existsSync(importExportFile)).to.be.true;
+            });
+
+            step('Import worked', async () => {
+                await celes.import(importExportFile);
+            });
+
+            //     // TODO
+            //     it('File not found throws an error', async () => {
+            //         expect(gameDataCollection.length).to.equal(numberOfResults);
+            //     });
+            //
+            //     // TODO
+            //     it('Invalid file throws an error', async () => {
+            //         expect(gameDataCollection.length).to.equal(numberOfResults);
+            //     });
+            //
+            //     // TODO
+            //     it('ApiVersion not valid throws an error', async () => {
+            //         expect(gameDataCollection.length).to.equal(numberOfResults);
+            //     });
         });
-
-        step('load(): Obtained results', async () => {
-            progress = 0;
-            gameDataCollection = await celes.load((p => {
-                progress = p;
-            }));
-        });
-
-        step('load(): Result is a list of GameData objects', async () => {
-            let itWorked = true;
-
-            for (let i = 0; i < gameDataCollection.length; i++) {
-                if (!Validator.isValidGameData(gameDataCollection[i])) {
-                    itWorked = false;
-                }
-            }
-
-            expect(itWorked).to.be.true;
-        });
-
-        step('load(): Obtained same number of results than pull()', async () => {
-            expect(gameDataCollection.length).to.equal(referenceResult.length);
-        });
-
-        step('load(): Progress has arrived to 100%', async () => {
-            expect(progress).to.equal(100);
-        });
-
-        step('export(): Export worked', async () => {
-            await celes.export(importExportFile);
-        });
-
-        step('export(): Exported file exists', async () => {
-            expect(existsSync(importExportFile)).to.be.true;
-        });
-
-        step('import(): Obtained results', async () => {
-            gameDataCollection = await celes.import(importExportFile);
-        });
-
-        step('import(): Result is a list of GameData objects', async () => {
-            let itWorked = true;
-
-            for (let i = 0; i < gameDataCollection.length; i++) {
-                if (!Validator.isValidGameData(gameDataCollection[i])) {
-                    itWorked = false;
-                }
-            }
-
-            expect(itWorked).to.be.true;
-        });
-
-        step('import(): Obtained same number of results than pull()', async () => {
-            expect(gameDataCollection.length).to.equal(referenceResult.length);
-        });
-
-        // TODO
-        // describe('Errors', () => {
-        //     // TODO
-        //     it('File not found throws an error', async () => {
-        //         expect(gameDataCollection.length).to.equal(numberOfResults);
-        //     });
-        //
-        //     // TODO
-        //     it('Invalid file throws an error', async () => {
-        //         expect(gameDataCollection.length).to.equal(numberOfResults);
-        //     });
-        //
-        //     // TODO
-        //     it('ApiVersion not valid throws an error', async () => {
-        //         expect(gameDataCollection.length).to.equal(numberOfResults);
-        //     });
-        // });
     });
 
     context('With valid samples', async () => {
         const achievementId = 'CgkI287L0pcOEAIQAA';
         const celes = new Celes(achievementWatcherTestRootPath, validSamplesFolders);
         const codexAppIds: string[] = ['382900'];
-        let gameDataCollection: GameData[];
         const reloadedAppIds: string[] = ['311210', '312750'];
 
-        before(() => {
+        before('Deleting one 382900\'s cache if existent', () => {
             const pathTo382900Cache: string = path.join(achievementWatcherTestRootPath, 'steam_cache/schema/english/382900.json');
             if (existsSync(pathTo382900Cache)) {
                 unlinkSync(pathTo382900Cache);
             }
         });
 
-        before(() => {
+        before('Deleting exported file if existent', () => {
             if (existsSync(importExportFile)) {
                 unlinkSync(importExportFile);
             }
         });
 
-        step('pull(): Obtained results', async () => {
-            gameDataCollection = await celes.pull();
-        });
+        describe('Pull', () => {
+            let gameDataCollection: GameData[];
+            let progress: number;
 
-        step('pull(): Loaded all Codex games', async () => {
-            expect(areAllAppIdsInTheGameDataCollection(codexAppIds, gameDataCollection)).to.be.true;
-        });
+            step('Obtained results', async () => {
+                gameDataCollection = await celes.pull((p => {
+                    progress = p;
+                }));
+            });
 
-        step('pull(): Loaded all Reloaded games', async () => {
-            expect(areAllAppIdsInTheGameDataCollection(reloadedAppIds, gameDataCollection)).to.be.true;
-        });
+            step('Progress has arrived to 100%', async () => {
+                expect(progress).to.equal(100);
+            });
 
-        step('load(): Obtained results', async () => {
-            gameDataCollection = await celes.load();
-        });
+            step('Result is a list of GameData objects', async () => {
+                let resultIsValid = true;
 
-        step('load(): Loaded all Codex games', () => {
-            expect(areAllAppIdsInTheGameDataCollection(codexAppIds, gameDataCollection)).to.be.true;
-        });
-
-        step('load(): Loaded all Reloaded games', () => {
-            expect(areAllAppIdsInTheGameDataCollection(reloadedAppIds, gameDataCollection)).to.be.true;
-        });
-
-        step('export(): Export worked', async () => {
-            await celes.export(importExportFile);
-        });
-
-        step('import(): Obtained results', async () => {
-            gameDataCollection = await celes.import(importExportFile);
-        });
-
-        step('import(): Loaded all Codex games', () => {
-            expect(areAllAppIdsInTheGameDataCollection(codexAppIds, gameDataCollection)).to.be.true;
-        });
-
-        step('import(): Loaded all Reloaded games', () => {
-            expect(areAllAppIdsInTheGameDataCollection(reloadedAppIds, gameDataCollection)).to.be.true;
-        });
-
-        step('addGamePlaytime(): Set 382900\'s play time to 10h', async () => {
-            await celes.addGamePlaytime('382900', 'Steam', 36000, true);
-        });
-
-        step('addGamePlaytime(): Check that 382900\'s playtime has been updated to 10h (36000s)', async () => {
-            const gameDataCollection: GameData[] = await celes.load();
-            let itWorked = false;
-
-            for (let i = 0; i < gameDataCollection.length; i++) {
-                if (gameDataCollection[i].appId === '382900') {
-                    itWorked = gameDataCollection[i].stats.playtime === 36000;
-                }
-            }
-
-            expect(itWorked).to.be.true;
-        });
-
-        step('addGamePlaytime(): Add 15 min to 382900\'s playtime', async () => {
-            await celes.addGamePlaytime('382900', 'Steam', 900);
-        });
-
-        step('addGamePlaytime(): Check that 382900\'s playtime has been updated to 10h 15m (36900s)', async () => {
-            let itWorked = false;
-
-            const gameDataCollection: GameData[] = await celes.load();
-            for (let i = 0; i < gameDataCollection.length; i++) {
-                if (gameDataCollection[i].appId === '382900') {
-                    itWorked = gameDataCollection[i].stats.playtime === 36900;
-                }
-            }
-
-            expect(itWorked).to.be.true;
-        });
-
-        step('setAchievementUnlockTime(): Set 382900\'s Codex\'s achievement ' + achievementId + ' unlock time to 1600000000', async () => {
-            await celes.setAchievementUnlockTime('382900', 'Codex', 'Steam', achievementId, 1600000000);
-        });
-
-        step('setAchievementUnlockTime(): Check that 382900\'s Codex\'s achievement ' + achievementId + ' unlock time is 1600000000', () => {
-            let itWorked = false;
-
-            for (let i = 0; i < gameDataCollection.length; i++) {
-                if (gameDataCollection[i].appId === '382900') {
-                    const sources: SourceStats[] = gameDataCollection[i].stats.sources;
-                    for (let j = 0; j < sources.length; j++) {
-                        if (sources[j].source === 'Codex') {
-                            itWorked = true;
-                            break;
-                        }
+                for (let i = 0; i < gameDataCollection.length; i++) {
+                    if (!Validator.isValidGameData(gameDataCollection[i])) {
+                        resultIsValid = false;
                     }
-                    break;
                 }
-            }
 
-            expect(itWorked).to.be.true;
+                expect(resultIsValid).to.be.true;
+            });
+
+            step('All Codex games were scraped', async () => {
+                expect(areAllAppIdsInTheGameDataCollection(codexAppIds, gameDataCollection)).to.be.true;
+            });
+
+            step('All Skidrow games were scraped', async () => {
+                expect(areAllAppIdsInTheGameDataCollection(reloadedAppIds, gameDataCollection)).to.be.true;
+            });
+        });
+
+        describe('Load', () => {
+            let gameDataCollection: GameData[];
+            let progress: number;
+
+            step('Obtained results', async () => {
+                gameDataCollection = await celes.load((p => {
+                    progress = p;
+                }));
+            });
+
+            step('Progress has arrived to 100%', async () => {
+                expect(progress).to.equal(100);
+            });
+
+            step('Result is a list of GameData objects', async () => {
+                let resultIsValid = true;
+
+                for (let i = 0; i < gameDataCollection.length; i++) {
+                    if (!Validator.isValidGameData(gameDataCollection[i])) {
+                        resultIsValid = false;
+                    }
+                }
+
+                expect(resultIsValid).to.be.true;
+            });
+
+            step('All Codex games were loaded', () => {
+                expect(areAllAppIdsInTheGameDataCollection(codexAppIds, gameDataCollection)).to.be.true;
+            });
+
+            step('All Reloaded games were loaded', () => {
+                expect(areAllAppIdsInTheGameDataCollection(reloadedAppIds, gameDataCollection)).to.be.true;
+            });
+        });
+
+        describe('Import/Export', () => {
+            let gameDataCollection: GameData[];
+
+            step('Export worked', async () => {
+                await celes.export(importExportFile);
+            });
+
+            step('Import worked', async () => {
+                gameDataCollection = await celes.import(importExportFile);
+            });
+
+            step('Result is a list of GameData objects', async () => {
+                let isValid = true;
+
+                for (let i = 0; i < gameDataCollection.length; i++) {
+                    if (!Validator.isValidGameData(gameDataCollection[i])) {
+                        isValid = false;
+                    }
+                }
+
+                expect(isValid).to.be.true;
+            });
+
+            step('All Codex games were imported', () => {
+                expect(areAllAppIdsInTheGameDataCollection(codexAppIds, gameDataCollection)).to.be.true;
+            });
+
+            step('All Reloaded games were imported', () => {
+                expect(areAllAppIdsInTheGameDataCollection(reloadedAppIds, gameDataCollection)).to.be.true;
+            });
+        });
+
+        describe('Add/set game playtime', () => {
+            before('Preloading games', (done) => {
+                celes.pull().then(() => {
+                    done();
+                })
+            });
+
+            step('Set game playtime', async () => {
+                await celes.addGamePlaytime('382900', 'Steam', 36000, true);
+            });
+
+            step('Game playtime was updated correctly', async () => {
+                const gameDataCollection: GameData[] = await celes.load();
+                let itWorked = false;
+
+                for (let i = 0; i < gameDataCollection.length; i++) {
+                    if (gameDataCollection[i].appId === '382900') {
+                        itWorked = gameDataCollection[i].stats.playtime === 36000;
+                    }
+                }
+
+                expect(itWorked).to.be.true;
+            });
+
+            step('Add game playtime', async () => {
+                await celes.addGamePlaytime('382900', 'Steam', 900);
+            });
+
+            step('Game playtime was set correctly', async () => {
+                const gameDataCollection: GameData[] = await celes.load();
+                let itWorked = false;
+
+                for (let i = 0; i < gameDataCollection.length; i++) {
+                    if (gameDataCollection[i].appId === '382900') {
+                        itWorked = gameDataCollection[i].stats.playtime === 36900;
+                    }
+                }
+
+                expect(itWorked).to.be.true;
+            });
+        });
+
+        describe('Set achievement unlock time', () => {
+            step('Set achievement unlock time worked', async () => {
+                await celes.setAchievementUnlockTime('382900', 'Codex', 'Steam', achievementId, 1600000000);
+            });
+
+            step('Check that time was updated correctly', async () => {
+                const gameDataCollection: GameData[] = await celes.load();
+                let itWorked = false;
+
+                for (let i = 0; i < gameDataCollection.length; i++) {
+                    if (gameDataCollection[i].appId === '382900') {
+                        const sources: SourceStats[] = gameDataCollection[i].stats.sources;
+                        for (let j = 0; j < sources.length; j++) {
+                            if (sources[j].source === 'Codex') {
+                                itWorked = true;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                expect(itWorked).to.be.true;
+            });
         });
     });
 });
