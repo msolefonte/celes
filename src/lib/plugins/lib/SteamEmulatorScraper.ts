@@ -34,7 +34,8 @@ abstract readonly achievementWatcherRootPath: string;
     async scan(additionalFoldersToScan: string[] = []): Promise<ScanResult[]> {
         console.log(this.source, 'scan called');
         const specificFoldersToScan: string[] = this.getSpecificFoldersToScan();
-        const foldersToScan: string[] = await this.getFoldersToScan(specificFoldersToScan, additionalFoldersToScan);
+        // const foldersToScan: string[] = await this.getFoldersToScan(specificFoldersToScan, additionalFoldersToScan);
+        const foldersToScan: string[] = await this.getFoldersToScan([], additionalFoldersToScan); // FIXME
         console.log('folders to scan:', foldersToScan);
 
         const gamesMetadata: ScanResult[] = [];
