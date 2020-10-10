@@ -36,6 +36,15 @@ export interface CelesConfig {
     useOldestUnlockTime: boolean;
 }
 
+export interface CodexAchievement {
+    Achieved: '0' | '1';
+    CurProgress: string;
+    MaxProgress: string;
+    UnlockTime: number;
+}
+
+export type CodexAchievementList = { [key: string]: CodexAchievement }
+
 export interface ExportableGameStats {
     appId: string;
     platform: Platform;
@@ -107,6 +116,15 @@ export interface NormalizedProgress {
 }
 
 export type Platform = 'Steam';
+
+export interface ReloadedAchievement {
+    State: string;
+    CurProgress: string;
+    MaxProgress: string;
+    Time: string;
+}
+
+export type ReloadedAchievementList = { [key: string]: ReloadedAchievement }
 
 export interface ScanResult {
     appId: string;

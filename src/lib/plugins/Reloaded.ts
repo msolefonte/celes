@@ -1,7 +1,7 @@
 'use strict';
 
 import * as path from 'path';
-import {Source, UnlockedOrInProgressAchievement} from '../../types';
+import {ReloadedAchievement, ReloadedAchievementList, Source, UnlockedOrInProgressAchievement} from '../../types';
 import {normalizeProgress, normalizeTimestamp} from './lib/Common';
 import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
 import omit from 'lodash.omit';
@@ -20,14 +20,14 @@ class Reloaded extends SteamEmulatorScraper {
         this.achievementWatcherRootPath = achievementWatcherRootPath;
     }
 
-    normalizeUnlockedOrInProgressAchievementList(achievementList: any): UnlockedOrInProgressAchievement[] {
+    normalizeUnlockedOrInProgressAchievementList(achievementList: ReloadedAchievementList): UnlockedOrInProgressAchievement[] {
         const UnlockedOrInProgressAchievementList: UnlockedOrInProgressAchievement[] = [];
 
-        const filter: string[] = ['SteamAchievements', 'Steam64', 'Steam'];
-        achievementList = omit(achievementList.ACHIEVE_DATA || achievementList, filter);
+        const filter: string[] = ['Steam', 'Steam64'];
+        achievementList = omit(achievementList, filter);
 
         Object.keys(achievementList).forEach((achievementName) => {
-            const achievementData: any = achievementList[achievementName];
+            const achievementData: ReloadedAchievement = achievementList[achievementName];
             const normalizedProgress = normalizeProgress(achievementData.CurProgress, achievementData.MaxProgress);
 
             if (achievementData.State === '0100000001') {
