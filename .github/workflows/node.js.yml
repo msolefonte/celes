@@ -1,9 +1,9 @@
 name: Node.js CI
 on:
   push:
-    branches: [ master, alpha ]
+    branches: [ master, alpha, beta/* ]
   pull_request:
-    branches: [ master, alpha ]
+    branches: [ master, alpha, beta/* ]
 jobs:
   build:
     runs-on: windows-latest

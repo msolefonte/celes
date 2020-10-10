@@ -21,3 +21,8 @@
 ##### To be added
 
 * Achievements with progress.
+
+#### SSE
+
+* **45760:** No achievements unlocked.
+* **228300:** Multiple achievements unlocked.

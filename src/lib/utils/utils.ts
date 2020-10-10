@@ -12,13 +12,13 @@ async function getGameSchema(achievementWatcherRootPath: string, appId: string, 
             achievements: gameSchema.achievement
         }
 
-        if ('binary' in gameSchemaBody) {
+        if ('binary' in gameSchemaBody) { // TODO THIS DOES NOT PASS TEST?
             gameSchemaBody.binary = gameSchema.binary;
         }
 
         return gameSchemaBody;
     } else {
-        throw new Error('Platform schema not available for ' + platform);
+        throw new Error('Platform schema not available for ' + platform); // TODO ADD BETTER ERROR // TODO ADD TEST
     }
 }
 

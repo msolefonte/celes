@@ -6,6 +6,11 @@ export interface Achievement {
     icongray: string;
 }
 
+export interface ApiServerResponse {
+    error: string | null;
+    data: ApiServerSchema | null;
+}
+
 export interface ApiServerSchema {
     apiVersion: string;
     appid: string;

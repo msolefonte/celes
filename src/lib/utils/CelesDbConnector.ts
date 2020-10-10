@@ -1,5 +1,6 @@
 import * as path from 'path';
 import {GameData, GameStats, Platform} from '../../types';
+import {InvalidApiVersionError} from './Errors';
 import {promises as fs} from 'fs';
 import {getGameSchema} from './utils';
 import mkdirp from 'mkdirp';
@@ -27,35 +28,33 @@ class CelesDbConnector {
                 const platformGames: string[] = await fs.readdir(path.join(this.celesDatabasePath, localDatabasePlatforms[i]));
 
                 for (let j = 0; j < platformGames.length; j++) {
-                    const appId = platformGames[j].split('.').slice(0, -1).join('.');
+                    try {
+                        const progressPercentage: number = baseProgress + Math.floor(((i + 1) / localDatabasePlatforms.length) * ((j + 1) / platformGames.length) * maxProgress);
+                        const appId = platformGames[j].split('.').slice(0, -1).join('.');
 
-                    const progressPercentage: number = baseProgress + Math.floor(((i + 1) / localDatabasePlatforms.length) * ((j + 1) / platformGames.length) * maxProgress);
-                    const gameData: GameData = await this.getGame(appId, localDatabasePlatforms[i], schemaLanguage);
+                        const gameData: GameData = await this.getGame(appId, localDatabasePlatforms[i], schemaLanguage);
 
-                    gameDataCollection.push(gameData);
+                        gameDataCollection.push(gameData);
 
-                    if (callbackProgress instanceof Function) {
-                        callbackProgress(progressPercentage);
+                        typeof callbackProgress === 'function' && callbackProgress(progressPercentage);
+                    } catch (error) {
+                        if (!(error instanceof InvalidApiVersionError)) {
+                            throw error;
+                        }
                     }
                 }
             }
         } catch (error) {
             if (error.code === 'ENOENT') {
-                console.debug('Local database does not exist');
-
-                if (callbackProgress instanceof Function) {
-                    callbackProgress(baseProgress + maxProgress);
-                }
+                typeof callbackProgress === 'function' && callbackProgress(baseProgress + maxProgress);
 
                 return [];
             } else {
-                console.debug('Error loading local database:', error); // TODO THROW
+                throw error
             }
         }
 
-        if (callbackProgress instanceof Function) {
-            callbackProgress(baseProgress + maxProgress);
-        }
+        typeof callbackProgress === 'function' && callbackProgress(baseProgress + maxProgress);
 
         return gameDataCollection;
     }
@@ -78,7 +77,7 @@ class CelesDbConnector {
         );
 
         if (gameStats.apiVersion !== this.apiVersion) {
-            throw new Error('API version not valid. Expected ' + this.apiVersion + ', found ' + gameStats.apiVersion + '.');
+            throw new InvalidApiVersionError(this.apiVersion, gameStats.apiVersion);
         }
 
         return <GameData> {
