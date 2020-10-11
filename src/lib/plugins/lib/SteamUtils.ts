@@ -1,5 +1,16 @@
 import * as path from 'path';
-import {ApiServerSchema, GameSchema} from '../../../types';
+import {
+    ApiServerBlacklistedIdError,
+    ApiServerInternalError,
+    ApiServerInvalidResponseError,
+    ApiServerRequestError,
+    ApiServerUnsupportedLanguageError
+} from '../../utils/Errors';
+import {
+    ApiServerResponse,
+    ApiServerSchema,
+    GameSchema
+} from '../../../types';
 import {existsAndIsYoungerThan} from './Common';
 import {promises as fs} from 'fs';
 import got from 'got';
@@ -11,30 +22,72 @@ class SteamUtils {
         return JSON.parse(await fs.readFile(gameCachePath, 'utf8'));
     }
 
-    static async getGameSchemaFromApiServer(appId: string, lang: string): Promise<GameSchema> {
-        const url = `https://api.xan105.com/steam/ach/${appId}?lang=${lang}`;
-        const response: string = (await got(url)).body;
+    static async getGameSchemaFromApiServer(appId: string, language: string): Promise<GameSchema> {
+        const url = `https://api.xan105.com/steam/ach/${appId}?lang=${language}`;
+        let serverResponse: string;
 
-        const apiServerSchema: ApiServerSchema = JSON.parse(response).data;
-        const gameSchema: GameSchema = {
-            apiVersion: SteamUtils.apiVersion,
-            appId: apiServerSchema.appid.toString(),
-            platform: 'Steam',
-            name: apiServerSchema.name,
-            img: apiServerSchema.img,
-            achievement: apiServerSchema.achievement
-        };
+        try {
+            serverResponse = (await got(url)).body;
+        } catch (error) {
+            serverResponse = error.response.body;
 
-        if ('binary' in apiServerSchema) {
-            gameSchema.binary = apiServerSchema.binary;
+            if (error instanceof got.HTTPError) {
+                let apiServerError: string | null;
+
+                try {
+                    apiServerError = JSON.parse(serverResponse).error
+                } catch (error) {
+                    throw new ApiServerRequestError(url);
+                }
+
+                if (apiServerError !== null) {
+                    if (apiServerError === 'this appID is currently blacklisted') {
+                        throw new ApiServerBlacklistedIdError(appId);
+                    } else if (apiServerError === 'Unsupported API language code') {
+                        throw new ApiServerUnsupportedLanguageError(language);
+                    } else {
+                        throw new ApiServerInternalError(url);
+                    }
+                }
+            }
+
+            throw new ApiServerRequestError(url);
         }
 
-        return gameSchema;
+        const apiServerResponse: ApiServerResponse = JSON.parse(serverResponse);
+        let apiServerSchema: ApiServerSchema;
+
+        if (apiServerResponse.data === null) {
+            throw new ApiServerInvalidResponseError(url);
+        } else {
+            apiServerSchema = apiServerResponse.data;
+        }
+
+        try {
+            const gameSchema: GameSchema = {
+                apiVersion: SteamUtils.apiVersion,
+                appId: apiServerSchema.appid.toString(),
+                platform: 'Steam',
+                name: apiServerSchema.name,
+                img: apiServerSchema.img,
+                achievement: apiServerSchema.achievement
+            };
+
+            if ('binary' in apiServerSchema) {
+                gameSchema.binary = apiServerSchema.binary;
+            }
+
+            return gameSchema;
+        } catch (error) {
+            if (error instanceof SyntaxError) {
+                throw new ApiServerInvalidResponseError(url);
+            } else {
+                throw error;
+            }
+        }
     }
 
     static async getGameSchema(achievementWatcherRootPath: string, appId: string, lang: string): Promise<GameSchema> {
-        // TODO WHAT IF NOT appId
-        // TODO WHAT IF NOT LANG
         let gameSchema: GameSchema;
         const gameCachePath = SteamUtils.getGameCachePath(achievementWatcherRootPath, appId, lang);
 
@@ -59,7 +112,7 @@ class SteamUtils {
 
     static getGameCachePath(achievementWatcherRootPath: string, appId: string, language: string): string {
         const cachePath: string = path.join(achievementWatcherRootPath, 'steam_cache/schema', language);
-        return path.join(`${cachePath}`, `${appId}.db`);
+        return path.join(`${cachePath}`, `${appId}.json`);
     }
 }
 

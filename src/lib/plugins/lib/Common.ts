@@ -8,7 +8,7 @@ async function existsAndIsYoungerThan(path: string, time = 7, timeUnit: moment.u
         const stats = await fs.stat(path);
 
         if ((isDir) ? stats.isDirectory() : stats.isFile()) {
-            return moment().diff(moment(stats.mtime), timeUnit) < time;
+            return moment().diff(moment(stats.mtime), timeUnit) < time; // TODO ADD TEST INVALID CACHE
         } else {
             return false;
         }
@@ -23,7 +23,7 @@ function normalizeProgress(curProgress: string, maxProgress: string): Normalized
         currentProgress = 0;
         maximProgress = 0;
     } else {
-        currentProgress = Math.floor(Number.parseFloat(curProgress) / Number.parseFloat(maxProgress) * 100);
+        currentProgress = Math.floor(Number.parseFloat(curProgress) / Number.parseFloat(maxProgress) * 100); // TODO ADD TEST GAME WITH PROGRESS
         maximProgress = 100;
     }
 

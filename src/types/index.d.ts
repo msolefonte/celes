@@ -6,6 +6,11 @@ export interface Achievement {
     icongray: string;
 }
 
+export interface ApiServerResponse {
+    error: string | null;
+    data: ApiServerSchema | null;
+}
+
 export interface ApiServerSchema {
     apiVersion: string;
     appid: string;
@@ -30,6 +35,15 @@ export interface CelesConfig {
     systemLanguage: string;
     useOldestUnlockTime: boolean;
 }
+
+export interface CodexAchievement {
+    Achieved: '0' | '1';
+    CurProgress: string;
+    MaxProgress: string;
+    UnlockTime: number;
+}
+
+export type CodexAchievementList = { [key: string]: CodexAchievement }
 
 export interface ExportableGameStats {
     appId: string;
@@ -103,6 +117,15 @@ export interface NormalizedProgress {
 
 export type Platform = 'Steam';
 
+export interface ReloadedAchievement {
+    State: string;
+    CurProgress: string;
+    MaxProgress: string;
+    Time: string;
+}
+
+export type ReloadedAchievementList = { [key: string]: ReloadedAchievement }
+
 export interface ScanResult {
     appId: string;
     source: Source;
@@ -113,6 +136,10 @@ export interface ScanResult {
         path?: string;
         userId?: SteamUser;
     }
+}
+
+export interface SkidrowAchievementList {
+    ACHIEVE_DATA: { [key: string]: '0' | '1' }
 }
 
 export type Source = 'Codex' | 'CreamAPI' | 'Goldberg' | 'Merge' | 'Reloaded - 3DM' | 'Skidrow' | 'SmartSteamEmu';

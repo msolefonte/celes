@@ -1,35 +1,90 @@
-// 'use strict';
-//
-// import * as path from 'path';
-// import {Source, UnlockedOrInProgressAchievement} from '../../types';
-// import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
-//
-//
-// class SSE extends SteamEmulatorScraper {
-//     readonly source: Source = 'SmartSteamEmu';
-//     readonly achievementWatcherRootPath: string;
-//
-//     private readonly appDataPath: string = <string>process.env['APPDATA'];
-//
-//     constructor(achievementWatcherRootPath: string) {
-//         super();
-//         this.achievementWatcherRootPath = achievementWatcherRootPath;
-//     }
-//
-//     // TODO
-//     normalizeUnlockedOrInProgressAchievementList(achievementList: any): UnlockedOrInProgressAchievement[] {
-//         const UnlockedOrInProgressAchievementList: UnlockedOrInProgressAchievement[] = [];
-//
-//         console.log(achievementList);
-//
-//         return UnlockedOrInProgressAchievementList;
-//     }
-//
-//     getSpecificFoldersToScan(): string[] {
-//         return [
-//             path.join(this.appDataPath, 'SmartSteamEmu')
-//         ];
-//     }
-// }
-//
-// export {SSE};
+'use strict';
+
+import * as path from 'path';
+import {
+    Achievement,
+    GameSchema,
+    SSEAchievement,
+    ScanResult,
+    Source,
+    UnlockedOrInProgressAchievement
+} from '../../types';
+import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
+import {SteamUtils} from './lib/SteamUtils';
+import crc32 from 'crc-32';
+
+class SSE extends SteamEmulatorScraper {
+    readonly source: Source = 'SmartSteamEmu';
+    readonly achievementLocationFiles: string[] = [
+        'stats.bin'
+    ];
+    readonly achievementWatcherRootPath: string;
+
+    private readonly appDataPath: string = <string>process.env['APPDATA'];
+
+    constructor(achievementWatcherRootPath: string) {
+        super();
+        this.achievementWatcherRootPath = achievementWatcherRootPath;
+    }
+
+    normalizeUnlockedOrInProgressAchievementList(achievements: SSEAchievement[]): UnlockedOrInProgressAchievement[] {
+        const activeAchievements: UnlockedOrInProgressAchievement[] = [];
+
+        for (let i = 0; i < achievements.length; i++) {
+            const activeAchievement: UnlockedOrInProgressAchievement = {
+                name: achievements[i].crc,
+                achieved: 1,
+                currentProgress: 0,
+                maxProgress: 0,
+                unlockTime: achievements[i].UnlockTime
+            }
+            activeAchievements.push(activeAchievement);
+        }
+
+        return activeAchievements;
+    }
+
+    async getUnlockedOrInProgressAchievements(game: ScanResult): Promise<UnlockedOrInProgressAchievement[]> {
+        const wronglyNormalizedAchievementList: UnlockedOrInProgressAchievement[] = await super.getUnlockedOrInProgressAchievements(game);
+        const correctlyNormalizedAchievementList: UnlockedOrInProgressAchievement[] = [];
+
+        const gameSchema: GameSchema = await SteamUtils.getGameSchema(this.achievementWatcherRootPath, game.appId, 'english');
+        const achievementIds = gameSchema.achievement.list.map((achievement: Achievement) => {
+            return achievement.name;
+        });
+
+        for (let i = 0; i < wronglyNormalizedAchievementList.length; i++) {
+            let achievementHasBeenNormalized = false;
+
+            for (let j = 0; j < achievementIds.length; j++) {
+                if (crc32.str(achievementIds[j]).toString(16) === wronglyNormalizedAchievementList[i].name) {
+                    const activeAchievement: UnlockedOrInProgressAchievement = {
+                        name: achievementIds[j],
+                        achieved: wronglyNormalizedAchievementList[i].achieved,
+                        currentProgress: wronglyNormalizedAchievementList[i].currentProgress,
+                        maxProgress: wronglyNormalizedAchievementList[i].maxProgress,
+                        unlockTime: wronglyNormalizedAchievementList[i].unlockTime
+                    }
+
+                    correctlyNormalizedAchievementList.push(activeAchievement);
+                    achievementHasBeenNormalized = true;
+                    break;
+                }
+            }
+
+            if (!achievementHasBeenNormalized) {
+                console.error(wronglyNormalizedAchievementList[i].name, 'not found in schema')
+            }
+        }
+
+        return correctlyNormalizedAchievementList;
+    }
+
+    getSpecificFoldersToScan(): string[] {
+        return [
+            path.join(this.appDataPath, 'SmartSteamEmu')
+        ];
+    }
+}
+
+export {SSE};

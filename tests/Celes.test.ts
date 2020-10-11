@@ -1,4 +1,5 @@
 import * as path from 'path';
+import {FileNotFoundError, InvalidApiVersionError} from '../src/lib/utils/Errors';
 import {GameData, SourceStats} from '../src/types';
 import {existsSync, unlinkSync} from 'fs';
 import {Celes} from '../src';
@@ -7,10 +8,15 @@ import {expect} from 'chai';
 import {step} from 'mocha-steps';
 
 const achievementWatcherTestRootPath: string = path.join(__dirname, 'tmp/appData/Achievement Watcher Test');
-const importExportFile: string = path.join(__dirname, 'tmp/export.awb');
+const importExportValidFile: string = path.join(__dirname, 'tmp/export.awb');
+const importExportInvalidFile: string = path.join(__dirname, 'samples/other/importFileInvalid.awb');
+const importExportNonExistentFile: string = path.join(__dirname, 'samples/other/importFileNonExistent.awb');
+const importExportWrongVersionFile: string = path.join(__dirname, 'samples/other/importFileWrongVersion.awb');
 const validSamplesFolders: string[] = [
     path.join(__dirname, 'samples/achievements/valid/codex/'),
-    path.join(__dirname, 'samples/achievements/valid/reloaded/')
+    path.join(__dirname, 'samples/achievements/valid/reloaded/'),
+    path.join(__dirname, 'samples/achievements/valid/sse/'),
+    path.join(__dirname, 'samples/achievements/valid/skidrow/'),
 ];
 
 function areAllAppIdsInTheGameDataCollection(appIds: string[], gameDataCollection: GameData[]) {
@@ -26,8 +32,8 @@ describe('Testing Celes API', () => {
         const celes = new Celes(achievementWatcherTestRootPath);
 
         before('Deleting exported file if existent', () => {
-            if (existsSync(importExportFile)) {
-                unlinkSync(importExportFile);
+            if (existsSync(importExportValidFile)) {
+                unlinkSync(importExportValidFile);
             }
         });
 
@@ -53,39 +59,56 @@ describe('Testing Celes API', () => {
 
         describe('Import/Export', () => {
             step('Export worked', async () => {
-                await celes.export(importExportFile);
+                await celes.export(importExportValidFile);
             });
 
             step('Exported file exists', async () => {
-                expect(existsSync(importExportFile)).to.be.true;
+                expect(existsSync(importExportValidFile)).to.be.true;
             });
 
             step('Import worked', async () => {
-                await celes.import(importExportFile);
+                await celes.import(importExportValidFile);
             });
 
-            //     // TODO
-            //     it('File not found throws an error', async () => {
-            //         expect(gameDataCollection.length).to.equal(numberOfResults);
-            //     });
-            //
-            //     // TODO
-            //     it('Invalid file throws an error', async () => {
-            //         expect(gameDataCollection.length).to.equal(numberOfResults);
-            //     });
-            //
-            //     // TODO
-            //     it('ApiVersion not valid throws an error', async () => {
-            //         expect(gameDataCollection.length).to.equal(numberOfResults);
-            //     });
+            it('Nonexistent file throws a FileNotFoundError', (done) => {
+                celes.import(importExportNonExistentFile).catch((error) => {
+                    {
+                        if (error instanceof FileNotFoundError) {
+                            done();
+                        }
+                    }
+                });
+            });
+
+            it('Invalid file throws a SyntaxError', (done) => {
+                celes.import(importExportInvalidFile).catch((error) => {
+                    {
+                        if (error instanceof SyntaxError) {
+                            done();
+                        }
+                    }
+                });
+            });
+
+            it('Invalid API version throws an InvalidApiVersionError', (done) => {
+                celes.import(importExportWrongVersionFile).catch((error) => {
+                    {
+                        if (error instanceof InvalidApiVersionError) {
+                            done();
+                        }
+                    }
+                });
+            });
         });
     });
 
     context('With valid samples', async () => {
         const achievementId = 'CgkI287L0pcOEAIQAA';
         const celes = new Celes(achievementWatcherTestRootPath, validSamplesFolders);
-        const codexAppIds: string[] = ['382900'];
+        const codexAppIds: string[] = ['255710', '382900', '1097840', '1184050'];
         const reloadedAppIds: string[] = ['311210', '312750'];
+        const sseAppIds: string[] = ['45760', '228300'];
+        const skidrowAppIds: string[] = ['474960', '584980'];
 
         before('Deleting one 382900\'s cache if existent', () => {
             const pathTo382900Cache: string = path.join(achievementWatcherTestRootPath, 'steam_cache/schema/english/382900.json');
@@ -95,8 +118,8 @@ describe('Testing Celes API', () => {
         });
 
         before('Deleting exported file if existent', () => {
-            if (existsSync(importExportFile)) {
-                unlinkSync(importExportFile);
+            if (existsSync(importExportValidFile)) {
+                unlinkSync(importExportValidFile);
             }
         });
 
@@ -126,12 +149,20 @@ describe('Testing Celes API', () => {
                 expect(resultIsValid).to.be.true;
             });
 
-            step('All Codex games were scraped', async () => {
+            step('All Codex games were scraped', () => {
                 expect(areAllAppIdsInTheGameDataCollection(codexAppIds, gameDataCollection)).to.be.true;
             });
 
-            step('All Skidrow games were scraped', async () => {
+            step('All Skidrow games were scraped', () => {
                 expect(areAllAppIdsInTheGameDataCollection(reloadedAppIds, gameDataCollection)).to.be.true;
+            });
+
+            step('All SSE games were scraped', () => {
+                expect(areAllAppIdsInTheGameDataCollection(sseAppIds, gameDataCollection)).to.be.true;
+            });
+
+            step('All Skidrow games were scraped', () => {
+                expect(areAllAppIdsInTheGameDataCollection(skidrowAppIds, gameDataCollection)).to.be.true;
             });
         });
 
@@ -168,17 +199,25 @@ describe('Testing Celes API', () => {
             step('All Reloaded games were loaded', () => {
                 expect(areAllAppIdsInTheGameDataCollection(reloadedAppIds, gameDataCollection)).to.be.true;
             });
+
+            step('All SSE games were scraped', () => {
+                expect(areAllAppIdsInTheGameDataCollection(sseAppIds, gameDataCollection)).to.be.true;
+            });
+
+            step('All Skidrow games were scraped', () => {
+                expect(areAllAppIdsInTheGameDataCollection(skidrowAppIds, gameDataCollection)).to.be.true;
+            });
         });
 
         describe('Import/Export', () => {
             let gameDataCollection: GameData[];
 
             step('Export worked', async () => {
-                await celes.export(importExportFile);
+                await celes.export(importExportValidFile);
             });
 
             step('Import worked', async () => {
-                gameDataCollection = await celes.import(importExportFile);
+                gameDataCollection = await celes.import(importExportValidFile);
             });
 
             step('Result is a list of GameData objects', async () => {
@@ -199,6 +238,14 @@ describe('Testing Celes API', () => {
 
             step('All Reloaded games were imported', () => {
                 expect(areAllAppIdsInTheGameDataCollection(reloadedAppIds, gameDataCollection)).to.be.true;
+            });
+
+            step('All SSE games were scraped', () => {
+                expect(areAllAppIdsInTheGameDataCollection(sseAppIds, gameDataCollection)).to.be.true;
+            });
+
+            step('All Skidrow games were scraped', () => {
+                expect(areAllAppIdsInTheGameDataCollection(skidrowAppIds, gameDataCollection)).to.be.true;
             });
         });
 

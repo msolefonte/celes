@@ -11,6 +11,7 @@ import {
     Source,
     UnlockedOrInProgressAchievement
 } from '../types';
+import {FileNotFoundError, InvalidApiVersionError} from './utils/Errors';
 import {AchievementsScraper} from './plugins/lib/AchievementsScraper';
 import {CelesDbConnector} from './utils/CelesDbConnector';
 import {CelesMutex} from './utils/CelesMutex';
@@ -19,14 +20,13 @@ import {promises as fs} from 'fs';
 import {getGameSchema} from './utils/utils';
 import mkdirp from 'mkdirp';
 import plugins from './plugins.json';
-import base = Mocha.reporters.base;
 
 class Celes {
     private readonly achievementWatcherRootPath: string;
     private readonly additionalFoldersToScan: string[];
+    private readonly celesMutex: CelesMutex;
     private readonly systemLanguage: string;
     private readonly useOldestUnlockTime: boolean;
-    private readonly celesMutex: CelesMutex;
 
     private readonly apiVersion: string = 'v1';
 
@@ -55,9 +55,10 @@ class Celes {
      * @param callbackProgress
      */
     async pull(callbackProgress?: (progress: number) => void): Promise<GameData[]> {
-        const scrappedData: GameData[] = await this.scrap(callbackProgress, 50, 0);
-        const celesDbConnector = new CelesDbConnector(this.achievementWatcherRootPath);
         let mergedData: GameData[] = [];
+
+        const celesDbConnector = new CelesDbConnector(this.achievementWatcherRootPath);
+        const scrappedData: GameData[] = await this.scrap(callbackProgress, 50, 0);
 
         const lockId: number = await this.celesMutex.lock();
         try {
@@ -125,12 +126,22 @@ class Celes {
      * @param force
      */
     async import(filePath: string, force = false): Promise<GameData[]> {
-        const importedData: ExportableGameStatsCollection = await JSON.parse(await fs.readFile(filePath, 'utf8'));
         const celesDbConnector = new CelesDbConnector(this.achievementWatcherRootPath);
+        let importedData: ExportableGameStatsCollection;
         let newData: GameData[] = [];
 
+        try {
+            importedData = await JSON.parse(await fs.readFile(filePath, 'utf8'));
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                throw new FileNotFoundError(filePath);
+            } else {
+                throw error;
+            }
+        }
+
         if (importedData.apiVersion !== this.apiVersion) {
-            throw new Error('API version not valid. Expected ' + this.apiVersion + ', found ' + importedData.apiVersion + '.');
+            throw new InvalidApiVersionError(this.apiVersion, importedData.apiVersion);
         }
 
         for (let i = 0; i < importedData.data.length; i++) {
@@ -166,6 +177,7 @@ class Celes {
         } finally {
             this.celesMutex.unlock(lockId);
         }
+
         return newData;
     }
 
@@ -255,7 +267,7 @@ class Celes {
                     }
                 }
             } catch (error) {
-                console.debug('Error loading plugin', plugins[i] + ':', error);
+                console.debug('Error loading plugin', plugins[i] + ':', error); // TODO ADD TEST PLUGIN GOES BOOM
             }
 
             if (typeof callbackProgress === 'function') {

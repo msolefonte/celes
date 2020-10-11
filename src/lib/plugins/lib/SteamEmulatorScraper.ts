@@ -2,16 +2,13 @@
 
 import * as path from 'path';
 import {GameSchema, ScanResult, Source, UnlockedOrInProgressAchievement} from '../../../types';
+import {existsSync, promises as fs} from 'fs';
 import {AchievementsScraper} from './AchievementsScraper';
 import {SSEConfigParser} from './SSEConfigParser';
 import {SteamUtils} from './SteamUtils';
-import {promises as fs} from 'fs';
 import glob from 'fast-glob';
 import ini from 'ini';
 import normalize from 'normalize-path';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import regedit from 'regodit'; // TODO LOOK FOR ALTERNATIVES
 
 // TODO CHECK LOGS / THROWS
 // TODO PASS LOGGER TO PLUGINS
@@ -25,7 +22,6 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
 abstract readonly achievementWatcherRootPath: string;
     protected abstract readonly achievementLocationFiles: string[];
     protected abstract readonly source: Source;
-    
 
     abstract normalizeUnlockedOrInProgressAchievementList(achievementList: unknown): UnlockedOrInProgressAchievement[];
 
@@ -36,7 +32,19 @@ abstract readonly achievementWatcherRootPath: string;
         const foldersToScan: string[] = await this.getFoldersToScan(specificFoldersToScan, additionalFoldersToScan);
 
         const gamesMetadata: ScanResult[] = [];
-        for (const dir of await glob(foldersToScan, {onlyDirectories: true, absolute: true})) {
+        for (const dir of await glob(foldersToScan, { onlyDirectories: true, absolute: true })) {
+            let achievementLocationFileFound = false;
+            for (const achievementLocationFile of this.achievementLocationFiles) {
+                if (existsSync(path.join(dir, achievementLocationFile))) {
+                    achievementLocationFileFound = true;
+                    break;
+                }
+            }
+
+            if (!achievementLocationFileFound) {
+                continue;
+            }
+
             const gameMetadata: ScanResult = {
                 appId: path.parse(dir).name.toString(),
                 data: {
@@ -55,7 +63,6 @@ abstract readonly achievementWatcherRootPath: string;
 
     async getGameSchema(appId: string, lang: string): Promise<GameSchema> {
         if (!this.steamLanguages.includes(lang)) {
-            // TODO Add debug log here
             lang = 'english';
         }
 
@@ -71,16 +78,9 @@ abstract readonly achievementWatcherRootPath: string;
         return this.source;
     }
 
-    private async getFoldersToScan(specificFolders: string[], additionalFolders: string[]): Promise<string[]> {
-        let foldersToScan: string[] = specificFolders;
-
-        // const DocsFolderPath: string = await regedit.promises.RegQueryStringValue('HKCU',
-        //     'Software/Microsoft/Windows/CurrentVersion/Explorer/User Shell Folders', 'Personal');
-        // if (DocsFolderPath) {
-        //     foldersToScan = foldersToScan.concat([
-        //         path.join(DocsFolderPath, 'Skidrow')
-        //     ]);
-        // } // TODO SKIDROW SPECIFIC
+    protected async getFoldersToScan(specificFolders: string[], additionalFolders: string[]): Promise<string[]> {
+        // let foldersToScan: string[] = [];
+        let foldersToScan: string[] = specificFolders; // FIXME FOR RELEASE
 
         if (additionalFolders.length > 0) {
             foldersToScan = foldersToScan.concat(additionalFolders);
@@ -93,33 +93,28 @@ abstract readonly achievementWatcherRootPath: string;
         return foldersToScan;
     }
 
-    // TODO NOT CLEAR
     private async getAchievementListFromGameFolder(gameFolder: string): Promise<unknown> {
-        let local: unknown;
+        let achievementList: unknown = {};
+
         for (const file of this.achievementLocationFiles) {
             try {
-                const achievementFile: string = path.join(gameFolder, file);
+                const achievementFilePath: string = path.join(gameFolder, file);
+
                 if (this.source == 'SmartSteamEmu' && file === 'stats.bin') {
-                    local = SSEConfigParser.parse(await fs.readFile(achievementFile));
+                    achievementList = SSEConfigParser.parse(await fs.readFile(achievementFilePath));
                 } else if (path.parse(file).ext == '.json') {
-                    local = JSON.parse(await fs.readFile(achievementFile, 'utf8'));
+                    achievementList = JSON.parse(await fs.readFile(achievementFilePath, 'utf8'));
                 } else {
-                    local = ini.parse(await fs.readFile(achievementFile, 'utf8'));
+                    achievementList = ini.parse(await fs.readFile(achievementFilePath, 'utf8'));
                 }
-                break;
             } catch (error) {
                 if (error.code !== 'ENOENT') {
                     throw error;
                 }
             }
         }
-        if (!local) {
-            // TODO ADD PROPER LOGGER
-            // console.debug(`No achievement files found in '${gameFolder}'`);
-            local = {};
-        }
 
-        return local;
+        return achievementList;
     }
 }
 

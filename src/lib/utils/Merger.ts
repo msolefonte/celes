@@ -50,14 +50,14 @@ class Merger {
                 if (!(achievement.name in mergedActiveAchievements)) {
                     mergedActiveAchievements[achievement.name] = achievement;
                 } else {
-                    if (achievement.currentProgress > mergedActiveAchievements[achievement.name].currentProgress) {
+                    if (achievement.currentProgress > mergedActiveAchievements[achievement.name].currentProgress) { // TODO ADD TEST MULTIPLE SOURCES DIFFERENT PROGRESS
                         mergedActiveAchievements[achievement.name] = achievement;
                     } else if (useOldestUnlockTime) {
                         if (achievement.unlockTime < mergedActiveAchievements[achievement.name].unlockTime) {
                             mergedActiveAchievements[achievement.name] = achievement;
                         }
                     } else {
-                        if (achievement.unlockTime > mergedActiveAchievements[achievement.name].unlockTime) {
+                        if (achievement.unlockTime > mergedActiveAchievements[achievement.name].unlockTime) { // TODO ADD TEST MULTIPLE SOURCES DIFFERENT PROGRESS (DIFFERENT ORDER)
                             mergedActiveAchievements[achievement.name] = achievement;
                         }
                     }
@@ -118,7 +118,7 @@ class Merger {
                 }
             }
 
-            if (gameData.schema.achievements.total > mergedAchievementsTotal) {
+            if (gameData.schema.achievements.total > mergedAchievementsTotal) {  // TODO ADD TEST DELETE ACHIEVEMENTS FROM ONE SCHEMA
                 mergedAchievementsTotal = gameData.schema.achievements.total;
                 mergedAchievementsList = gameData.schema.achievements.list;
             }
@@ -149,7 +149,7 @@ class Merger {
         };
 
         if ('binary' in gd1.schema) {
-            mergedGameData.schema.binary = gd1.schema.binary;
+            mergedGameData.schema.binary = gd1.schema.binary; // TODO WHY THIS THO
         }
 
         return mergedGameData;

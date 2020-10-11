@@ -1,7 +1,7 @@
 'use strict';
 
 import * as path from 'path';
-import {Source, UnlockedOrInProgressAchievement} from '../../types';
+import {CodexAchievement, CodexAchievementList, Source, UnlockedOrInProgressAchievement} from '../../types';
 import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
 import {normalizeProgress} from './lib/Common';
 import omit from 'lodash.omit';
@@ -22,15 +22,14 @@ class Codex extends SteamEmulatorScraper {
         this.achievementWatcherRootPath = achievementWatcherRootPath;
     }
 
-    // TODO FIX
-    normalizeUnlockedOrInProgressAchievementList(achievementList: any): UnlockedOrInProgressAchievement[] {
+    normalizeUnlockedOrInProgressAchievementList(achievementList: CodexAchievementList): UnlockedOrInProgressAchievement[] {
         const UnlockedOrInProgressAchievementList: UnlockedOrInProgressAchievement[] = [];
 
-        const filter: string[] = ['SteamAchievements', 'Steam64', 'Steam'];
-        achievementList = omit(achievementList.ACHIEVE_DATA || achievementList, filter);
+        const filter: string[] = ['SteamAchievements'];
+        achievementList = omit(achievementList, filter);
 
         Object.keys(achievementList).forEach((achievementName) => {
-            const achievementData: any = achievementList[achievementName];
+            const achievementData: CodexAchievement = achievementList[achievementName];
             const normalizedProgress = normalizeProgress(achievementData.CurProgress, achievementData.MaxProgress);
 
             if (achievementData.Achieved === '1') {
@@ -42,13 +41,23 @@ class Codex extends SteamEmulatorScraper {
                     unlockTime: achievementData.UnlockTime,
                 });
             } else if (normalizedProgress.maximProgress > 0) {
-                UnlockedOrInProgressAchievementList.push({
-                    name: achievementName,
-                    achieved: 0,
-                    currentProgress: normalizedProgress.currentProgress,
-                    maxProgress: normalizedProgress.maximProgress,
-                    unlockTime: achievementData.UnlockTime,
-                });
+                if (normalizedProgress.currentProgress == normalizedProgress.maximProgress) {
+                    UnlockedOrInProgressAchievementList.push({
+                        name: achievementName,
+                        achieved: 1,
+                        currentProgress: normalizedProgress.currentProgress,
+                        maxProgress: normalizedProgress.maximProgress,
+                        unlockTime: achievementData.UnlockTime,
+                    });
+                } else {
+                    UnlockedOrInProgressAchievementList.push({
+                        name: achievementName,
+                        achieved: 0,
+                        currentProgress: normalizedProgress.currentProgress,
+                        maxProgress: normalizedProgress.maximProgress,
+                        unlockTime: achievementData.UnlockTime,
+                    });
+                }
             }
         });
 
