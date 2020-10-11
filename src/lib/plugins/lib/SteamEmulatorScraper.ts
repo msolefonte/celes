@@ -2,16 +2,13 @@
 
 import * as path from 'path';
 import {GameSchema, ScanResult, Source, UnlockedOrInProgressAchievement} from '../../../types';
+import {existsSync, promises as fs} from 'fs';
 import {AchievementsScraper} from './AchievementsScraper';
 import {SSEConfigParser} from './SSEConfigParser';
 import {SteamUtils} from './SteamUtils';
-import {promises as fs} from 'fs';
 import glob from 'fast-glob';
 import ini from 'ini';
 import normalize from 'normalize-path';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import regedit from 'regodit'; // TODO LOOK FOR ALTERNATIVES
 
 // TODO CHECK LOGS / THROWS
 // TODO PASS LOGGER TO PLUGINS
@@ -36,6 +33,18 @@ abstract readonly achievementWatcherRootPath: string;
 
         const gamesMetadata: ScanResult[] = [];
         for (const dir of await glob(foldersToScan, { onlyDirectories: true, absolute: true })) {
+            let achievementLocationFileFound = false;
+            for (const achievementLocationFile of this.achievementLocationFiles) {
+                if (existsSync(path.join(dir, achievementLocationFile))) {
+                    achievementLocationFileFound = true;
+                    break;
+                }
+            }
+
+            if (!achievementLocationFileFound) {
+                continue;
+            }
+
             const gameMetadata: ScanResult = {
                 appId: path.parse(dir).name.toString(),
                 data: {
@@ -69,16 +78,9 @@ abstract readonly achievementWatcherRootPath: string;
         return this.source;
     }
 
-    private async getFoldersToScan(specificFolders: string[], additionalFolders: string[]): Promise<string[]> {
-        let foldersToScan: string[] = specificFolders;
-
-        // const DocsFolderPath: string = await regedit.promises.RegQueryStringValue('HKCU',
-        //     'Software/Microsoft/Windows/CurrentVersion/Explorer/User Shell Folders', 'Personal');
-        // if (DocsFolderPath) {
-        //     foldersToScan = foldersToScan.concat([
-        //         path.join(DocsFolderPath, 'Skidrow')
-        //     ]);
-        // } // TODO SKIDROW SPECIFIC
+    protected async getFoldersToScan(specificFolders: string[], additionalFolders: string[]): Promise<string[]> {
+        // let foldersToScan: string[] = [];
+        let foldersToScan: string[] = specificFolders; // FIXME FOR RELEASE
 
         if (additionalFolders.length > 0) {
             foldersToScan = foldersToScan.concat(additionalFolders);

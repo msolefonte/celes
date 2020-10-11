@@ -138,6 +138,10 @@ export interface ScanResult {
     }
 }
 
+export interface SkidrowAchievementList {
+    ACHIEVE_DATA: { [key: string]: '0' | '1' }
+}
+
 export type Source = 'Codex' | 'CreamAPI' | 'Goldberg' | 'Merge' | 'Reloaded - 3DM' | 'Skidrow' | 'SmartSteamEmu';
 
 export interface SourceStats {

@@ -1,60 +1,63 @@
-// 'use strict';
-//
-// import * as path from 'path';
-// import {Source, UnlockedOrInProgressAchievement} from '../../types';
-// import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
-//
-//
-// class Skidrow extends SteamEmulatorScraper {
-//     readonly source: Source = 'Skidrow';
-//     readonly achievementWatcherRootPath: string;
-//
-//     private readonly localAppDataPath: string = <string>process.env['LOCALAPPDATA'];
-//
-//     constructor(achievementWatcherRootPath: string) {
-//         super();
-//         this.achievementWatcherRootPath = achievementWatcherRootPath;
-//     }
-//
-//     // TODO TEST
-//     normalizeUnlockedOrInProgressAchievementList(achievementList: any): UnlockedOrInProgressAchievement[] {
-//         const UnlockedOrInProgressAchievementList: UnlockedOrInProgressAchievement[] = [];
-//
-//         console.log(achievementList);
-//
-//         // const filter: string[] = ['SteamAchievements', 'Steam64', 'Steam'];
-//         // achievementList = omit(achievementList.ACHIEVE_DATA || achievementList, filter);
-//         //
-//         // Object.keys(achievementList).forEach((achievementName) => {
-//         //     const achievementData: any = achievementList[achievementName];
-//         //
-//         //     let currentProgress: number, maxProgress: number;
-//         //     if (Number.parseInt(achievementData.MaxProgress) === 0) {
-//         //         currentProgress = 0;
-//         //         maxProgress = 0;
-//         //     } else {
-//         //         currentProgress = Math.floor(Number.parseFloat(achievementData.CurProgress) /
-//         //             Number.parseFloat(achievementData.MaxProgress) * 100);
-//         //         maxProgress = 100;
-//         //     }
-//         //
-//         //     UnlockedOrInProgressAchievementList.push({
-//         //         name: achievementName,
-//         //         achieved: <0 | 1>+(achievementData.Achieved === '1'),
-//         //         currentProgress: currentProgress,
-//         //         maxProgress: maxProgress,
-//         //         unlockTime: achievementData.UnlockTime,
-//         //     });
-//         // });
-//
-//         return UnlockedOrInProgressAchievementList;
-//     }
-//
-//     getSpecificFoldersToScan(): string[] {
-//         return [
-//             path.join(this.localAppDataPath, 'SKIDROW')
-//         ];
-//     }
-// }
-//
-// export {Skidrow};
+'use strict';
+
+import * as path from 'path';
+import {SkidrowAchievementList, Source, UnlockedOrInProgressAchievement} from '../../types';
+import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import regedit from 'regodit'; // TODO LOOK FOR ALTERNATIVES
+
+class Skidrow extends SteamEmulatorScraper {
+    readonly source: Source = 'Skidrow';
+    readonly achievementWatcherRootPath: string;
+    readonly achievementLocationFiles: string[] = [
+        'achieve.dat'
+    ];
+
+    private readonly localAppDataPath: string = <string>process.env['LOCALAPPDATA'];
+
+    constructor(achievementWatcherRootPath: string) {
+        super();
+        this.achievementWatcherRootPath = achievementWatcherRootPath;
+    }
+
+    normalizeUnlockedOrInProgressAchievementList(achievementList: SkidrowAchievementList): UnlockedOrInProgressAchievement[] {
+        const UnlockedOrInProgressAchievementList: UnlockedOrInProgressAchievement[] = [];
+
+        Object.keys(achievementList.ACHIEVE_DATA).forEach((achievementName: string) => {
+            const achievementIsUnlocked: boolean = achievementList.ACHIEVE_DATA[achievementName] === '1';
+
+            if (achievementIsUnlocked) {
+                UnlockedOrInProgressAchievementList.push({
+                    name: achievementName,
+                    achieved: 1,
+                    currentProgress: 0,
+                    maxProgress: 0,
+                    unlockTime: 0,
+                });
+            }
+        });
+
+        return UnlockedOrInProgressAchievementList;
+    }
+
+    protected async getFoldersToScan(specificFolders: string[], additionalFolders: string[]): Promise<string[]> {
+        const DocsFolderPath: string = await regedit.promises.RegQueryStringValue('HKCU', // TODO REGEDIT SUS
+            'Software/Microsoft/Windows/CurrentVersion/Explorer/User Shell Folders', 'Personal');
+        if (DocsFolderPath) {
+            additionalFolders = additionalFolders.concat([
+                path.join(DocsFolderPath, 'Skidrow')
+            ]);
+        }
+
+        return super.getFoldersToScan(specificFolders, additionalFolders);
+    }
+
+    getSpecificFoldersToScan(): string[] {
+        return [
+            path.join(this.localAppDataPath, 'SKIDROW')
+        ];
+    }
+}
+
+export {Skidrow};

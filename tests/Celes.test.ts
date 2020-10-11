@@ -15,7 +15,8 @@ const importExportWrongVersionFile: string = path.join(__dirname, 'samples/other
 const validSamplesFolders: string[] = [
     path.join(__dirname, 'samples/achievements/valid/codex/'),
     path.join(__dirname, 'samples/achievements/valid/reloaded/'),
-    path.join(__dirname, 'samples/achievements/valid/sse/')
+    path.join(__dirname, 'samples/achievements/valid/sse/'),
+    path.join(__dirname, 'samples/achievements/valid/skidrow/'),
 ];
 
 function areAllAppIdsInTheGameDataCollection(appIds: string[], gameDataCollection: GameData[]) {
@@ -104,9 +105,10 @@ describe('Testing Celes API', () => {
     context('With valid samples', async () => {
         const achievementId = 'CgkI287L0pcOEAIQAA';
         const celes = new Celes(achievementWatcherTestRootPath, validSamplesFolders);
-        const codexAppIds: string[] = ['382900'];
+        const codexAppIds: string[] = ['255710', '382900', '1097840', '1184050'];
         const reloadedAppIds: string[] = ['311210', '312750'];
-        const sseAppIds: string[] = ['45760', '228300', '485510'];
+        const sseAppIds: string[] = ['45760', '228300'];
+        const skidrowAppIds: string[] = ['474960', '584980'];
 
         before('Deleting one 382900\'s cache if existent', () => {
             const pathTo382900Cache: string = path.join(achievementWatcherTestRootPath, 'steam_cache/schema/english/382900.json');
@@ -158,6 +160,10 @@ describe('Testing Celes API', () => {
             step('All SSE games were scraped', () => {
                 expect(areAllAppIdsInTheGameDataCollection(sseAppIds, gameDataCollection)).to.be.true;
             });
+
+            step('All Skidrow games were scraped', () => {
+                expect(areAllAppIdsInTheGameDataCollection(skidrowAppIds, gameDataCollection)).to.be.true;
+            });
         });
 
         describe('Load', () => {
@@ -197,6 +203,10 @@ describe('Testing Celes API', () => {
             step('All SSE games were scraped', () => {
                 expect(areAllAppIdsInTheGameDataCollection(sseAppIds, gameDataCollection)).to.be.true;
             });
+
+            step('All Skidrow games were scraped', () => {
+                expect(areAllAppIdsInTheGameDataCollection(skidrowAppIds, gameDataCollection)).to.be.true;
+            });
         });
 
         describe('Import/Export', () => {
@@ -232,6 +242,10 @@ describe('Testing Celes API', () => {
 
             step('All SSE games were scraped', () => {
                 expect(areAllAppIdsInTheGameDataCollection(sseAppIds, gameDataCollection)).to.be.true;
+            });
+
+            step('All Skidrow games were scraped', () => {
+                expect(areAllAppIdsInTheGameDataCollection(skidrowAppIds, gameDataCollection)).to.be.true;
             });
         });
 

@@ -1,0 +1,58 @@
+{
+  "DAYS15": {
+    "earned": true,
+    "earned_time": 1575385380
+  },
+  "DAYS31": {
+    "earned": true,
+    "earned_time": 1575628738
+  },
+  "DAYS4": {
+    "earned": true,
+    "earned_time": 1575293493
+  },
+  "DAYS8": {
+    "earned": true,
+    "earned_time": 1575295508
+  },
+  "MAINQUEST1": {
+    "earned": true,
+    "earned_time": 1574666698
+  },
+  "MEAT8": {
+    "earned": true,
+    "earned_time": 1575632699
+  },
+  "MEATHUMAN1": {
+    "earned": true,
+    "earned_time": 1575631266
+  },
+  "QUESTHOMESWEETHOME": {
+    "earned": true,
+    "earned_time": 1575732769
+  },
+  "RABBITTRAP1": {
+    "earned": true,
+    "earned_time": 1575474586
+  },
+  "RESTART1": {
+    "earned": true,
+    "earned_time": 1575885027
+  },
+  "SKILL40": {
+    "earned": true,
+    "earned_time": 1575385703
+  },
+  "STONE1000": {
+    "earned": true,
+    "earned_time": 1575390239
+  },
+  "WOLF1": {
+    "earned": true,
+    "earned_time": 1575387608
+  },
+  "WOOD1000": {
+    "earned": true,
+    "earned_time": 1575385353
+  }
+}

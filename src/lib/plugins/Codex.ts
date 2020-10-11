@@ -41,13 +41,23 @@ class Codex extends SteamEmulatorScraper {
                     unlockTime: achievementData.UnlockTime,
                 });
             } else if (normalizedProgress.maximProgress > 0) {
-                UnlockedOrInProgressAchievementList.push({
-                    name: achievementName,
-                    achieved: 0,
-                    currentProgress: normalizedProgress.currentProgress,
-                    maxProgress: normalizedProgress.maximProgress,
-                    unlockTime: achievementData.UnlockTime,
-                });
+                if (normalizedProgress.currentProgress == normalizedProgress.maximProgress) {
+                    UnlockedOrInProgressAchievementList.push({
+                        name: achievementName,
+                        achieved: 1,
+                        currentProgress: normalizedProgress.currentProgress,
+                        maxProgress: normalizedProgress.maximProgress,
+                        unlockTime: achievementData.UnlockTime,
+                    });
+                } else {
+                    UnlockedOrInProgressAchievementList.push({
+                        name: achievementName,
+                        achieved: 0,
+                        currentProgress: normalizedProgress.currentProgress,
+                        maxProgress: normalizedProgress.maximProgress,
+                        unlockTime: achievementData.UnlockTime,
+                    });
+                }
             }
         });
 

@@ -34,7 +34,7 @@ class Reloaded extends SteamEmulatorScraper {
                 UnlockedOrInProgressAchievementList.push({
                     name: achievementName,
                     achieved: 1,
-                    currentProgress: normalizedProgress.currentProgress,
+                    currentProgress: normalizedProgress.currentProgress, // TODO CHECK THIS ONE. PROGRESS IS WEIRD STRING
                     maxProgress: normalizedProgress.maximProgress,
                     unlockTime: normalizeTimestamp(achievementData.Time)
                 });
