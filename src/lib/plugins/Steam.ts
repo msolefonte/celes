@@ -1,84 +1,150 @@
-// TODO
+import * as path from 'path';
+import {
+    GameSchema,
+    ScanResult,
+    Source,
+    SteamGameMetadata,
+    SteamUser,
+    SteamUserData,
+    UnlockedOrInProgressAchievement
+} from '../../types';
+import {AchievementsScraper} from './lib/AchievementsScraper';
+import {SteamIdUtils} from './lib/SteamIdUtils';
+import {existsSync} from 'fs';
+import glob from 'fast-glob';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import regedit from 'regodit'; // TODO LOOK FOR ALTERNATIVES
 
-// 'use strict';
-//
-// // const { remote } = require('electron');
-// import {ScanResult, ILegitSteamGameMetadata, ISteamLanguage, SteamUser} from '../../types';
-//
-// const path = require('path');
-// const glob = require('fast-glob');
-// const normalize = require('normalize-path');
-// const ini = require('ini');
-// const omit = require('lodash.omit');
-// const moment = require('moment');
-// const request = require('request-zero');
-// // const urlParser = require('url');
-// const ffs = require('../utils/feverFS.ts');
-// const htmlParser = require('node-html-parser').parse;
-// const regedit = require('regodit');
-// const steamID = require('../utils/steamID');
-// const steamLanguages = require("../locale/steam.json");
-// const sse = require('./sse.js');
-//
-// // TODO CHECK LOGS / THROWS
-//
-// class LegitSteamParser {
-//     private readonly publicDataPath: string = <string>process.env['Public'];
-//     private readonly appDataPath: string = <string>process.env['APPDATA'];
-//     private readonly localAppDataPath: string = <string>process.env['LOCALAPPDATA'];
-//     private readonly programDataPath: string = <string>process.env['PROGRAMDATA'];
-//     private readonly achievementWatcherRootPath;
-//
-//     constructor() {
-//     }
-//
-//     async scan(listingType: 0 | 1 | 2 = 0): Promise<ScanResult[]> {
-//         const gamesMetadata: ScanResult[] = [];
-//
-//         if (regedit.RegKeyExists('HKCU', 'Software/Valve/Steam') && listingType > 0) {
-//             const steamPath = await this.getSteamPath();
-//             const steamCache = path.join(steamPath, 'appcache/stats');
-//             const publicUsers = await this.getSteamUsers(steamPath);
-//
-//             const legitGamesList: ILegitSteamGameMetadata[] = (await glob('UserGameStats_*([0-9])_*([0-9]).bin', {
-//                 cwd: steamCache,
-//                 onlyFiles: true,
-//                 absolute: false
-//             })).map((filename: string) => {
-//                 const matches: RegExpMatchArray = <RegExpMatchArray>filename.match(/([0-9]+)/g);
-//                 return {
-//                     userId: matches[0],
-//                     appId: matches[1]
-//                 };
-//             });
-//
-//             for (let game of legitGamesList) {
-//                 let isInstalled = true;
-//                 if (listingType == 1) {
-//                     isInstalled = (await regedit.promises.RegQueryIntegerValue('HKCU',
-//                         `Software/Valve/Steam/Apps/${game.appId}`, 'Installed') === '1');
-//                 }
-//                 const user: SteamUser = <SteamUser> publicUsers.find(user => user.user == game.userId);
-//
-//                 if (user && isInstalled) {
-//                     gamesMetadata.push({
-//                         appId: game.appId,
-//                         source: `Steam (${user.name})`,
-//                         data: {
-//                             type: 'steamAPI',
-//                             userId: user,
-//                             cachePath: steamCache
-//                         }
-//                     });
-//                 }
-//             }
-//         } else {
-//             throw 'Legit Steam not found or disabled.';
-//         }
-//
-//         return gamesMetadata;
-//     }
-//
+class Steam implements AchievementsScraper {
+    private static async getSteamPath(): Promise<string> {
+        /*
+          Some SteamEmu change HKCU/Software/Valve/Steam/SteamPath to the game's dir
+          Fallback to Software/WOW6432Node/Valve/Steam/InstallPath in this case
+          NB: Steam client correct the key on startup
+        */ // TODO TURN INTO DOCS
+
+        const regHives = [
+            {root: 'HKCU', key: 'Software/Valve/Steam', name: 'SteamPath'},
+            {root: 'HKLM', key: 'Software/WOW6432Node/Valve/Steam', name: 'InstallPath'}
+        ];
+
+        for (const regHive of regHives) {
+            const steamPath: string = await regedit.promises.RegQueryStringValue(regHive.root, regHive.key, regHive.name);
+            if (steamPath) {
+                if (existsSync(path.join(steamPath, 'steam.exe'))) {
+                    return steamPath;
+                }
+            }
+        }
+
+        throw new Error('Steam Path not found'); // TODO PROPER ERROR
+    }
+
+    private static async getSteamUsers(steamPath: string): Promise<SteamUser[]> {
+        const steamUsers: SteamUser[] = [];
+
+        let users: (string | number)[] = await regedit.promises.RegListAllSubkeys('HKCU', 'Software/Valve/Steam/Users');
+        if (!users) {
+            users = await glob('*([0-9])', {
+                cwd: path.join(steamPath, 'userdata'),
+                onlyDirectories: true,
+                absolute: false
+            });
+        }
+
+        if (users.length == 0) {
+            return [];
+        }
+
+        for (const user of users) {
+            const id: string = SteamIdUtils.getSteamId64(user);
+            const data: SteamUserData = await SteamIdUtils.getUserData(id);
+
+            if (data.privacyState === 'public') {
+                steamUsers.push({
+                    user: user.toString(),
+                    id: id,
+                    name: data.steamID
+                });
+            } else {
+                console.log(`${user} - ${id} (${data.steamID}) is not public`);  // TODO PROPER ERROR
+            }
+        }
+
+        return steamUsers;
+    }
+
+    private readonly achievementWatcherRootPath: string;
+    private readonly source: Source = 'Steam';
+    private readonly listingType: 0 | 1 | 2;
+
+    constructor(achievementWatcherRootPath: string, listingType: 0 | 1 | 2 = 0) {
+        this.achievementWatcherRootPath = achievementWatcherRootPath;
+        this.listingType = listingType;
+    }
+
+    getSource(): Source {
+        return this.source;
+    }
+
+    async getUnlockedOrInProgressAchievements(game: ScanResult): Promise<UnlockedOrInProgressAchievement[]> {
+        throw new Error(game.toString()); // TODO
+    }
+
+    async getGameSchema(appId: string, lang?: string, key?: string): Promise<GameSchema> {
+        throw new Error(appId + lang + key); // TODO
+    }
+
+    async scan(): Promise<ScanResult[]> {
+        const gamesMetadata: ScanResult[] = [];
+
+        if (this.listingType > 0 && regedit.RegKeyExists('HKCU', 'Software/Valve/Steam')) {
+            const steamPath = await Steam.getSteamPath();
+            const steamCachePath = path.join(steamPath, 'appcache/stats');
+            const publicUsers = await Steam.getSteamUsers(steamPath);
+
+            const legitGamesList: SteamGameMetadata[] = (await glob('UserGameStats_*([0-9])_*([0-9]).bin', {
+                cwd: steamCachePath,
+                onlyFiles: true,
+                absolute: false
+            })).map((filename: string) => {
+                const matches: RegExpMatchArray = <RegExpMatchArray>filename.match(/([0-9]+)/g);
+                return {
+                    userId: matches[0],
+                    appId: matches[1]
+                };
+            });
+
+            for (const game of legitGamesList) {
+                let isInstalled = true;
+                if (this.listingType == 1) {
+                    isInstalled = (await regedit.promises.RegQueryIntegerValue('HKCU',
+                        `Software/Valve/Steam/Apps/${game.appId}`, 'Installed') === '1');
+                }
+
+                const user: SteamUser = <SteamUser>publicUsers.find((user: SteamUser) => {
+                    return user.user == game.userId;
+                });
+
+                if (user && isInstalled) {
+                    gamesMetadata.push({
+                        appId: game.appId,
+                        source: 'Steam',
+                        platform: 'Steam',
+                        data: {
+                            type: 'steamAPI',
+                            userId: user,
+                            cachePath: steamCachePath
+                        }
+                    });
+                }
+            }
+        }
+
+        return gamesMetadata;
+    }
+
 //     async getGameMetadata(config: any) {
 //         if (!steamLanguages.some( (language: ISteamLanguage) => { return language.api === config.lang } )) {
 //               throw "Unsupported API language code";
@@ -242,35 +308,6 @@
 //
 //     }
 //
-//     private async getSteamPath() {
-//         /*
-//           Some SteamEmu change HKCU/Software/Valve/Steam/SteamPath to the game's dir
-//           Fallback to Software/WOW6432Node/Valve/Steam/InstallPath in this case
-//           NB: Steam client correct the key on startup
-//         */
-//
-//         const regHives = [
-//             {root: 'HKCU', key: 'Software/Valve/Steam', name: 'SteamPath'},
-//             {root: 'HKLM', key: 'Software/WOW6432Node/Valve/Steam', name: 'InstallPath'}
-//         ];
-//
-//         let steamPath;
-//
-//         for (let regHive of regHives) {
-//
-//             steamPath = await regedit.promises.RegQueryStringValue(regHive.root, regHive.key, regHive.name);
-//             if (steamPath) {
-//                 if (await ffs.promises.exists(path.join(steamPath, 'steam.exe'))) {
-//                     break;
-//                 }
-//             }
-//         }
-//
-//         if (!steamPath) {
-//             throw 'Steam Path not found';
-//         }
-//         return steamPath;
-//     }
 //
 //     private async getSteamUsers(steamPath: string): Promise<SteamUser[]> {
 //         let steamUsers: SteamUser[] = [];
@@ -478,9 +515,9 @@
 //
 // // export = {scan, scanLegit, getGameData, getAchievementsFromFile, getAchievementsFromAPI};
 // export = {SteamParser};
-
+//
 // TODO DRAFT HERE
-
+//
 // // TODO LEGIT
 // async scanLegitSteam(listingType: 0 | 1 | 2 = 0): Promise<ScanResult[]> {
 //     const gamesMetadata: ScanResult[] = [];
@@ -528,7 +565,7 @@
 //
 //     return gamesMetadata;
 // }
-
+//
 // // TODO LEGIT
 // async getAchievementsFromAPI(cfg) {
 //
@@ -578,9 +615,9 @@
 //     }
 //
 // }
-
-
-
+//
+//
+//
 // private async getSteamPath() {
 //     /*
 //       Some SteamEmu change HKCU/Software/Valve/Steam/SteamPath to the game's dir
@@ -612,7 +649,7 @@
 // }
 //
 // private async getSteamUsers(steamPath: string): Promise<SteamUser[]> {
-//     let steamUsers: SteamUser[] = [];
+//     const steamUsers: SteamUser[] = [];
 //
 //     let users = await regedit.promises.RegListAllSubkeys('HKCU', 'Software/Valve/Steam/Users');
 //     if (!users) {
@@ -626,9 +663,9 @@
 //     if (users.length == 0) {
 //         throw 'No Steam User ID found';
 //     }
-//     for (let user of users) {
-//         let id = steamID.to64(user);
-//         let data = await steamID.whoIs(id);
+//     for (const user of users) {
+//         const id = steamID.to64(user);
+//         const data = await steamID.whoIs(id);
 //
 //         if (data.privacyState === 'public') {
 //             console.log(`${user} - ${id} (${data.steamID}) is public`);
@@ -684,8 +721,8 @@
 //     } catch (err) {
 //         throw err;
 //     }
-//
-// };
-//
 
-//
+}
+
+export {Steam};
+

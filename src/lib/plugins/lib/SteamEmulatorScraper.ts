@@ -19,7 +19,7 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
         'german', 'greek', 'hungarian', 'italian', 'japanese', 'korean', 'norwegian', 'polish', 'portuguese',
         'brazilian', 'romanian', 'russian', 'spanish', 'latam', 'swedish', 'thai', 'turkish', 'ukrainian', 'vietnamese'
     ];
-abstract readonly achievementWatcherRootPath: string;
+    protected abstract readonly achievementWatcherRootPath: string;
     protected abstract readonly achievementLocationFiles: string[];
     protected abstract readonly source: Source;
 

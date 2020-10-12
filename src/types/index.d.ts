@@ -142,7 +142,8 @@ export interface SkidrowAchievementList {
     ACHIEVE_DATA: { [achievementName: string]: '0' | '1' }
 }
 
-export type Source = '3DM' | 'Codex' | 'CreamAPI' | 'Goldberg' | 'Merge' | 'Reloaded' | 'Skidrow' | 'SmartSteamEmu';
+export type Source = '3DM' | 'Codex' | 'CreamAPI' | 'Goldberg' | 'Merge' | 'Reloaded' | 'Skidrow' | 'SmartSteamEmu' |
+    'Steam';
 
 export interface SourceStats {
     source: Source;
@@ -157,10 +158,19 @@ export interface SSEAchievement {
     UnlockTime: number;
 }
 
+export interface SteamGameMetadata {
+    appId: string;
+    userId: string;
+}
 export interface SteamUser {
     user: string;
     id: string;
     name: string;
+}
+
+export interface SteamUserData {
+    privacyState: 'public' | 'private';
+    steamID: string;
 }
 
 export interface TDMAchievementList1 {

@@ -4,6 +4,11 @@
 
 ### Valid
 
+#### 3DM
+
+* **240970:** Achievements unlocked (Default path).
+* **683280:** No achievements unlocked (Unusual path (`steam_achievement.ini`)).
+
 #### Codex
 
 * **255710:** No achievements unlocked.
