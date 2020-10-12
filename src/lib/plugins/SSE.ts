@@ -73,7 +73,8 @@ class SSE extends SteamEmulatorScraper {
             }
 
             if (!achievementHasBeenNormalized) {
-                console.error(wronglyNormalizedAchievementList[i].name, 'not found in schema')
+                // TODO ADD LOG
+                // console.error(wronglyNormalizedAchievementList[i].name, 'not found in schema')
             }
         }
 

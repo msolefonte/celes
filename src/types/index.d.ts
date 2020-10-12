@@ -36,14 +36,14 @@ export interface CelesConfig {
     useOldestUnlockTime: boolean;
 }
 
-export interface CodexAchievement {
+export interface CodexAchievementData {
     Achieved: '0' | '1';
     CurProgress: string;
     MaxProgress: string;
     UnlockTime: number;
 }
 
-export type CodexAchievementList = { [key: string]: CodexAchievement }
+export type CodexAchievementList = { [achievementName: string]: CodexAchievementData }
 
 export interface ExportableGameStats {
     appId: string;
@@ -117,14 +117,14 @@ export interface NormalizedProgress {
 
 export type Platform = 'Steam';
 
-export interface ReloadedAchievement {
+export interface ReloadedAchievementData {
     State: string;
     CurProgress: string;
     MaxProgress: string;
     Time: string;
 }
 
-export type ReloadedAchievementList = { [key: string]: ReloadedAchievement }
+export type ReloadedAchievementList = { [achievementName: string]: ReloadedAchievementData }
 
 export interface ScanResult {
     appId: string;
@@ -139,10 +139,10 @@ export interface ScanResult {
 }
 
 export interface SkidrowAchievementList {
-    ACHIEVE_DATA: { [key: string]: '0' | '1' }
+    ACHIEVE_DATA: { [achievementName: string]: '0' | '1' }
 }
 
-export type Source = 'Codex' | 'CreamAPI' | 'Goldberg' | 'Merge' | 'Reloaded - 3DM' | 'Skidrow' | 'SmartSteamEmu';
+export type Source = '3DM' | 'Codex' | 'CreamAPI' | 'Goldberg' | 'Merge' | 'Reloaded' | 'Skidrow' | 'SmartSteamEmu';
 
 export interface SourceStats {
     source: Source;
@@ -161,6 +161,15 @@ export interface SteamUser {
     user: string;
     id: string;
     name: string;
+}
+
+export interface TDMAchievementList1 {
+    State: {[achievementName: string]: string},
+    Time: {[achievementName: string]: string}
+}
+
+export interface TDMAchievementList2 {
+    Steam: {[achievementName: string]: string}
 }
 
 export interface UnlockedOrInProgressAchievement {

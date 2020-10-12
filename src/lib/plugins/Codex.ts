@@ -1,7 +1,7 @@
 'use strict';
 
 import * as path from 'path';
-import {CodexAchievement, CodexAchievementList, Source, UnlockedOrInProgressAchievement} from '../../types';
+import {CodexAchievementData, CodexAchievementList, Source, UnlockedOrInProgressAchievement} from '../../types';
 import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
 import {normalizeProgress} from './lib/Common';
 import omit from 'lodash.omit';
@@ -28,8 +28,8 @@ class Codex extends SteamEmulatorScraper {
         const filter: string[] = ['SteamAchievements'];
         achievementList = omit(achievementList, filter);
 
-        Object.keys(achievementList).forEach((achievementName) => {
-            const achievementData: CodexAchievement = achievementList[achievementName];
+        Object.keys(achievementList).forEach((achievementName: string) => {
+            const achievementData: CodexAchievementData = achievementList[achievementName];
             const normalizedProgress = normalizeProgress(achievementData.CurProgress, achievementData.MaxProgress);
 
             if (achievementData.Achieved === '1') {

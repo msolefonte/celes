@@ -12,12 +12,19 @@ const importExportValidFile: string = path.join(__dirname, 'tmp/export.awb');
 const importExportInvalidFile: string = path.join(__dirname, 'samples/other/importFileInvalid.awb');
 const importExportNonExistentFile: string = path.join(__dirname, 'samples/other/importFileNonExistent.awb');
 const importExportWrongVersionFile: string = path.join(__dirname, 'samples/other/importFileWrongVersion.awb');
+
 const validSamplesFolders: string[] = [
+    path.join(__dirname, 'samples/achievements/valid/3dm/'),
     path.join(__dirname, 'samples/achievements/valid/codex/'),
     path.join(__dirname, 'samples/achievements/valid/reloaded/'),
     path.join(__dirname, 'samples/achievements/valid/sse/'),
     path.join(__dirname, 'samples/achievements/valid/skidrow/'),
 ];
+const tdmAppIds: string[] = ['240970', '683280'];
+const codexAppIds: string[] = ['255710', '382900', '1097840', '1184050'];
+const reloadedAppIds: string[] = ['311210', '312750'];
+const sseAppIds: string[] = ['45760', '228300'];
+const skidrowAppIds: string[] = ['474960', '584980'];
 
 function areAllAppIdsInTheGameDataCollection(appIds: string[], gameDataCollection: GameData[]) {
     return appIds.every((appId: string) => {
@@ -105,10 +112,6 @@ describe('Testing Celes API', () => {
     context('With valid samples', async () => {
         const achievementId = 'CgkI287L0pcOEAIQAA';
         const celes = new Celes(achievementWatcherTestRootPath, validSamplesFolders);
-        const codexAppIds: string[] = ['255710', '382900', '1097840', '1184050'];
-        const reloadedAppIds: string[] = ['311210', '312750'];
-        const sseAppIds: string[] = ['45760', '228300'];
-        const skidrowAppIds: string[] = ['474960', '584980'];
 
         before('Deleting one 382900\'s cache if existent', () => {
             const pathTo382900Cache: string = path.join(achievementWatcherTestRootPath, 'steam_cache/schema/english/382900.json');
@@ -164,6 +167,10 @@ describe('Testing Celes API', () => {
             step('All Skidrow games were scraped', () => {
                 expect(areAllAppIdsInTheGameDataCollection(skidrowAppIds, gameDataCollection)).to.be.true;
             });
+
+            step('All 3DM games were scraped', () => {
+                expect(areAllAppIdsInTheGameDataCollection(tdmAppIds, gameDataCollection)).to.be.true;
+            });
         });
 
         describe('Load', () => {
@@ -200,12 +207,16 @@ describe('Testing Celes API', () => {
                 expect(areAllAppIdsInTheGameDataCollection(reloadedAppIds, gameDataCollection)).to.be.true;
             });
 
-            step('All SSE games were scraped', () => {
+            step('All SSE games were loaded', () => {
                 expect(areAllAppIdsInTheGameDataCollection(sseAppIds, gameDataCollection)).to.be.true;
             });
 
-            step('All Skidrow games were scraped', () => {
+            step('All Skidrow games were loaded', () => {
                 expect(areAllAppIdsInTheGameDataCollection(skidrowAppIds, gameDataCollection)).to.be.true;
+            });
+
+            step('All 3DM games were loaded', () => {
+                expect(areAllAppIdsInTheGameDataCollection(tdmAppIds, gameDataCollection)).to.be.true;
             });
         });
 
@@ -240,12 +251,16 @@ describe('Testing Celes API', () => {
                 expect(areAllAppIdsInTheGameDataCollection(reloadedAppIds, gameDataCollection)).to.be.true;
             });
 
-            step('All SSE games were scraped', () => {
+            step('All SSE games were imported', () => {
                 expect(areAllAppIdsInTheGameDataCollection(sseAppIds, gameDataCollection)).to.be.true;
             });
 
-            step('All Skidrow games were scraped', () => {
+            step('All Skidrow games were imported', () => {
                 expect(areAllAppIdsInTheGameDataCollection(skidrowAppIds, gameDataCollection)).to.be.true;
+            });
+
+            step('All 3DM games were imported', () => {
+                expect(areAllAppIdsInTheGameDataCollection(tdmAppIds, gameDataCollection)).to.be.true;
             });
         });
 

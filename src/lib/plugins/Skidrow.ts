@@ -44,7 +44,7 @@ class Skidrow extends SteamEmulatorScraper {
     protected async getFoldersToScan(specificFolders: string[], additionalFolders: string[]): Promise<string[]> {
         const DocsFolderPath: string = await regedit.promises.RegQueryStringValue('HKCU', // TODO REGEDIT SUS
             'Software/Microsoft/Windows/CurrentVersion/Explorer/User Shell Folders', 'Personal');
-        if (DocsFolderPath) {
+        if (DocsFolderPath) { // TODO NOT TESTED. PERHAPS TEST ENVIRONMENT VARIABLE
             additionalFolders = additionalFolders.concat([
                 path.join(DocsFolderPath, 'Skidrow')
             ]);

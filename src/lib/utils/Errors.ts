@@ -22,6 +22,12 @@ class ApiServerRequestError extends Error {
     }
 }
 
+class InvalidApiVersionError extends Error {
+    constructor(expected: string, found: string) {
+        super('API version not valid. Expected ' + expected + ', found ' + found + '.')
+    }
+}
+
 class ApiServerUnsupportedLanguageError extends Error {
     constructor(language: string) {
         super('Language ' + language + ' is not available');
@@ -34,9 +40,9 @@ class FileNotFoundError extends Error {
     }
 }
 
-class InvalidApiVersionError extends Error {
-    constructor(expected: string, found: string) {
-        super('API version not valid. Expected ' + expected + ', found ' + found + '.')
+class WrongSourceError extends Error {
+    constructor() {
+        super('Wrong source detected.')
     }
 }
 
@@ -47,5 +53,6 @@ export {
     ApiServerRequestError,
     ApiServerUnsupportedLanguageError,
     InvalidApiVersionError,
-    FileNotFoundError
+    FileNotFoundError,
+    WrongSourceError
 }

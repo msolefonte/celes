@@ -11,7 +11,7 @@ import {
     Source,
     UnlockedOrInProgressAchievement
 } from '../types';
-import {FileNotFoundError, InvalidApiVersionError} from './utils/Errors';
+import {FileNotFoundError, InvalidApiVersionError, WrongSourceError} from './utils/Errors';
 import {AchievementsScraper} from './plugins/lib/AchievementsScraper';
 import {CelesDbConnector} from './utils/CelesDbConnector';
 import {CelesMutex} from './utils/CelesMutex';
@@ -236,7 +236,17 @@ class Celes {
                 for (let j = 0; j < listOfGames.length; j++) {
                     const progressPercentage: number = baseProgress + Math.floor(((i + 1) / plugins.length) * ((j + 1) / listOfGames.length) * maxProgress);
                     const gameSchema: GameSchema = await scraper.getGameSchema(listOfGames[j].appId, this.systemLanguage);
-                    const unlockedOrInProgressAchievements: UnlockedOrInProgressAchievement[] = await scraper.getUnlockedOrInProgressAchievements(listOfGames[j]);
+                    let activeAchievements: UnlockedOrInProgressAchievement[];
+
+                    try {
+                        activeAchievements = await scraper.getUnlockedOrInProgressAchievements(listOfGames[j]);
+                    } catch (error) {
+                        if (error instanceof WrongSourceError) {
+                            continue;
+                        } else {
+                            throw error; // TODO ADD TEST PLUGIN GOES BOOM
+                        }
+                    }
 
                     const gameData: GameData = {
                         apiVersion: this.apiVersion,
@@ -252,7 +262,7 @@ class Celes {
                                 {
                                     source: scraper.getSource(),
                                     achievements: {
-                                        active: unlockedOrInProgressAchievements
+                                        active: activeAchievements
                                     }
                                 }
                             ],
