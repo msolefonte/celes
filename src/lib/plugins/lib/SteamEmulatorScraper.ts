@@ -14,11 +14,6 @@ import normalize from 'normalize-path';
 // TODO PASS LOGGER TO PLUGINS
 
 abstract class SteamEmulatorScraper implements AchievementsScraper {
-    private readonly steamLanguages: string[] = [
-        'arabic', 'bulgarian', 'schinese', 'tchinese', 'czech', 'danish', 'dutch', 'english', 'finnish', 'french',
-        'german', 'greek', 'hungarian', 'italian', 'japanese', 'korean', 'norwegian', 'polish', 'portuguese',
-        'brazilian', 'romanian', 'russian', 'spanish', 'latam', 'swedish', 'thai', 'turkish', 'ukrainian', 'vietnamese'
-    ];
     protected abstract readonly achievementWatcherRootPath: string;
     protected abstract readonly achievementLocationFiles: string[];
     protected abstract readonly source: Source;
@@ -61,12 +56,8 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
         return gamesMetadata;
     }
 
-    async getGameSchema(appId: string, lang: string): Promise<GameSchema> {
-        if (!this.steamLanguages.includes(lang)) {
-            lang = 'english';
-        }
-
-        return SteamUtils.getGameSchema(this.achievementWatcherRootPath, appId, lang);
+    async getGameSchema(appId: string, language: string): Promise<GameSchema> {
+        return SteamUtils.getGameSchema(this.achievementWatcherRootPath, appId, language);
     }
 
     async getUnlockedOrInProgressAchievements(game: ScanResult): Promise<UnlockedOrInProgressAchievement[]> {

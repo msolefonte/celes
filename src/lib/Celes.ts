@@ -11,8 +11,13 @@ import {
     Source,
     UnlockedOrInProgressAchievement
 } from '../types';
-import {FileNotFoundError, InvalidApiVersionError, WrongSourceError} from './utils/Errors';
+import {
+    FileNotFoundError,
+    InvalidApiVersionError,
+    WrongSourceError
+} from './utils/Errors';
 import {AchievementsScraper} from './plugins/lib/AchievementsScraper';
+import {BlacklistedIdError} from 'cloud-client';
 import {CelesDbConnector} from './utils/CelesDbConnector';
 import {CelesMutex} from './utils/CelesMutex';
 import {Merger} from './utils/Merger';
@@ -22,6 +27,10 @@ import mkdirp from 'mkdirp';
 import plugins from './plugins.json';
 
 class Celes {
+    private static reportPluginCrash(plugin: string, error: unknown) {
+        console.debug('Error loading plugin', plugin + ':', error); // TODO ADD TEST PLUGIN GOES BOOM
+    }
+
     private readonly achievementWatcherRootPath: string;
     private readonly additionalFoldersToScan: string[];
     private readonly celesMutex: CelesMutex;
@@ -235,8 +244,19 @@ class Celes {
 
                 for (let j = 0; j < listOfGames.length; j++) {
                     const progressPercentage: number = baseProgress + Math.floor(((i + 1) / plugins.length) * ((j + 1) / listOfGames.length) * maxProgress);
-                    const gameSchema: GameSchema = await scraper.getGameSchema(listOfGames[j].appId, this.systemLanguage);
+                    let gameSchema: GameSchema;
                     let activeAchievements: UnlockedOrInProgressAchievement[];
+
+                    try {
+                        gameSchema = await scraper.getGameSchema(listOfGames[j].appId, this.systemLanguage);
+                    } catch (error) {
+                        if (error instanceof BlacklistedIdError) {
+                            continue;
+                        } else {
+                            Celes.reportPluginCrash(plugins[i], error); // TODO ADD BLACKLISTED I.E. 17515
+                            continue;
+                        }
+                    }
 
                     try {
                         activeAchievements = await scraper.getUnlockedOrInProgressAchievements(listOfGames[j]);
@@ -244,7 +264,8 @@ class Celes {
                         if (error instanceof WrongSourceError) {
                             continue;
                         } else {
-                            throw error; // TODO ADD TEST PLUGIN GOES BOOM
+                            Celes.reportPluginCrash(plugins[i], error); // TODO ADD TEST PLUGIN GOES BOOM
+                            continue;
                         }
                     }
 
@@ -277,7 +298,7 @@ class Celes {
                     }
                 }
             } catch (error) {
-                console.debug('Error loading plugin', plugins[i] + ':', error); // TODO ADD TEST PLUGIN GOES BOOM
+                Celes.reportPluginCrash(plugins[i], error);
             }
 
             if (typeof callbackProgress === 'function') {
@@ -287,6 +308,8 @@ class Celes {
 
         return gameDataCollection;
     }
+
+    
 }
 
 export {Celes};

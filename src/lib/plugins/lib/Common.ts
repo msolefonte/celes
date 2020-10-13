@@ -2,7 +2,6 @@ import {NormalizedProgress} from '../../../types';
 import {promises as fs} from 'fs';
 import moment from 'moment';
 
-
 async function existsAndIsYoungerThan(path: string, time = 7, timeUnit: moment.unitOfTime.Diff = 'days', isDir = false): Promise<boolean> {
     try {
         const stats = await fs.stat(path);
@@ -31,7 +30,11 @@ function normalizeProgress(curProgress: string, maxProgress: string): Normalized
 }
 
 function normalizeTimestamp(time: string): number {
-    return new DataView(new Uint8Array(Buffer.from(time, 'hex')).buffer).getUint32(0, true) || 0;
+    try {
+        return new DataView(new Uint8Array(Buffer.from(time, 'hex')).buffer).getUint32(0, true);
+    }catch (error) {
+        return 0;
+    }
 }
 
 export {existsAndIsYoungerThan, normalizeProgress, normalizeTimestamp};

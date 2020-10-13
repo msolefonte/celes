@@ -1,43 +1,36 @@
-import {
-    ApiServerBlacklistedIdError,
-    ApiServerInternalError,
-    ApiServerUnsupportedLanguageError
-} from '../src/lib/utils/Errors';
+import {BlacklistedIdError, InternalError} from 'cloud-client'
 import {SteamUtils} from '../src/lib/plugins/lib/SteamUtils';
 import path from 'path';
 
 const achievementWatcherTestRootPath: string = path.join(__dirname, 'tmp/appData/Achievement Watcher Test');
 
 describe('Testing Steam Utils', () => {
-    describe('Get game schema from API Server', () => {
-        it('Valid request works', async() => {
-            await SteamUtils.getGameSchemaFromApiServer('382900', 'english');
-        });
-    });
-
     describe('Get game schema with invalid requests', () => {
-        it('Blacklisted App ID throws ApiServerBlacklistedIdError', (done) => {
+        it('Blacklisted App ID throws BlacklistedIdError', (done) => {
             SteamUtils.getGameSchema( achievementWatcherTestRootPath, '1', 'english').catch((error) => {
-                if (error instanceof ApiServerBlacklistedIdError) {
+                if (error instanceof BlacklistedIdError) {
                     done();
+                } else {
+                    console.error(error);
                 }
             });
         });
 
-        it('Invalid language throws ApiServerUnsupportedLanguageError', (done) => {
-            SteamUtils.getGameSchema( achievementWatcherTestRootPath, '382900', 'invalid').catch((error) => {
-                if (error instanceof ApiServerUnsupportedLanguageError) {
-                    done();
-                }
-            });
-        });
-
-        it('Invalid request throws ApiServerInternalError', (done) => {
+        it('Invalid request throws InternalError', (done) => {
             SteamUtils.getGameSchema( achievementWatcherTestRootPath, 'invalid', 'english').catch((error) => {
-                if (error instanceof ApiServerInternalError) {
+                if (error instanceof InternalError) {
                     done();
+                } else {
+                    console.error(error);
                 }
             });
         });
+
+        it('Invalid language is fixed to English', (done) => {
+            SteamUtils.getGameSchema( achievementWatcherTestRootPath, '382900', 'invalid').catch((error) => {
+                console.error(error);
+            });
+            done();
+        })
     })
 });

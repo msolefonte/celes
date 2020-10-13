@@ -6,28 +6,6 @@ export interface Achievement {
     icongray: string;
 }
 
-export interface ApiServerResponse {
-    error: string | null;
-    data: ApiServerSchema | null;
-}
-
-export interface ApiServerSchema {
-    apiVersion: string;
-    appid: string;
-    name: string;
-    binary?: string;
-    img: {
-        header?: string;
-        background?: string;
-        portrait?: string;
-        icon?: string;
-    }
-    achievement: {
-        total: number;
-        list: Achievement[];
-    }
-}
-
 export interface CelesConfig {
     apiVersion: string;
     additionalFoldersToScan: string[];

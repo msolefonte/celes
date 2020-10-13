@@ -1,100 +1,35 @@
 import * as path from 'path';
+import {CloudClient} from 'cloud-client';
 import {
-    ApiServerBlacklistedIdError,
-    ApiServerInternalError,
-    ApiServerInvalidResponseError,
-    ApiServerRequestError,
-    ApiServerUnsupportedLanguageError
-} from '../../utils/Errors';
-import {
-    ApiServerResponse,
-    ApiServerSchema,
     GameSchema
 } from '../../../types';
 import {existsAndIsYoungerThan} from './Common';
 import {promises as fs} from 'fs';
-import got from 'got';
 import mkdirp from 'mkdirp';
 
 class SteamUtils {
-    private static apiVersion = 'v1';
+    private static readonly steamLanguages: string[] = [
+        'arabic', 'bulgarian', 'schinese', 'tchinese', 'czech', 'danish', 'dutch', 'english', 'finnish', 'french',
+        'german', 'greek', 'hungarian', 'italian', 'japanese', 'korean', 'norwegian', 'polish', 'portuguese',
+        'brazilian', 'romanian', 'russian', 'spanish', 'latam', 'swedish', 'thai', 'turkish', 'ukrainian', 'vietnamese'
+    ];
+
     static async getGameSchemaFromCache(gameCachePath: string): Promise<GameSchema> {
         return JSON.parse(await fs.readFile(gameCachePath, 'utf8'));
     }
 
-    static async getGameSchemaFromApiServer(appId: string, language: string): Promise<GameSchema> {
-        const url = `https://api.xan105.com/steam/ach/${appId}?lang=${language}`;
-        let serverResponse: string;
-
-        try {
-            serverResponse = (await got(url)).body;
-        } catch (error) {
-            serverResponse = error.response.body;
-
-            if (error instanceof got.HTTPError) {
-                let apiServerError: string | null;
-
-                try {
-                    apiServerError = JSON.parse(serverResponse).error
-                } catch (error) {
-                    throw new ApiServerRequestError(url);
-                }
-
-                if (apiServerError !== null) {
-                    if (apiServerError === 'this appID is currently blacklisted') {
-                        throw new ApiServerBlacklistedIdError(appId);
-                    } else if (apiServerError === 'Unsupported API language code') {
-                        throw new ApiServerUnsupportedLanguageError(language);
-                    } else {
-                        throw new ApiServerInternalError(url);
-                    }
-                }
-            }
-
-            throw new ApiServerRequestError(url);
+    static async getGameSchema(achievementWatcherRootPath: string, appId: string, language: string): Promise<GameSchema> {
+        if (!SteamUtils.steamLanguages.includes(language)) {
+            language = 'english';
         }
 
-        const apiServerResponse: ApiServerResponse = JSON.parse(serverResponse);
-        let apiServerSchema: ApiServerSchema;
-
-        if (apiServerResponse.data === null) {
-            throw new ApiServerInvalidResponseError(url);
-        } else {
-            apiServerSchema = apiServerResponse.data;
-        }
-
-        try {
-            const gameSchema: GameSchema = {
-                apiVersion: SteamUtils.apiVersion,
-                appId: apiServerSchema.appid.toString(),
-                platform: 'Steam',
-                name: apiServerSchema.name,
-                img: apiServerSchema.img,
-                achievement: apiServerSchema.achievement
-            };
-
-            if ('binary' in apiServerSchema) {
-                gameSchema.binary = apiServerSchema.binary;
-            }
-
-            return gameSchema;
-        } catch (error) {
-            if (error instanceof SyntaxError) {
-                throw new ApiServerInvalidResponseError(url);
-            } else {
-                throw error;
-            }
-        }
-    }
-
-    static async getGameSchema(achievementWatcherRootPath: string, appId: string, lang: string): Promise<GameSchema> {
         let gameSchema: GameSchema;
-        const gameCachePath = SteamUtils.getGameCachePath(achievementWatcherRootPath, appId, lang);
+        const gameCachePath = SteamUtils.getGameCachePath(achievementWatcherRootPath, appId, language);
 
         if (await SteamUtils.validSteamGameSchemaCacheExists(gameCachePath)) {
             gameSchema = await SteamUtils.getGameSchemaFromCache(gameCachePath);
         } else {
-            gameSchema = await SteamUtils.getGameSchemaFromApiServer(appId, lang);
+            gameSchema = await CloudClient.getGameSchema(appId, language);
             await SteamUtils.updateGameSchemaCache(gameCachePath, gameSchema);
         }
 

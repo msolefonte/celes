@@ -1,5 +1,7 @@
-import {GameSchema, ScanResult, UnlockedOrInProgressAchievement} from '../src/types';
+import {GameSchema, ScanResult} from '../src/types';
+import {BlacklistedIdError} from 'cloud-client';
 import {Steam} from '../src/lib/plugins/Steam';
+import {WrongSourceError} from '../src/lib/utils/Errors';
 import path from 'path';
 import {step} from 'mocha-steps';
 
@@ -20,20 +22,56 @@ describe('Testing Steam Plugin', () => {
 
         step('Scan', async () => {
             listOfGames = await steam.scan();
-            console.log(listOfGames);
+        });
+
+        step('Get schemas', async() => {
+            for (const game of listOfGames) {
+                let gameSchema: GameSchema;
+
+                try {
+                    gameSchema = await steam.getGameSchema(game.appId, 'english');
+                } catch (error) {
+                    if (error instanceof BlacklistedIdError) {
+                        continue;
+                    } else {
+                        throw error;
+                    }
+                }
+            }
         });
     });
 
     context('With Listing Type = 2', () => {
         const steam = new Steam(achievementWatcherTestRootPath, 2);
-
         let listOfGames: ScanResult[];
+
         step('Scan', async () => {
             listOfGames = await steam.scan();
-            console.log(listOfGames);
         });
 
-        // const gameSchema: GameSchema = await scraper.getGameSchema(listOfGames[j].appId, this.systemLanguage);
-        // activeAchievements = await scraper.getUnlockedOrInProgressAchievements(listOfGames[j]);
+        step('Get schemas', async() => {
+            for (const game of listOfGames) {
+
+                try {
+                    await steam.getGameSchema(game.appId, 'english');
+                } catch (error) {
+                    if (!(error instanceof BlacklistedIdError)) {
+                        throw error;
+                    }
+                }
+            }
+        });
+
+        step('Get active achievements', async() => {
+            for (const game of listOfGames) {
+                try {
+                    await steam.getUnlockedOrInProgressAchievements(game);
+                } catch (error) {
+                    if (!(error instanceof WrongSourceError)) {
+                        throw error;
+                    }
+                }
+            }
+        });
     });
 });

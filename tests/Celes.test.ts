@@ -112,12 +112,8 @@ describe('Testing Celes API', () => {
     context('With valid samples', async () => {
         const achievementId = 'CgkI287L0pcOEAIQAA';
         const celes = new Celes(achievementWatcherTestRootPath, validSamplesFolders);
-        const codexAppIds: string[] = ['255710', '382900', '1097840', '1184050'];
-        const reloadedAppIds: string[] = ['311210', '312750'];
-        const sseAppIds: string[] = ['45760', '228300'];
-        const skidrowAppIds: string[] = ['474960', '584980'];
 
-        before('Deleting one 382900\'s cache if existent', () => {
+        before('Replacing or creating 382900\'s cache with an outdated birthtime', () => {
             const pathTo382900Cache: string = path.join(achievementWatcherTestRootPath, 'steam_cache/schema/english/382900.json');
             if (existsSync(pathTo382900Cache)) {
                 unlinkSync(pathTo382900Cache);
