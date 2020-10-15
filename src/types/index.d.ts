@@ -6,26 +6,13 @@ export interface Achievement {
     icongray: string;
 }
 
-export interface ApiServerResponse {
-    error: string | null;
-    data: ApiServerSchema | null;
+export interface Ali213AchievementData {
+    HaveAchieved: '1',
+    HaveAchievedTime: string
 }
 
-export interface ApiServerSchema {
-    apiVersion: string;
-    appid: string;
-    name: string;
-    binary?: string;
-    img: {
-        header?: string;
-        background?: string;
-        portrait?: string;
-        icon?: string;
-    }
-    achievement: {
-        total: number;
-        list: Achievement[];
-    }
+export interface Ali213AchievementList {
+    [achievementName: string]: Ali213AchievementData
 }
 
 export interface CelesConfig {
@@ -36,14 +23,26 @@ export interface CelesConfig {
     useOldestUnlockTime: boolean;
 }
 
-export interface CodexAchievement {
+export interface CodexAchievementData {
     Achieved: '0' | '1';
     CurProgress: string;
     MaxProgress: string;
-    UnlockTime: number;
+    UnlockTime: string;
 }
 
-export type CodexAchievementList = { [key: string]: CodexAchievement }
+export type CodexAchievementList = { [achievementName: string]: CodexAchievementData }
+
+export interface CreamApiAchievementData {
+    achieved: boolean;
+    unlocktime: number;
+}
+
+export type CreamApiAchievementList = { [achievementName: string]: CreamApiAchievementData }
+
+export interface DarksidersAchievementList {
+    Achievements: {[achievementName: string]: string},
+    AchievementsUnlockTimes: {[achievementName: string]: string}
+}
 
 export interface ExportableGameStats {
     appId: string;
@@ -110,6 +109,24 @@ export interface GameStats {
     playtime: number;
 }
 
+export interface GoldbergAchievementDataIni {
+    Achieved: 1,
+    UnlockTime: string
+}
+
+export interface GoldbergAchievementDataJson {
+    earned: true,
+    earned_time: number
+}
+
+export interface GoldbergAchievementListIni {
+    [achievementName: string]: GoldbergAchievementDataIni
+}
+
+export interface GoldbergAchievementListJson{
+    [achievementName: string]: GoldbergAchievementDataJson
+}
+
 export interface NormalizedProgress {
     currentProgress: number,
     maximProgress: number
@@ -117,14 +134,14 @@ export interface NormalizedProgress {
 
 export type Platform = 'Steam';
 
-export interface ReloadedAchievement {
+export interface ReloadedAchievementData {
     State: string;
     CurProgress: string;
     MaxProgress: string;
     Time: string;
 }
 
-export type ReloadedAchievementList = { [key: string]: ReloadedAchievement }
+export type ReloadedAchievementList = { [achievementName: string]: ReloadedAchievementData }
 
 export interface ScanResult {
     appId: string;
@@ -139,10 +156,11 @@ export interface ScanResult {
 }
 
 export interface SkidrowAchievementList {
-    ACHIEVE_DATA: { [key: string]: '0' | '1' }
+    ACHIEVE_DATA: { [achievementName: string]: '0' | '1' }
 }
 
-export type Source = 'Codex' | 'CreamAPI' | 'Goldberg' | 'Merge' | 'Reloaded - 3DM' | 'Skidrow' | 'SmartSteamEmu';
+export type Source = '3DM' | 'Ali213' | 'Codex' | 'CreamAPI' | 'Darksiders' | 'Goldberg' | 'Merge' | 'Reloaded' |
+    'Skidrow' | 'SmartSteamEmu' | 'Steam';
 
 export interface SourceStats {
     source: Source;
@@ -157,10 +175,28 @@ export interface SSEAchievement {
     UnlockTime: number;
 }
 
+export interface SteamGameMetadata {
+    appId: string;
+    userId: string;
+}
 export interface SteamUser {
     user: string;
     id: string;
     name: string;
+}
+
+export interface SteamUserData {
+    privacyState: 'public' | 'private';
+    steamID: string;
+}
+
+export interface TDMAchievementList1 {
+    State: {[achievementName: string]: string},
+    Time: {[achievementName: string]: string}
+}
+
+export interface TDMAchievementList2 {
+    Steam: {[achievementName: string]: string}
 }
 
 export interface UnlockedOrInProgressAchievement {

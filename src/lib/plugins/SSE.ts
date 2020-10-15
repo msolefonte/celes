@@ -9,8 +9,8 @@ import {
     Source,
     UnlockedOrInProgressAchievement
 } from '../../types';
-import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
-import {SteamUtils} from './lib/SteamUtils';
+import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
+import {SteamUtils} from './utils/SteamUtils';
 import crc32 from 'crc-32';
 
 class SSE extends SteamEmulatorScraper {
@@ -27,7 +27,7 @@ class SSE extends SteamEmulatorScraper {
         this.achievementWatcherRootPath = achievementWatcherRootPath;
     }
 
-    normalizeUnlockedOrInProgressAchievementList(achievements: SSEAchievement[]): UnlockedOrInProgressAchievement[] {
+    normalizeActiveAchievements(achievements: SSEAchievement[]): UnlockedOrInProgressAchievement[] {
         const activeAchievements: UnlockedOrInProgressAchievement[] = [];
 
         for (let i = 0; i < achievements.length; i++) {
@@ -36,7 +36,7 @@ class SSE extends SteamEmulatorScraper {
                 achieved: 1,
                 currentProgress: 0,
                 maxProgress: 0,
-                unlockTime: achievements[i].UnlockTime
+                unlockTime: achievements[i].UnlockTime * 1000
             }
             activeAchievements.push(activeAchievement);
         }
@@ -73,7 +73,8 @@ class SSE extends SteamEmulatorScraper {
             }
 
             if (!achievementHasBeenNormalized) {
-                console.error(wronglyNormalizedAchievementList[i].name, 'not found in schema')
+                // TODO ADD LOG
+                // console.error(wronglyNormalizedAchievementList[i].name, 'not found in schema')
             }
         }
 

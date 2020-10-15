@@ -1,39 +1,36 @@
 'use strict';
 
-import * as path from 'path';
 import {
-    CreamApiAchievementData,
-    CreamApiAchievementList,
+    Ali213AchievementData,
+    Ali213AchievementList,
     Source,
     UnlockedOrInProgressAchievement
 } from '../../types';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
 
-class CreamAPI extends SteamEmulatorScraper {
-    readonly source: Source = 'CreamAPI';
+class Ali213 extends SteamEmulatorScraper {
+    readonly source: Source = 'Ali213';
     readonly achievementWatcherRootPath: string;
     readonly achievementLocationFiles: string[] = [
-        'CreamAPI.Achievements.cfg'
+        'Achievements.Bin'
     ];
-
-    private readonly appDataPath: string = <string>process.env['APPDATA'];
 
     constructor(achievementWatcherRootPath: string) {
         super();
         this.achievementWatcherRootPath = achievementWatcherRootPath;
     }
 
-    normalizeActiveAchievements(achievementList: CreamApiAchievementList): UnlockedOrInProgressAchievement[] {
+    normalizeActiveAchievements(achievementList: Ali213AchievementList): UnlockedOrInProgressAchievement[] {
         const activeAchievements: UnlockedOrInProgressAchievement[] = [];
 
         Object.keys(achievementList).forEach((achievementName: string) => {
-            const achievementData: CreamApiAchievementData = achievementList[achievementName];
+            const achievementData: Ali213AchievementData = achievementList[achievementName];
             activeAchievements.push({
                 name: achievementName,
                 achieved: 1,
                 currentProgress: 0,
                 maxProgress: 0,
-                unlockTime: achievementData.unlocktime * 1000000,
+                unlockTime: parseInt(achievementData.HaveAchievedTime) * 1000,
             });
         });
 
@@ -42,9 +39,9 @@ class CreamAPI extends SteamEmulatorScraper {
 
     getSpecificFoldersToScan(): string[] {
         return [
-            path.join(this.appDataPath, 'CreamAPI')
+            // TODO CHECK
         ];
     }
 }
 
-export {CreamAPI};
+export {Ali213};
