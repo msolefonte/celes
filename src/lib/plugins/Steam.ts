@@ -9,10 +9,10 @@ import {
     UnlockedOrInProgressAchievement
 } from '../../types';
 import {existsSync, promises as fs} from 'fs';
-import {AchievementsScraper} from './lib/AchievementsScraper';
+import {AchievementsScraper} from './utils/AchievementsScraper';
 import {CloudClient} from 'cloud-client';
-import {SteamIdUtils} from './lib/SteamIdUtils';
-import {SteamUtils} from './lib/SteamUtils';
+import {SteamIdUtils} from './utils/SteamIdUtils';
+import {SteamUtils} from './utils/SteamUtils';
 import glob from 'fast-glob';
 import moment from 'moment';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment

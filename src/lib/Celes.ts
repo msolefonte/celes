@@ -14,12 +14,12 @@ import {
 import {
     FileNotFoundError,
     InvalidApiVersionError,
-    WrongSourceError
+    WrongSourceDetectedError
 } from './utils/Errors';
-import {AchievementsScraper} from './plugins/lib/AchievementsScraper';
-import {BlacklistedIdError} from 'cloud-client';
+import {AchievementsScraper} from './plugins/utils/AchievementsScraper';
 import {CelesDbConnector} from './utils/CelesDbConnector';
 import {CelesMutex} from './utils/CelesMutex';
+import {InternalError} from 'cloud-client';
 import {Merger} from './utils/Merger';
 import {promises as fs} from 'fs';
 import {getGameSchema} from './utils/utils';
@@ -250,10 +250,10 @@ class Celes {
                     try {
                         gameSchema = await scraper.getGameSchema(listOfGames[j].appId, this.systemLanguage);
                     } catch (error) {
-                        if (error instanceof BlacklistedIdError) {
+                        if (error instanceof InternalError) { // TODO ADD BLACKLISTED I.E. 17515
                             continue;
                         } else {
-                            Celes.reportPluginCrash(plugins[i], error); // TODO ADD BLACKLISTED I.E. 17515
+                            Celes.reportPluginCrash(plugins[i], error);
                             continue;
                         }
                     }
@@ -261,7 +261,7 @@ class Celes {
                     try {
                         activeAchievements = await scraper.getUnlockedOrInProgressAchievements(listOfGames[j]);
                     } catch (error) {
-                        if (error instanceof WrongSourceError) {
+                        if (error instanceof WrongSourceDetectedError) {
                             continue;
                         } else {
                             Celes.reportPluginCrash(plugins[i], error); // TODO ADD TEST PLUGIN GOES BOOM

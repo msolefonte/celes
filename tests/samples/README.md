@@ -9,12 +9,30 @@
 * **240970:** Achievements unlocked (Default path).
 * **683280:** No achievements unlocked (Unusual path (`steam_achievement.ini`)).
 
+#### ALI213
+
+* **382890:** Achievements unlocked. Achievement names with dots.
+
 #### Codex
 
+* **17515:** Blacklisted game.
 * **255710:** No achievements unlocked.
 * **382900:** Achievements unlocked.
 * **1097840:**: Achievements with progress.
 * **1184050:** Achievements with 100% progress but not unlocked.
+
+#### Darksiders
+
+* **774361:** Achievements unlocked.
+
+#### Goldberg
+
+* **883710:** Achievements unlocked (INI format).
+* **1113000:** Achievements unlocked (JSON format).
+
+#### CreamAPI
+
+* **883710:** Achievements unlocked.
 
 #### Reloaded
 

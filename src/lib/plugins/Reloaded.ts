@@ -7,9 +7,9 @@ import {
     Source,
     UnlockedOrInProgressAchievement
 } from '../../types';
-import {normalizeProgress, normalizeTimestamp} from './lib/Common';
-import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
-import {WrongSourceError} from '../utils/Errors';
+import {normalizeProgress, normalizeTimestamp} from './utils/Common';
+import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
+import {WrongSourceDetectedError} from '../utils/Errors';
 import omit from 'lodash.omit';
 
 class Reloaded extends SteamEmulatorScraper {
@@ -30,11 +30,11 @@ class Reloaded extends SteamEmulatorScraper {
         this.achievementWatcherRootPath = achievementWatcherRootPath;
     }
 
-    normalizeUnlockedOrInProgressAchievementList(achievementList: ReloadedAchievementList): UnlockedOrInProgressAchievement[] {
-        const UnlockedOrInProgressAchievementList: UnlockedOrInProgressAchievement[] = [];
+    normalizeActiveAchievements(achievementList: ReloadedAchievementList): UnlockedOrInProgressAchievement[] {
+        const activeAchievements: UnlockedOrInProgressAchievement[] = [];
 
         if (Reloaded.is3dmAchievementList(achievementList)) {
-            throw new WrongSourceError();
+            throw new WrongSourceDetectedError();
         }
 
         const filter: string[] = ['Steam', 'Steam64'];
@@ -45,7 +45,7 @@ class Reloaded extends SteamEmulatorScraper {
             const normalizedProgress = normalizeProgress(achievementData.CurProgress, achievementData.MaxProgress);
 
             if (achievementData.State === '0100000001') {
-                UnlockedOrInProgressAchievementList.push({
+                activeAchievements.push({
                     name: achievementName,
                     achieved: 1,
                     currentProgress: normalizedProgress.currentProgress, // TODO CHECK THIS ONE. PROGRESS IS A WEIRD STRING
@@ -53,7 +53,7 @@ class Reloaded extends SteamEmulatorScraper {
                     unlockTime: normalizeTimestamp(achievementData.Time)
                 });
             } else if (normalizedProgress.maximProgress > 0) {
-                UnlockedOrInProgressAchievementList.push({
+                activeAchievements.push({
                     name: achievementName,
                     achieved: 0,
                     currentProgress: normalizedProgress.currentProgress,
@@ -63,7 +63,7 @@ class Reloaded extends SteamEmulatorScraper {
             }
         });
 
-        return UnlockedOrInProgressAchievementList;
+        return activeAchievements;
     }
 
     getSpecificFoldersToScan(): string[] {

@@ -1,7 +1,7 @@
 'use strict';
 
 import {GameSchema, GameSchemaBody, Platform} from '../../types';
-import {SteamUtils} from '../plugins/lib/SteamUtils';
+import {SteamUtils} from '../plugins/utils/SteamUtils';
 
 async function getGameSchema(achievementWatcherRootPath: string, appId: string, platform: Platform, language: string): Promise<GameSchemaBody> {
     if (platform === 'Steam') {

@@ -2,13 +2,15 @@
 
 import * as path from 'path';
 import {
+    ReloadedAchievementList,
     Source,
     TDMAchievementList1,
     TDMAchievementList2,
     UnlockedOrInProgressAchievement
 } from '../../types';
-import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
-import {normalizeTimestamp} from './lib/Common';
+import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
+import {WrongSourceDetectedError} from '../utils/Errors';
+import {normalizeTimestamp} from './utils/Common';
 
 class Reloaded extends SteamEmulatorScraper {
     readonly source: Source = '3DM';
@@ -25,22 +27,26 @@ class Reloaded extends SteamEmulatorScraper {
         this.achievementWatcherRootPath = achievementWatcherRootPath;
     }
 
-    normalizeUnlockedOrInProgressAchievementList(achievementList: TDMAchievementList1 | TDMAchievementList2): UnlockedOrInProgressAchievement[] {
-        const UnlockedOrInProgressAchievementList: UnlockedOrInProgressAchievement[] = [];
+    normalizeActiveAchievements(achievementList: ReloadedAchievementList | TDMAchievementList1 | TDMAchievementList2): UnlockedOrInProgressAchievement[] {
+        const activeAchievements: UnlockedOrInProgressAchievement[] = [];
 
         if ('State' in achievementList) {
             Object.keys(achievementList.State).forEach((achievementName: string) => {
-                UnlockedOrInProgressAchievementList.push({
+                activeAchievements.push({
                     name: achievementName,
                     achieved: 1,
                     currentProgress: 0,
                     maxProgress: 0,
-                    unlockTime: normalizeTimestamp(achievementList.Time[achievementName])
+                    unlockTime: normalizeTimestamp((<TDMAchievementList1> achievementList).Time[achievementName])
                 });
             });
-        } else {
+        } else if ('Steam' in achievementList) {
             Object.keys(achievementList.Steam).forEach((achievementName: string) => {
-                UnlockedOrInProgressAchievementList.push({
+                if(achievementName === 'ACHCount') {
+                    throw new WrongSourceDetectedError();
+                }
+
+                activeAchievements.push({
                     name: achievementName,
                     achieved: 1,
                     currentProgress: 0,
@@ -50,7 +56,7 @@ class Reloaded extends SteamEmulatorScraper {
             });
         }
 
-        return UnlockedOrInProgressAchievementList;
+        return activeAchievements;
     }
 
     getSpecificFoldersToScan(): string[] {

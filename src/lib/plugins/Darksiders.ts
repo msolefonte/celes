@@ -1,39 +1,34 @@
 'use strict';
 
-import * as path from 'path';
 import {
-    CreamApiAchievementData,
-    CreamApiAchievementList,
+    DarksidersAchievementList,
     Source,
     UnlockedOrInProgressAchievement
 } from '../../types';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
 
-class CreamAPI extends SteamEmulatorScraper {
-    readonly source: Source = 'CreamAPI';
+class Darksiders extends SteamEmulatorScraper {
+    readonly source: Source = 'Darksiders';
     readonly achievementWatcherRootPath: string;
     readonly achievementLocationFiles: string[] = [
-        'CreamAPI.Achievements.cfg'
+        'stats.ini'
     ];
-
-    private readonly appDataPath: string = <string>process.env['APPDATA'];
 
     constructor(achievementWatcherRootPath: string) {
         super();
         this.achievementWatcherRootPath = achievementWatcherRootPath;
     }
 
-    normalizeActiveAchievements(achievementList: CreamApiAchievementList): UnlockedOrInProgressAchievement[] {
+    normalizeActiveAchievements(achievementList: DarksidersAchievementList): UnlockedOrInProgressAchievement[] {
         const activeAchievements: UnlockedOrInProgressAchievement[] = [];
 
-        Object.keys(achievementList).forEach((achievementName: string) => {
-            const achievementData: CreamApiAchievementData = achievementList[achievementName];
+        Object.keys(achievementList.Achievements).forEach((achievementName: string) => {
             activeAchievements.push({
                 name: achievementName,
                 achieved: 1,
                 currentProgress: 0,
                 maxProgress: 0,
-                unlockTime: achievementData.unlocktime * 1000000,
+                unlockTime: parseInt(achievementList.AchievementsUnlockTimes[achievementName]) * 1000
             });
         });
 
@@ -42,9 +37,9 @@ class CreamAPI extends SteamEmulatorScraper {
 
     getSpecificFoldersToScan(): string[] {
         return [
-            path.join(this.appDataPath, 'CreamAPI')
+            // TODO CHECK
         ];
     }
 }
 
-export {CreamAPI};
+export {Darksiders};

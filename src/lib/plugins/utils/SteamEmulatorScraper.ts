@@ -7,8 +7,8 @@ import {AchievementsScraper} from './AchievementsScraper';
 import {SSEConfigParser} from './SSEConfigParser';
 import {SteamUtils} from './SteamUtils';
 import glob from 'fast-glob';
-import ini from 'ini';
 import normalize from 'normalize-path';
+import {parse as parseIni} from 'js-ini';
 
 // TODO CHECK LOGS / THROWS
 // TODO PASS LOGGER TO PLUGINS
@@ -18,7 +18,7 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
     protected abstract readonly achievementLocationFiles: string[];
     protected abstract readonly source: Source;
 
-    abstract normalizeUnlockedOrInProgressAchievementList(achievementList: unknown): UnlockedOrInProgressAchievement[];
+    abstract normalizeActiveAchievements(achievementList: unknown): UnlockedOrInProgressAchievement[];
 
     abstract getSpecificFoldersToScan(): string[];
 
@@ -62,7 +62,7 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
 
     async getUnlockedOrInProgressAchievements(game: ScanResult): Promise<UnlockedOrInProgressAchievement[]> {
         const achievementList: unknown = await this.getAchievementListFromGameFolder(<string>game.data.path);
-        return this.normalizeUnlockedOrInProgressAchievementList(achievementList);
+        return this.normalizeActiveAchievements(achievementList);
     }
 
     getSource(): Source {
@@ -96,7 +96,7 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
                 } else if (path.parse(file).ext == '.json') {
                     achievementList = JSON.parse(await fs.readFile(achievementFilePath, 'utf8'));
                 } else {
-                    achievementList = ini.parse(await fs.readFile(achievementFilePath, 'utf8'));
+                    achievementList = await parseIni(await fs.readFile(achievementFilePath, 'utf8'));
                 }
             } catch (error) {
                 if (error.code !== 'ENOENT') {

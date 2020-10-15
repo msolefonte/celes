@@ -10,7 +10,7 @@ class FileNotFoundError extends Error {
     }
 }
 
-class WrongSourceError extends Error {
+class WrongSourceDetectedError extends Error {
     constructor() {
         super('Wrong source detected.')
     }
@@ -19,5 +19,5 @@ class WrongSourceError extends Error {
 export {
     InvalidApiVersionError,
     FileNotFoundError,
-    WrongSourceError
+    WrongSourceDetectedError
 }

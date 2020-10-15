@@ -6,6 +6,15 @@ export interface Achievement {
     icongray: string;
 }
 
+export interface Ali213AchievementData {
+    HaveAchieved: '1',
+    HaveAchievedTime: string
+}
+
+export interface Ali213AchievementList {
+    [achievementName: string]: Ali213AchievementData
+}
+
 export interface CelesConfig {
     apiVersion: string;
     additionalFoldersToScan: string[];
@@ -18,10 +27,22 @@ export interface CodexAchievementData {
     Achieved: '0' | '1';
     CurProgress: string;
     MaxProgress: string;
-    UnlockTime: number;
+    UnlockTime: string;
 }
 
 export type CodexAchievementList = { [achievementName: string]: CodexAchievementData }
+
+export interface CreamApiAchievementData {
+    achieved: boolean;
+    unlocktime: number;
+}
+
+export type CreamApiAchievementList = { [achievementName: string]: CreamApiAchievementData }
+
+export interface DarksidersAchievementList {
+    Achievements: {[achievementName: string]: string},
+    AchievementsUnlockTimes: {[achievementName: string]: string}
+}
 
 export interface ExportableGameStats {
     appId: string;
@@ -88,6 +109,24 @@ export interface GameStats {
     playtime: number;
 }
 
+export interface GoldbergAchievementDataIni {
+    Achieved: 1,
+    UnlockTime: string
+}
+
+export interface GoldbergAchievementDataJson {
+    earned: true,
+    earned_time: number
+}
+
+export interface GoldbergAchievementListIni {
+    [achievementName: string]: GoldbergAchievementDataIni
+}
+
+export interface GoldbergAchievementListJson{
+    [achievementName: string]: GoldbergAchievementDataJson
+}
+
 export interface NormalizedProgress {
     currentProgress: number,
     maximProgress: number
@@ -120,8 +159,8 @@ export interface SkidrowAchievementList {
     ACHIEVE_DATA: { [achievementName: string]: '0' | '1' }
 }
 
-export type Source = '3DM' | 'Codex' | 'CreamAPI' | 'Goldberg' | 'Merge' | 'Reloaded' | 'Skidrow' | 'SmartSteamEmu' |
-    'Steam';
+export type Source = '3DM' | 'Ali213' | 'Codex' | 'CreamAPI' | 'Darksiders' | 'Goldberg' | 'Merge' | 'Reloaded' |
+    'Skidrow' | 'SmartSteamEmu' | 'Steam';
 
 export interface SourceStats {
     source: Source;

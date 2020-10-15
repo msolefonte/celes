@@ -2,7 +2,7 @@
 
 import * as path from 'path';
 import {SkidrowAchievementList, Source, UnlockedOrInProgressAchievement} from '../../types';
-import {SteamEmulatorScraper} from './lib/SteamEmulatorScraper';
+import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import regedit from 'regodit'; // TODO LOOK FOR ALTERNATIVES
@@ -21,14 +21,14 @@ class Skidrow extends SteamEmulatorScraper {
         this.achievementWatcherRootPath = achievementWatcherRootPath;
     }
 
-    normalizeUnlockedOrInProgressAchievementList(achievementList: SkidrowAchievementList): UnlockedOrInProgressAchievement[] {
-        const UnlockedOrInProgressAchievementList: UnlockedOrInProgressAchievement[] = [];
+    normalizeActiveAchievements(achievementList: SkidrowAchievementList): UnlockedOrInProgressAchievement[] {
+        const activeAchievements: UnlockedOrInProgressAchievement[] = [];
 
         Object.keys(achievementList.ACHIEVE_DATA).forEach((achievementName: string) => {
             const achievementIsUnlocked: boolean = achievementList.ACHIEVE_DATA[achievementName] === '1';
 
             if (achievementIsUnlocked) {
-                UnlockedOrInProgressAchievementList.push({
+                activeAchievements.push({
                     name: achievementName,
                     achieved: 1,
                     currentProgress: 0,
@@ -38,15 +38,17 @@ class Skidrow extends SteamEmulatorScraper {
             }
         });
 
-        return UnlockedOrInProgressAchievementList;
+        return activeAchievements;
     }
 
     protected async getFoldersToScan(specificFolders: string[], additionalFolders: string[]): Promise<string[]> {
-        const DocsFolderPath: string = await regedit.promises.RegQueryStringValue('HKCU', // TODO REGEDIT SUS
+        const docsFolderPath: string = await regedit.promises.RegQueryStringValue('HKCU', // TODO REGEDIT SUS
             'Software/Microsoft/Windows/CurrentVersion/Explorer/User Shell Folders', 'Personal');
-        if (DocsFolderPath) { // TODO NOT TESTED. PERHAPS TEST ENVIRONMENT VARIABLE
+
+        /* istanbul ignore else */
+        if (docsFolderPath) {
             additionalFolders = additionalFolders.concat([
-                path.join(DocsFolderPath, 'Skidrow')
+                path.join(docsFolderPath, 'Skidrow')
             ]);
         }
 

@@ -7,7 +7,7 @@ async function existsAndIsYoungerThan(path: string, time = 7, timeUnit: moment.u
         const stats = await fs.stat(path);
 
         if ((isDir) ? stats.isDirectory() : stats.isFile()) {
-            return moment().diff(moment(stats.mtime), timeUnit) < time; // TODO ADD TEST INVALID CACHE
+            return moment().diff(moment(stats.mtime), timeUnit) < time;
         } else {
             return false;
         }
@@ -31,7 +31,7 @@ function normalizeProgress(curProgress: string, maxProgress: string): Normalized
 
 function normalizeTimestamp(time: string): number {
     try {
-        return new DataView(new Uint8Array(Buffer.from(time, 'hex')).buffer).getUint32(0, true);
+        return new DataView(new Uint8Array(Buffer.from(time, 'hex')).buffer).getUint32(0, true) * 1000;
     }catch (error) {
         return 0;
     }
