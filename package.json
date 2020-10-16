@@ -11,9 +11,8 @@
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "test": "mocha -r ts-node/register 'tests/**/*.test.ts' --timeout 30000 --require mocha-steps",
-    "test:steam": "mocha -r ts-node/register 'tests/**/SteamPlugin.test.ts' --timeout 30000 --require mocha-steps",
-    "test:coverage": "nyc --reporter=html --reporter=text npm run test",
-    "test:steam:coverage": "nyc --reporter=html --reporter=text npm run test:steam"
+    "test:coverage": "nyc npm run test",
+    "test:coverage:html": "nyc --reporter=html --reporter=text npm run test"
   },
   "contributors": [
     {
@@ -31,6 +30,7 @@
     "@types/ini": "^1.3.30",
     "@types/lodash.omit": "^4.5.6",
     "@types/normalize-path": "^3.0.0",
+    "@types/rimraf": "^3.0.0",
     "@types/steamid": "^1.1.0",
     "@types/xml2js": "^0.4.5",
     "cloud-client": "git://github.com/achievement-watcher/cloud-nodejs-client.git#alpha",

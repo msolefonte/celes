@@ -25,7 +25,7 @@ class Skidrow extends SteamEmulatorScraper {
         const activeAchievements: UnlockedOrInProgressAchievement[] = [];
 
         Object.keys(achievementList.ACHIEVE_DATA).forEach((achievementName: string) => {
-            const achievementIsUnlocked: boolean = achievementList.ACHIEVE_DATA[achievementName] === '1';
+            const achievementIsUnlocked: boolean = achievementList.ACHIEVE_DATA[achievementName] === 1;
 
             if (achievementIsUnlocked) {
                 activeAchievements.push({

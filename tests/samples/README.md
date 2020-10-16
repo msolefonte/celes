@@ -15,7 +15,6 @@
 
 #### Codex
 
-* **17515:** Blacklisted game.
 * **255710:** No achievements unlocked.
 * **382900:** Achievements unlocked.
 * **1097840:**: Achievements with progress.
@@ -36,8 +35,13 @@
 
 #### Reloaded
 
-* **311210:** Achievements unlocked.
+* **311210:** Achievements unlocked. One of them has progress.
 * **312750:** No achievements unlocked.
+
+##### Note
+
+The progress added to **311210** is simulated and not real, so it may not be a real approach of the problem. Real 
+samples are required.
 
 ##### To be added
 
@@ -52,3 +56,13 @@
 
 * **45760:** No achievements unlocked.
 * **228300:** Achievements unlocked.
+
+### Invalid
+
+#### Codex
+
+* **17515:** Blacklisted game.
+
+### SSE
+
+* **228300** Invalid file.

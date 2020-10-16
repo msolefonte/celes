@@ -42,15 +42,15 @@ class Reloaded extends SteamEmulatorScraper {
 
         Object.keys(achievementList).forEach((achievementName: string) => {
             const achievementData: ReloadedAchievementData = achievementList[achievementName];
-            const normalizedProgress = normalizeProgress(achievementData.CurProgress, achievementData.MaxProgress);
+            const normalizedProgress = normalizeProgress(achievementData.CurProgress.toString(), achievementData.MaxProgress.toString());
 
-            if (achievementData.State === '0100000001') {
+            if (achievementData.State.toString() === '100000001') {
                 activeAchievements.push({
                     name: achievementName,
                     achieved: 1,
-                    currentProgress: normalizedProgress.currentProgress, // TODO CHECK THIS ONE. PROGRESS IS A WEIRD STRING
+                    currentProgress: normalizedProgress.currentProgress, // Waiting for samples
                     maxProgress: normalizedProgress.maximProgress,
-                    unlockTime: normalizeTimestamp(achievementData.Time)
+                    unlockTime: normalizeTimestamp(achievementData.Time.toString())
                 });
             } else if (normalizedProgress.maximProgress > 0) {
                 activeAchievements.push({
@@ -58,7 +58,7 @@ class Reloaded extends SteamEmulatorScraper {
                     achieved: 0,
                     currentProgress: normalizedProgress.currentProgress,
                     maxProgress: normalizedProgress.maximProgress,
-                    unlockTime: normalizeTimestamp(achievementData.Time)
+                    unlockTime: normalizeTimestamp(achievementData.Time.toString())
                 });
             }
         });

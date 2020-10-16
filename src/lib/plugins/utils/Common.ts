@@ -29,10 +29,10 @@ function normalizeProgress(curProgress: string, maxProgress: string): Normalized
     return {currentProgress: currentProgress, maximProgress: maximProgress};
 }
 
-function normalizeTimestamp(time: string): number {
+function normalizeTimestamp(hexadecimalTime: string): number {
     try {
-        return new DataView(new Uint8Array(Buffer.from(time, 'hex')).buffer).getUint32(0, true) * 1000;
-    }catch (error) {
+        return new DataView(new Uint8Array(Buffer.from(hexadecimalTime, 'hex')).buffer).getUint32(0, true) * 1000;
+    } catch (error) {
         return 0;
     }
 }

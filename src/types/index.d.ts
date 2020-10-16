@@ -135,10 +135,10 @@ export interface NormalizedProgress {
 export type Platform = 'Steam';
 
 export interface ReloadedAchievementData {
-    State: string;
-    CurProgress: string;
-    MaxProgress: string;
-    Time: string;
+    State: number;
+    CurProgress: number;
+    MaxProgress: number;
+    Time: number;
 }
 
 export type ReloadedAchievementList = { [achievementName: string]: ReloadedAchievementData }
@@ -155,8 +155,22 @@ export interface ScanResult {
     }
 }
 
+export interface ScrapError {
+    message: string;
+    type: string;
+    plugin?: string;
+    platform?: Platform;
+    source?: Source;
+    appId?: string;
+}
+
+export interface ScrapResult {
+    data: GameData[],
+    error?: ScrapError[]
+}
+
 export interface SkidrowAchievementList {
-    ACHIEVE_DATA: { [achievementName: string]: '0' | '1' }
+    ACHIEVE_DATA: { [achievementName: string]: 0 | 1 }
 }
 
 export type Source = '3DM' | 'Ali213' | 'Codex' | 'CreamAPI' | 'Darksiders' | 'Goldberg' | 'Merge' | 'Reloaded' |

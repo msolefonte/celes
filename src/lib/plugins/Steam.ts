@@ -1,6 +1,6 @@
 import * as path from 'path';
 import {
-    GameSchema,
+    GameSchema, Platform,
     ScanResult,
     Source,
     SteamGameMetadata,
@@ -12,6 +12,7 @@ import {existsSync, promises as fs} from 'fs';
 import {AchievementsScraper} from './utils/AchievementsScraper';
 import {CloudClient} from 'cloud-client';
 import {SteamIdUtils} from './utils/SteamIdUtils';
+import {SteamNotFoundError} from '../utils/Errors';
 import {SteamUtils} from './utils/SteamUtils';
 import glob from 'fast-glob';
 import moment from 'moment';
@@ -41,14 +42,14 @@ class Steam implements AchievementsScraper {
             }
         }
 
-        throw new Error('Steam Path not found'); // TODO PROPER ERROR
+        throw new SteamNotFoundError(); // TODO ADD TEST STEAM NOT FOUND
     }
 
     private static async getSteamUsers(steamPath: string): Promise<SteamUser[]> {
         const steamUsers: SteamUser[] = [];
 
         let users: (string | number)[] = await regedit.promises.RegListAllSubkeys('HKCU', 'Software/Valve/Steam/Users');
-        if (!users) {
+        if (!users) {  // TODO ADD TEST NOT USERS
             users = await glob('*([0-9])', {
                 cwd: path.join(steamPath, 'userdata'),
                 onlyDirectories: true,
@@ -56,7 +57,7 @@ class Steam implements AchievementsScraper {
             });
         }
 
-        if (users.length == 0) {
+        if (users.length == 0) {  // TODO ADD TEST NOT USERS
             return [];
         }
 
@@ -71,7 +72,7 @@ class Steam implements AchievementsScraper {
                     name: data.steamID
                 });
             } else {
-                console.log(`${user} - ${id} (${data.steamID}) is not public`);  // TODO PROPER ERROR
+                console.log(`${user} - ${id} (${data.steamID}) is not public`);  // TODO PROPER TEST / LOG / ERROR
             }
         }
 
@@ -79,12 +80,16 @@ class Steam implements AchievementsScraper {
     }
 
     private readonly achievementWatcherRootPath: string;
-    private readonly source: Source = 'Steam';
     private readonly listingType: 0 | 1 | 2;
+    private readonly source: Source = 'Steam';
 
-    constructor(achievementWatcherRootPath: string, listingType: 0 | 1 | 2 = 0) {
+    constructor(achievementWatcherRootPath: string, listingType: 0 | 1 | 2) {
         this.achievementWatcherRootPath = achievementWatcherRootPath;
         this.listingType = listingType;
+    }
+
+    getPlatform(): Platform {
+        return 'Steam';
     }
 
     getSource(): Source {
@@ -101,7 +106,7 @@ class Steam implements AchievementsScraper {
 
         const cachePaths = {
             local: path.join(this.achievementWatcherRootPath, 'steam_cache/user', steamUser, `${game.appId}.db`),
-            steam: path.join(<string> game.data.cachePath, 'UserGameStats_' + steamUser + '_' + game.appId + '.bin')
+            steam: path.join(<string>game.data.cachePath, 'UserGameStats_' + steamUser + '_' + game.appId + '.bin')
         };
 
         const cacheTime = {
@@ -124,7 +129,7 @@ class Steam implements AchievementsScraper {
         if (Object.keys(steamCacheStats).length > 0) {
             cacheTime.steam = moment(steamCacheStats.mtime).valueOf();
         } else {
-            throw 'No Steam cache file found';
+            throw 'No Steam cache file found';  // TODO ADD TEST AND PROPER ERROR
         }
 
         if (cacheTime.steam > cacheTime.local) {

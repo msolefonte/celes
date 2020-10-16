@@ -1,7 +1,7 @@
 'use strict';
 
 import * as path from 'path';
-import {GameSchema, ScanResult, Source, UnlockedOrInProgressAchievement} from '../../../types';
+import {GameSchema, Platform, ScanResult, Source, UnlockedOrInProgressAchievement} from '../../../types';
 import {existsSync, promises as fs} from 'fs';
 import {AchievementsScraper} from './AchievementsScraper';
 import {SSEConfigParser} from './SSEConfigParser';
@@ -63,6 +63,10 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
     async getUnlockedOrInProgressAchievements(game: ScanResult): Promise<UnlockedOrInProgressAchievement[]> {
         const achievementList: unknown = await this.getAchievementListFromGameFolder(<string>game.data.path);
         return this.normalizeActiveAchievements(achievementList);
+    }
+
+    getPlatform(): Platform {
+        return 'Steam';
     }
 
     getSource(): Source {

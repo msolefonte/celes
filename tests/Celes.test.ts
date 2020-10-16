@@ -1,16 +1,19 @@
 import * as path from 'path';
 import {FileNotFoundError, InvalidApiVersionError} from '../src/lib/utils/Errors';
-import {GameData, Source, SourceStats} from '../src/types';
+import {GameData, ScrapResult, Source, SourceStats} from '../src/types';
 import {existsSync, unlinkSync} from 'fs';
 import {Celes} from '../src';
 import {Validator} from './utils/Validator';
 import {expect} from 'chai';
+import rimraf from 'rimraf';
 import {step} from 'mocha-steps';
 
 const achievementWatcherTestRootPath: string = path.join(__dirname, 'tmp/appData/Achievement Watcher Test');
-const importExportValidFile: string = path.join(__dirname, 'tmp/export.awb');
+const celesDbPath: string = path.join(achievementWatcherTestRootPath, 'celes/db');
 const importExportInvalidFile: string = path.join(__dirname, 'samples/other/importFileInvalid.awb');
+const importExportEmptyDataFile: string = path.join(__dirname, 'samples/other/importFileEmptyData.awb');
 const importExportNonExistentFile: string = path.join(__dirname, 'samples/other/importFileNonExistent.awb');
+const importExportValidFile: string = path.join(__dirname, 'tmp/export.awb');
 const importExportWrongVersionFile: string = path.join(__dirname, 'samples/other/importFileWrongVersion.awb');
 
 const tdmAppIds: string[] = ['240970', '683280'];
@@ -34,6 +37,11 @@ const validSamplesFolders: string[] = [
     path.join(__dirname, 'samples/achievements/valid/skidrow/'),
 ];
 
+const invalidSamplesFolders: string[] = [
+    path.join(__dirname, 'samples/achievements/invalid/codex/'),
+    path.join(__dirname, 'samples/achievements/invalid/sse/')
+];
+
 function areAllAppIdsInTheGameDataCollection(appIds: string[], gameDataCollection: GameData[], source: Source) {
     const filteredGameDataCollection: GameData[] = [];
     for (const gameData of gameDataCollection) {
@@ -53,6 +61,11 @@ function areAllAppIdsInTheGameDataCollection(appIds: string[], gameDataCollectio
 describe('Testing Celes API', () => {
     context('Without samples', () => {
         const celes = new Celes(achievementWatcherTestRootPath);
+        before('Deleting Celes database if existent', () => {
+            if (existsSync(celesDbPath)) {
+                rimraf.sync(celesDbPath);
+            }
+        });
 
         before('Deleting exported file if existent', () => {
             if (existsSync(importExportValidFile)) {
@@ -126,8 +139,7 @@ describe('Testing Celes API', () => {
     });
 
     context('With valid samples', async () => {
-        const achievementId = 'CgkI287L0pcOEAIQAA';
-        const celes = new Celes(achievementWatcherTestRootPath, validSamplesFolders);
+        const celes = new Celes(achievementWatcherTestRootPath, validSamplesFolders, undefined, 0);
 
         before('Replacing or creating 382900\'s cache with an outdated birthtime', () => {
             const pathTo382900Cache: string = path.join(achievementWatcherTestRootPath, 'steam_cache/schema/english/382900.json');
@@ -143,11 +155,17 @@ describe('Testing Celes API', () => {
         });
 
         describe('Pull', () => {
-            let gameDataCollection: GameData[];
+            let scrapResult: ScrapResult;
             let progress: number;
 
+            after('Print errors', () => {
+                if (scrapResult.error !== undefined) {
+                    console.error(scrapResult.error);
+                }
+            })
+
             step('Obtained results', async () => {
-                gameDataCollection = await celes.pull((p => {
+                scrapResult = await celes.pull((p => {
                     progress = p;
                 }));
             });
@@ -156,11 +174,15 @@ describe('Testing Celes API', () => {
                 expect(progress).to.equal(100);
             });
 
-            step('Result is a list of GameData objects', async () => {
+            step('Scrap result error does not exist', async () => {
+                expect(scrapResult.error !== undefined && scrapResult.error.length != 0).to.be.false;
+            });
+
+            step('Scrap result data is a list of GameData objects', async () => {
                 let resultIsValid = true;
 
-                for (let i = 0; i < gameDataCollection.length; i++) {
-                    if (!Validator.isValidGameData(gameDataCollection[i])) {
+                for (let i = 0; i < scrapResult.data.length; i++) {
+                    if (!Validator.isValidGameData(scrapResult.data[i])) {
                         resultIsValid = false;
                     }
                 }
@@ -169,7 +191,7 @@ describe('Testing Celes API', () => {
             });
 
             step('All active achievement names are in the schemas', async () => {
-                for (const gameData of gameDataCollection) {
+                for (const gameData of scrapResult.data) {
                     for (const sourceStats of gameData.stats.sources) {
                         for (const activeAchievement of sourceStats.achievements.active) {
                             let schemaFound = false;
@@ -190,7 +212,7 @@ describe('Testing Celes API', () => {
             });
 
             step('All active achievement unlock times are valid', () => {
-                for (const gameData of gameDataCollection) {
+                for (const gameData of scrapResult.data) {
                     for (const sourceStats of gameData.stats.sources) {
                         for (const activeAchievement of sourceStats.achievements.active) {
                             if (typeof activeAchievement.unlockTime !== 'number') {
@@ -210,7 +232,7 @@ describe('Testing Celes API', () => {
             });
 
             step('All active achievement progress values are valid', async () => {
-                for (const gameData of gameDataCollection) {
+                for (const gameData of scrapResult.data) {
                     for (const sourceStats of gameData.stats.sources) {
                         for (const activeAchievement of sourceStats.achievements.active) {
                             if (typeof activeAchievement.currentProgress !== 'number') {
@@ -239,39 +261,39 @@ describe('Testing Celes API', () => {
             });
 
             step('All 3DM games were scraped', () => {
-                expect(areAllAppIdsInTheGameDataCollection(tdmAppIds, gameDataCollection, '3DM')).to.be.true;
+                expect(areAllAppIdsInTheGameDataCollection(tdmAppIds, scrapResult.data, '3DM')).to.be.true;
             });
 
             step('All ALI213 games were scraped', () => {
-                expect(areAllAppIdsInTheGameDataCollection(ali213AppIds, gameDataCollection, 'Ali213')).to.be.true;
+                expect(areAllAppIdsInTheGameDataCollection(ali213AppIds, scrapResult.data, 'Ali213')).to.be.true;
             });
 
             step('All Codex games were scraped', () => {
-                expect(areAllAppIdsInTheGameDataCollection(codexAppIds, gameDataCollection, 'Codex')).to.be.true;
+                expect(areAllAppIdsInTheGameDataCollection(codexAppIds, scrapResult.data, 'Codex')).to.be.true;
             });
 
             step('All Cream API games were scraped', () => {
-                expect(areAllAppIdsInTheGameDataCollection(creamApiAppIds, gameDataCollection, 'CreamAPI')).to.be.true;
+                expect(areAllAppIdsInTheGameDataCollection(creamApiAppIds, scrapResult.data, 'CreamAPI')).to.be.true;
             });
 
             step('All Darksiders games were scraped', () => {
-                expect(areAllAppIdsInTheGameDataCollection(darksidersApiAppIds, gameDataCollection, 'Darksiders')).to.be.true;
+                expect(areAllAppIdsInTheGameDataCollection(darksidersApiAppIds, scrapResult.data, 'Darksiders')).to.be.true;
             });
 
             step('All Goldberg games were scraped', () => {
-                expect(areAllAppIdsInTheGameDataCollection(goldbergAppIds, gameDataCollection, 'Goldberg')).to.be.true;
+                expect(areAllAppIdsInTheGameDataCollection(goldbergAppIds, scrapResult.data, 'Goldberg')).to.be.true;
             });
 
             step('All Reloaded games were scraped', () => {
-                expect(areAllAppIdsInTheGameDataCollection(reloadedAppIds, gameDataCollection, 'Reloaded')).to.be.true;
+                expect(areAllAppIdsInTheGameDataCollection(reloadedAppIds, scrapResult.data, 'Reloaded')).to.be.true;
             });
 
             step('All SSE games were scraped', () => {
-                expect(areAllAppIdsInTheGameDataCollection(sseAppIds, gameDataCollection, 'SmartSteamEmu')).to.be.true;
+                expect(areAllAppIdsInTheGameDataCollection(sseAppIds, scrapResult.data, 'SmartSteamEmu')).to.be.true;
             });
 
             step('All Skidrow games were scraped', () => {
-                expect(areAllAppIdsInTheGameDataCollection(skidrowAppIds, gameDataCollection, 'Skidrow')).to.be.true;
+                expect(areAllAppIdsInTheGameDataCollection(skidrowAppIds, scrapResult.data, 'Skidrow')).to.be.true;
             });
         });
 
@@ -343,6 +365,14 @@ describe('Testing Celes API', () => {
 
             step('Export worked', async () => {
                 await celes.export(importExportValidFile);
+            });
+
+            step('Import empty file (force mode) worked', async () => {
+                gameDataCollection = await celes.import(importExportEmptyDataFile, true);
+            });
+
+            step('Game data is empty', async () => {
+                expect(gameDataCollection).to.be.empty;
             });
 
             step('Import worked', async () => {
@@ -441,8 +471,12 @@ describe('Testing Celes API', () => {
         });
 
         describe('Set achievement unlock time', () => {
+            const appId = '1097840';
+            const achievementId = 'Act1Chapter2StoryPoint';
+            const unlockTime = 1600000000;
+
             step('Set achievement unlock time worked', async () => {
-                await celes.setAchievementUnlockTime('382900', 'Codex', 'Steam', achievementId, 1600000000);
+                await celes.setAchievementUnlockTime(appId, 'Codex', 'Steam', achievementId, unlockTime);
             });
 
             step('Check that time was updated correctly', async () => {
@@ -450,12 +484,16 @@ describe('Testing Celes API', () => {
                 let itWorked = false;
 
                 for (let i = 0; i < gameDataCollection.length; i++) {
-                    if (gameDataCollection[i].appId === '382900') {
+                    if (gameDataCollection[i].appId === appId) {
                         const sources: SourceStats[] = gameDataCollection[i].stats.sources;
                         for (let j = 0; j < sources.length; j++) {
                             if (sources[j].source === 'Codex') {
-                                itWorked = true;
-                                break;
+                                for (const achievement of sources[j].achievements.active) {
+                                    if (achievement.name === achievementId) {
+                                        itWorked = achievement.unlockTime === unlockTime;
+                                        break;
+                                    }
+                                }
                             }
                         }
                         break;
@@ -464,6 +502,50 @@ describe('Testing Celes API', () => {
 
                 expect(itWorked).to.be.true;
             });
+        });
+    });
+
+    context('With invalid samples/config', async () => {
+        describe('Invalid samples', () => {
+            const sseInvalidAppId = '228300';
+
+            const celes = new Celes(achievementWatcherTestRootPath, invalidSamplesFolders);
+            let scrapResult: ScrapResult;
+
+            step('Pull works', async () => {
+                scrapResult = await celes.pull();
+            })
+
+            // TODO ALSO CHECK BLACKLIST
+
+            step('SSE invalid file returns an scrap error with type UnexpectedFileContentError', (done) => {
+                if (scrapResult.error !== undefined) {
+                    for (const scrapError of scrapResult.error) {
+                        if (scrapError.appId === sseInvalidAppId && scrapError.type === 'UnexpectedFileContentError') {
+                            done();
+                        }
+                    }
+                }
+            });
+        });
+
+        describe('Invalid/Broken plugin', () => {
+            const celes = new Celes(achievementWatcherTestRootPath, [], ['invalid']);
+            let scrapResult: ScrapResult;
+
+            step('Plugin crash does not result in application crash', async () => {
+                scrapResult = await celes.pull();
+            })
+
+            step('Plugin crash is reported', (done) => {
+                if (scrapResult.error !== undefined) {
+                    for (const scrapError of scrapResult.error) {
+                        if (scrapError.plugin === 'invalid') {
+                            done();
+                        }
+                    }
+                }
+            })
         });
     });
 });

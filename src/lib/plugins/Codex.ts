@@ -44,7 +44,7 @@ class Codex extends SteamEmulatorScraper {
 
             const normalizedProgress = normalizeProgress(achievementData.CurProgress, achievementData.MaxProgress);
 
-            if (achievementData.Achieved === '1') {
+            if (achievementData.Achieved == '1') {
                 activeAchievements.push({
                     name: achievementName,
                     achieved: 1,
