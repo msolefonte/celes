@@ -12,12 +12,12 @@ async function getGameSchema(achievementWatcherRootPath: string, appId: string, 
             achievements: gameSchema.achievement
         }
 
-        if ('binary' in gameSchemaBody) { // TODO THIS DOES NOT PASS TEST?
+        if (gameSchema.binary !== undefined) {
             gameSchemaBody.binary = gameSchema.binary;
         }
 
         return gameSchemaBody;
-    } else {
+    } else {  // TODO FIX WHEN PS3 IS AVAILABLE
         throw new Error('Platform schema not available for ' + platform); // TODO ADD BETTER ERROR // TODO ADD TEST
     }
 }

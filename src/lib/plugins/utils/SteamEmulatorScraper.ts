@@ -22,7 +22,7 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
 
     abstract getSpecificFoldersToScan(): string[];
 
-    async scan(additionalFoldersToScan: string[] = []): Promise<ScanResult[]> {
+    async scan(additionalFoldersToScan: string[]): Promise<ScanResult[]> {
         const specificFoldersToScan: string[] = this.getSpecificFoldersToScan();
         const foldersToScan: string[] = await this.getFoldersToScan(specificFoldersToScan, additionalFoldersToScan);
 

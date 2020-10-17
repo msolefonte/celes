@@ -110,7 +110,7 @@ class Celes {
         const lockId: number = await this.celesMutex.lock();
         try {
             const databaseData: GameData[] = await celesDbConnector.getAll(this.systemLanguage, callbackProgress, 50, 50);
-            mergedData = Merger.mergeGameDataCollections([scrapedData, databaseData]);
+            mergedData = Merger.mergeGameDataCollections([scrapedData, databaseData], this.useOldestUnlockTime);
             await celesDbConnector.updateAll(mergedData);
         } finally {
             this.celesMutex.unlock(lockId);

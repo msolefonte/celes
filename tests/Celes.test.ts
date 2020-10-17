@@ -29,8 +29,10 @@ const validSamplesFolders: string[] = [
     path.join(__dirname, 'samples/achievements/valid/3dm/'),
     path.join(__dirname, 'samples/achievements/valid/ali213/'),
     path.join(__dirname, 'samples/achievements/valid/codex/'),
+    path.join(__dirname, 'samples/achievements/valid/codex_duplicates/'),
     path.join(__dirname, 'samples/achievements/valid/creamAPI/'),
     path.join(__dirname, 'samples/achievements/valid/darksiders/'),
+    path.join(__dirname, 'samples/achievements/valid/darksiders_duplicates/'),
     path.join(__dirname, 'samples/achievements/valid/goldberg/'),
     path.join(__dirname, 'samples/achievements/valid/reloaded/'),
     path.join(__dirname, 'samples/achievements/valid/sse/'),
@@ -505,7 +507,7 @@ describe('Testing Celes API', () => {
         });
     });
 
-    context('With invalid samples/config', async () => {
+    context('With invalid/variable samples/config', async () => {
         describe('Invalid samples', () => {
             const sseInvalidAppId = '228300';
 
@@ -546,6 +548,20 @@ describe('Testing Celes API', () => {
                     }
                 }
             })
+        });
+
+        describe('Use newest unlock time', () => {
+            const celes = new Celes(
+                achievementWatcherTestRootPath,
+                validSamplesFolders,
+                undefined,
+                undefined,
+                undefined,
+                false);
+
+            step('Pull works', async () => {
+                await celes.pull();
+            });
         });
     });
 });

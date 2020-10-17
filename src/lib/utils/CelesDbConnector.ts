@@ -60,14 +60,10 @@ class CelesDbConnector {
     }
 
     async updateAll(gameData: GameData[]): Promise<void> {
-        try {
-            await mkdirp(this.celesDatabasePath);
+        await mkdirp(this.celesDatabasePath);
 
-            for (let i = 0; i < gameData.length; i++) {
-                await this.updateGame(gameData[i]);
-            }
-        } catch (error) {
-            console.debug(error);
+        for (let i = 0; i < gameData.length; i++) {
+            await this.updateGame(gameData[i]);
         }
     }
 
@@ -93,8 +89,6 @@ class CelesDbConnector {
     }
 
     async updateGame(gameData: GameData): Promise<void> {
-        // TODO PATCH WHAT IF appId NOT VALID
-        // TODO PATCH WHAT IF GAME PLATFORM NOT VALID
         const gamePlatform: Platform = gameData.platform;
         const gameStats: GameStats = {
             apiVersion: this.apiVersion,

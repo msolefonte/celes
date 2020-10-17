@@ -1,6 +1,7 @@
 export interface Achievement {
     name: string;
-    defaultvalue: number;
+    displayName: string;
+    description: string;
     hidden: 0 | 1;
     icon: string;
     icongray: string;
@@ -94,6 +95,7 @@ export interface GameSchemaBody  {
         header?: string;
         background?: string;
         portrait?: string;
+        hero?: string;
         icon?: string;
     }
     achievements: {

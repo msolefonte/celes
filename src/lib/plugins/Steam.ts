@@ -63,16 +63,16 @@ class Steam implements AchievementsScraper {
 
         for (const user of users) {
             const id: string = SteamIdUtils.getSteamId64(user);
-            const data: SteamUserData = await SteamIdUtils.getUserData(id);
+            const steamUserData: SteamUserData = await SteamIdUtils.getUserData(id);
 
-            if (data.privacyState === 'public') {
+            if (steamUserData.privacyState === 'public') {
                 steamUsers.push({
                     user: user.toString(),
                     id: id,
-                    name: data.steamID
+                    name: steamUserData.steamID
                 });
             } else {
-                console.log(`${user} - ${id} (${data.steamID}) is not public`);  // TODO PROPER TEST / LOG / ERROR
+                console.log(`${user} - ${id} (${steamUserData.steamID}) is not public`);  // TODO PROPER TEST / LOG / ERROR
             }
         }
 
