@@ -22,7 +22,7 @@ function normalizeProgress(curProgress: string, maxProgress: string): Normalized
         currentProgress = 0;
         maximProgress = 0;
     } else {
-        currentProgress = Math.floor(Number.parseFloat(curProgress) / Number.parseFloat(maxProgress) * 100); // TODO ADD TEST GAME WITH PROGRESS
+        currentProgress = Math.floor(Number.parseFloat(curProgress) / Number.parseFloat(maxProgress) * 100);
         maximProgress = 100;
     }
 

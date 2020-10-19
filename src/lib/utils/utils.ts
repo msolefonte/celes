@@ -1,6 +1,7 @@
 'use strict';
 
 import {GameSchema, GameSchemaBody, Platform} from '../../types';
+import {PlatformNotAvailableError} from './Errors';
 import {SteamUtils} from '../plugins/utils/SteamUtils';
 
 async function getGameSchema(achievementWatcherRootPath: string, appId: string, platform: Platform, language: string): Promise<GameSchemaBody> {
@@ -12,13 +13,14 @@ async function getGameSchema(achievementWatcherRootPath: string, appId: string, 
             achievements: gameSchema.achievement
         }
 
+        /* istanbul ignore else */
         if (gameSchema.binary !== undefined) {
             gameSchemaBody.binary = gameSchema.binary;
         }
 
         return gameSchemaBody;
-    } else {  // TODO FIX WHEN PS3 IS AVAILABLE
-        throw new Error('Platform schema not available for ' + platform); // TODO ADD BETTER ERROR // TODO ADD TEST
+    } else {
+        throw new PlatformNotAvailableError(platform);
     }
 }
 

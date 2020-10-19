@@ -45,7 +45,7 @@ class Skidrow extends SteamEmulatorScraper {
         const docsFolderPath: string = await regedit.promises.RegQueryStringValue('HKCU', // TODO REGEDIT SUS
             'Software/Microsoft/Windows/CurrentVersion/Explorer/User Shell Folders', 'Personal');
 
-        /* istanbul ignore else */
+        /* istanbul ignore next */
         if (docsFolderPath) {
             additionalFolders = additionalFolders.concat([
                 path.join(docsFolderPath, 'Skidrow')

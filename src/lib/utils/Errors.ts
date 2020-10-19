@@ -10,9 +10,21 @@ class FileNotFoundError extends Error {
     }
 }
 
+class PlatformNotAvailableError extends Error {
+    constructor(platform: string) {
+        super('Platform not available: ' + platform);
+    }
+}
+
 class SteamNotFoundError extends Error {
     constructor() {
         super('Steam path not found. Is it installed?');
+    }
+}
+
+class SteamPublicUsersNotFoundError extends Error {
+    constructor() {
+        super('No Steam users were found. Are their profiles public?');
     }
 }
 
@@ -25,6 +37,8 @@ class WrongSourceDetectedError extends Error {
 export {
     InvalidApiVersionError,
     FileNotFoundError,
+    PlatformNotAvailableError,
     SteamNotFoundError,
+    SteamPublicUsersNotFoundError,
     WrongSourceDetectedError
 }

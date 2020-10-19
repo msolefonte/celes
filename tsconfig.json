@@ -6,7 +6,6 @@
     "outDir": "./dist",
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "removeComments": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "pretty": true,

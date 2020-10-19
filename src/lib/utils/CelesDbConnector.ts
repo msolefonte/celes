@@ -38,16 +38,13 @@ class CelesDbConnector {
 
                         typeof callbackProgress === 'function' && callbackProgress(progressPercentage);
                     } catch (error) {
-                        if (!(error instanceof InvalidApiVersionError)) {
-                            throw error;
-                        }
+                        throw error;
                     }
                 }
             }
         } catch (error) {
             if (error.code === 'ENOENT') {
                 typeof callbackProgress === 'function' && callbackProgress(baseProgress + maxProgress);
-
                 return [];
             } else {
                 throw error

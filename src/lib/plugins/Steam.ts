@@ -12,9 +12,10 @@ import {existsSync, promises as fs} from 'fs';
 import {AchievementsScraper} from './utils/AchievementsScraper';
 import {CloudClient} from 'cloud-client';
 import {SteamIdUtils} from './utils/SteamIdUtils';
-import {SteamNotFoundError} from '../utils/Errors';
+import {SteamNotFoundError, SteamPublicUsersNotFoundError} from '../utils/Errors';
 import {SteamUtils} from './utils/SteamUtils';
 import glob from 'fast-glob';
+import mkdirp from 'mkdirp';
 import moment from 'moment';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -42,10 +43,10 @@ class Steam implements AchievementsScraper {
             }
         }
 
-        throw new SteamNotFoundError(); // TODO ADD TEST STEAM NOT FOUND
+        throw new SteamNotFoundError();
     }
 
-    private static async getSteamUsers(steamPath: string): Promise<SteamUser[]> {
+    private static async getPublicSteamUsers(steamPath: string): Promise<SteamUser[]> {
         const steamUsers: SteamUser[] = [];
 
         let users: (string | number)[] = await regedit.promises.RegListAllSubkeys('HKCU', 'Software/Valve/Steam/Users');
@@ -55,10 +56,6 @@ class Steam implements AchievementsScraper {
                 onlyDirectories: true,
                 absolute: false
             });
-        }
-
-        if (users.length == 0) {  // TODO ADD TEST NOT USERS
-            return [];
         }
 
         for (const user of users) {
@@ -71,8 +68,6 @@ class Steam implements AchievementsScraper {
                     id: id,
                     name: steamUserData.steamID
                 });
-            } else {
-                console.log(`${user} - ${id} (${steamUserData.steamID}) is not public`);  // TODO PROPER TEST / LOG / ERROR
             }
         }
 
@@ -136,9 +131,10 @@ class Steam implements AchievementsScraper {
             try {
                 activeAchievements = await CloudClient.getSteamUserStats(steamUser, game.appId);
             } catch (e) {
-                console.log('ERROR', game.appId, ':', e.message);
+                console.log('ERROR', game.appId, ':', e.message);  // TODO NOT FOUND ERROR?
                 // throw e;
             }
+            await mkdirp(path.dirname(cachePaths.local));
             await fs.writeFile(cachePaths.local, JSON.stringify(activeAchievements, null, 2));
         } else {
             activeAchievements = JSON.parse(await fs.readFile(cachePaths.local, 'utf8'));
@@ -152,14 +148,14 @@ class Steam implements AchievementsScraper {
     }
 
     async scan(): Promise<ScanResult[]> {
-        const gamesMetadata: ScanResult[] = [];
+        const scanResults: ScanResult[] = [];
 
-        if (this.listingType > 0 && regedit.RegKeyExists('HKCU', 'Software/Valve/Steam')) {
+        if (this.listingType > 0) {
             const steamPath = await Steam.getSteamPath();
             const steamCachePath = path.join(steamPath, 'appcache/stats');
-            const publicUsers = await Steam.getSteamUsers(steamPath);
+            const publicUsers = await Steam.getPublicSteamUsers(steamPath);
 
-            const legitGamesList: SteamGameMetadata[] = (await glob('UserGameStats_*([0-9])_*([0-9]).bin', {
+            const steamGames: SteamGameMetadata[] = (await glob('UserGameStats_*([0-9])_*([0-9]).bin', {
                 cwd: steamCachePath,
                 onlyFiles: true,
                 absolute: false
@@ -171,19 +167,19 @@ class Steam implements AchievementsScraper {
                 };
             });
 
-            for (const game of legitGamesList) {
+            for (const game of steamGames) {
                 let isInstalled = true;
                 if (this.listingType == 1) {
                     isInstalled = (await regedit.promises.RegQueryIntegerValue('HKCU',
                         'Software/Valve/Steam/Apps/' + game.appId, 'Installed') === '1');
                 }
 
-                const user: SteamUser = <SteamUser>publicUsers.find((user: SteamUser) => {
+                const user: SteamUser = <SteamUser> publicUsers.find((user: SteamUser) => {
                     return user.user == game.userId;
                 });
 
                 if (user && isInstalled) {
-                    gamesMetadata.push({
+                    scanResults.push({
                         appId: game.appId,
                         source: 'Steam',
                         platform: 'Steam',
@@ -197,7 +193,7 @@ class Steam implements AchievementsScraper {
             }
         }
 
-        return gamesMetadata;
+        return scanResults;
     }
 }
 

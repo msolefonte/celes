@@ -1,8 +1,13 @@
-import {GameData} from '../src/types';
+import {GameData, Platform} from '../src/types';
+import {InvalidApiVersionError, PlatformNotAvailableError} from '../src/lib/utils/Errors';
+import {CelesDbConnector} from '../src/lib/utils/CelesDbConnector';
 import {Merger} from '../src/lib/utils/Merger';
 import {expect} from 'chai';
+import {getGameSchema} from '../src/lib/utils/utils';
+import {isEqual} from 'lodash';
+import path from 'path';
 
-
+const achievementWatcherSamplesRootPath: string = path.join(__dirname, 'samples/achievement-watcher/');
 const gdc1: GameData[] = [
     {
         apiVersion: 'v1',
@@ -77,9 +82,10 @@ const gdc2: GameData[] = [
 
 describe('Testing Utils', () => {
     context('Merger library', () => {
-        // TODO TEST SCHEMAS COLLISION -> CHECK SCHEMAS
         it('Collision between same game schemas returns more complete schema', () => {
-            Merger.mergeGameDataCollections([gdc1, gdc2]);
+            const mergedGameDatas: GameData[] = Merger.mergeGameDataCollections([gdc1, gdc2]);
+            expect(mergedGameDatas.length).to.be.equal(1);
+            expect(isEqual(mergedGameDatas[0].schema, gdc2[0].schema)).to.be.equal(true);
         });
 
         // TODO CHECK ACHIEVEMENTS COLLISION OLDEST
@@ -89,9 +95,24 @@ describe('Testing Utils', () => {
         // TODO CHECK PROGRESS COLLISION
     });
 
-    // TODO TESTS UTILS
-    // TODO - PLATFORM NOT AVAILABLE
+    context('CelesDbConnector library', () => {
+        const celesDbConnector: CelesDbConnector = new CelesDbConnector(achievementWatcherSamplesRootPath);
+        it('Invalid API version returns InvalidApiVersionError', (done) => {
+            celesDbConnector.getAll('english').catch((error) => {
+                if (error instanceof InvalidApiVersionError) {
+                    done();
+                }
+            });
+        });
+    });
 
-    // TODO TEST CELESDBCONNECTOR
-    // TODO - INVALID API VERSION
+    context('General utils', () => {
+        it ('Getting schema of invalid platform returns PlatformNotAvailableError', (done) => {
+            getGameSchema('', '', <Platform>'invalid', '').catch((error) => {
+                if (error instanceof PlatformNotAvailableError) {
+                    done();
+                }
+            })
+        });
+    });
 });
