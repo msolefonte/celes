@@ -53,8 +53,8 @@ if (process.env.CI) {
 
         context('Steam installed, non existent users', () => {
             before('Set registry to the desired states', () => {
-                windows.registry('HKCU/Software/Valve/Steam').add('SteamPath', steamWithoutUsersSamplePath);
-                windows.registry('HKLM/Software/WOW6432Node/Valve/Steam').add('InstallPath', 'D:\\Games\\Sparrow\\Oxygen Not Included\\Steam');
+                windows.registry('HKCU/Software/Valve/Steam').add('SteamPath', steamWithoutUsersSamplePath, true);
+                windows.registry('HKLM/Software/WOW6432Node/Valve/Steam').add('InstallPath', 'D:\\Games\\Sparrow\\Oxygen Not Included\\Steam', true);
             });
 
             context('With Listing Type = 2', () => {
