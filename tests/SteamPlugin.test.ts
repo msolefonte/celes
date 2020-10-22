@@ -138,7 +138,7 @@ describe('Testing Steam Plugin', () => {
             await regedit.promises.RegDeleteKeyIncludingSubkeys('HKCU', 'Software/Valve/Steam/');
             await regedit.promises.RegWriteDwordValue('HKCU', 'Software/Valve/Steam/Apps/' + steamSampleInstalledGameId, 'Installed', 1);
             await regedit.promises.RegWriteStringValue('HKCU', 'Software/Valve/Steam/', 'SteamPath', steamSamplePath);
-            await regedit.promises.RegWriteStringValue('HKCU', 'Software/Valve/Steam/Users/', steamSampleUser, 'true');
+            await regedit.promises.RegWriteKey('HKCU', 'Software/Valve/Steam/Users/' + steamSampleUserId);
         });
 
         after('Set registry to the default states', async () => {
