@@ -52,18 +52,13 @@ class Steam implements AchievementsScraper {
         const steamUsers: SteamUser[] = [];
 
         let users: (string | number)[] = await regedit.promises.RegListAllSubkeys('HKCU', 'Software/Valve/Steam/Users');
-        console.log('users');
-        console.log(users);
         if (!users) {
-            console.log('glob');
             users = await glob('*([0-9])', {
                 cwd: path.join(steamPath, 'userdata'),
                 onlyDirectories: true,
                 absolute: false
             });
         }
-        console.log('users');
-        console.log(users);
 
         for (const user of users) {
             const id: string = SteamIdUtils.getSteamId64(user);
@@ -78,8 +73,6 @@ class Steam implements AchievementsScraper {
             }
         }
 
-        console.log('steamUsers');
-        console.log(steamUsers);
         if (steamUsers.length === 0) {
             throw new SteamPublicUsersNotFoundError();
         }
