@@ -18,3 +18,6 @@ class SteamIdUtils {
 }
 
 export {SteamIdUtils}
+
+// 76561198160327197
+// http://steamcommunity.com/profiles/76561198160327197/?xml=1

@@ -1,152 +1,232 @@
-import {SteamNotFoundError, WrongSourceDetectedError} from '../src/lib/utils/Errors';
+import {existsSync, unlinkSync} from 'fs';
+import {
+    SteamGameCacheNotFound,
+    SteamNotFoundError,
+    SteamPublicUsersNotFoundError,
+    WrongSourceDetectedError
+} from '../src/lib/utils/Errors';
 import {InternalError} from 'cloud-client';
 import {ScanResult} from '../src/types';
 import {Steam} from '../src/lib/plugins/Steam';
 import {expect} from 'chai';
 import path from 'path';
-import {step} from 'mocha-steps';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import windows from 'windows';
+import regedit from 'regodit';
+import {step} from 'mocha-steps';
 
-if (process.env.CI) {
-    const achievementWatcherTestRootPath: string = path.join(__dirname, 'tmp/appData/Achievement Watcher Test');
-    const steamSamplePath: string = path.join(__dirname, 'samples/steam');
-    const steamWithoutUsersSamplePath: string = path.join(__dirname, 'samples/steam-wu');
+async function createKeyBackup(root: string, original_key: string, backup_key: string): Promise<void> {
+    const realValue = await regedit.RegExportKey(root, original_key, {absenceError: false});
+    await regedit.RegImportKey(root, backup_key, realValue, {absenceDelete: true});
+}
 
-    describe('Testing Steam Plugin', () => {
-        context('Steam not installed', () => {
-            before('Set registry to the desired states', () => {
-                windows.registry('HKCU/Software/Valve/Steam').SteamPath.remove();
-                windows.registry('HKLM/Software/WOW6432Node/Valve/Steam').InstallPath.remove();
-            });
+async function recoverKeyBackup(root: string, original_key: string, backup_key: string): Promise<void> {
+    const backupValue = await regedit.RegExportKey(root, backup_key, {absenceError: false});
+    await regedit.RegImportKey(root, original_key, backupValue, {absenceDelete: true});
+    await regedit.RegDeleteKeyIncludingSubkeys(root, backup_key);
+}
 
-            context('With Listing Type = 0', () => {
-                const steam = new Steam(achievementWatcherTestRootPath, 0);
-                it('Scan returns an empty list', async () => {
-                    expect(await steam.scan()).to.be.empty;
-                });
-            });
+const achievementWatcherTestRootPath: string = path.join(__dirname, 'tmp/appData/Achievement Watcher Test');
+const steamPrivateUserId = '76561198160327197';
+const steamSampleInstalledGameId = '1069740';
+const steamSamplePath: string = path.join(__dirname, 'samples/steam');
+const steamSampleUser = '76561198058952831';
+const steamSampleUserId = '98687103';
+const steamWithoutUsersSamplePath: string = path.join(__dirname, 'samples/steam-wu');
 
-            context('With Listing Type = 1', () => {
-                const steam = new Steam(achievementWatcherTestRootPath, 1);
-                it('Scan returns SteamNotFoundError', (done) => {
-                    steam.scan().catch((error) => {
-                        if (error instanceof SteamNotFoundError) {
-                            done();
-                        }
-                    })
-                });
-            });
+describe('Testing Steam Plugin', () => {
+    context('Steam not installed', () => {
+        before('Set registry to the desired states', async () => {
+            await createKeyBackup('HKCU', 'Software/Valve/Steam', 'Software/Valve/Steam.AW.BKP');
+            await createKeyBackup('HKLM', 'Software/WOW6432Node/Valve/Steam', 'Software/WOW6432Node/Valve/Steam.AW.BKP');
+            await regedit.promises.RegDeleteKeyIncludingSubkeys('HKCU', 'Software/Valve/Steam/');
+            await regedit.promises.RegDeleteKeyIncludingSubkeys('HKLM', 'Software/WOW6432Node/Valve/Steam/');
+        });
 
-            context('With Listing Type = 2', () => {
-                const steam = new Steam(achievementWatcherTestRootPath, 1);
-                it('Scan returns SteamNotFoundError', (done) => {
-                    steam.scan().catch((error) => {
-                        if (error instanceof SteamNotFoundError) {
-                            done();
-                        }
-                    })
-                });
+        after('Set registry to the default states', async () => {
+            await recoverKeyBackup('HKCU', 'Software/Valve/Steam', 'Software/Valve/Steam.AW.BKP');
+            await recoverKeyBackup('HKLM', 'Software/WOW6432Node/Valve/Steam', 'Software/WOW6432Node/Valve/Steam.AW.BKP');
+        });
+
+        context('With Listing Type = 0', () => {
+            const steam = new Steam(achievementWatcherTestRootPath, 0);
+            it('Scan returns an empty list', async () => {
+                expect(await steam.scan()).to.be.empty;
             });
         });
 
-        context('Steam installed, non existent users', () => {
-            before('Set registry to the desired states', () => {
-                windows.registry('HKCU/Software/Valve/Steam').add('SteamPath', steamWithoutUsersSamplePath, true);
-                windows.registry('HKLM/Software/WOW6432Node/Valve/Steam').add('InstallPath', 'D:\\Games\\Sparrow\\Oxygen Not Included\\Steam', true);
-            });
-
-            context('With Listing Type = 2', () => {
-                const steam = new Steam(achievementWatcherTestRootPath, 2);
-
-                it('Scan returns SteamPublicUsersNotFoundError', (done) => {
-                    steam.scan().catch((error) => {
-                        if (error instanceof SteamNotFoundError) {
-                            done();
-                        }
-                    })
-                });
+        context('With Listing Type = 1', () => {
+            const steam = new Steam(achievementWatcherTestRootPath, 1);
+            it('Scan returns SteamNotFoundError', (done) => {
+                steam.scan().catch((error) => {
+                    if (error instanceof SteamNotFoundError) {
+                        done();
+                    }
+                })
             });
         });
 
-        context('Steam installed, non public users', () => {
-            before('Set registry to the desired states', () => {
-                windows.registry('HKCU/Software/Valve/Steam').add('SteamPath', steamWithoutUsersSamplePath);
-                windows.registry('HKCU/Software/Valve/Steam/Users').add('76561198160327197', 1);
-                windows.registry('HKLM/Software/WOW6432Node/Valve/Steam').add('InstallPath', 'D:\\Games\\Sparrow\\Oxygen Not Included\\Steam');
+        context('With Listing Type = 2', () => {
+            const steam = new Steam(achievementWatcherTestRootPath, 1);
+            it('Scan returns SteamNotFoundError', (done) => {
+                steam.scan().catch((error) => {
+                    if (error instanceof SteamNotFoundError) {
+                        done();
+                    }
+                })
             });
+        });
+    });
 
-            context('With Listing Type = 2', () => {
-                const steam = new Steam(achievementWatcherTestRootPath, 2);
+    context('Steam installed, non existent users', () => {
+        before('Set registry to the desired states', async () => {
+            await createKeyBackup('HKCU', 'Software/Valve/Steam', 'Software/Valve/Steam.AW.BKP');
+            await createKeyBackup('HKLM', 'Software/WOW6432Node/Valve/Steam', 'Software/WOW6432Node/Valve/Steam.AW.BKP');
+            await regedit.promises.RegDeleteKeyIncludingSubkeys('HKCU', 'Software/Valve/Steam/');
+            await regedit.promises.RegWriteStringValue('HKCU', 'Software/Valve/Steam/', 'SteamPath', steamWithoutUsersSamplePath);
+        });
 
-                it('Scan returns SteamPublicUsersNotFoundError', (done) => {
-                    steam.scan().catch((error) => {
-                        if (error instanceof SteamNotFoundError) {
-                            done();
-                        }
-                    })
-                });
+        after('Set registry to the default states', async () => {
+            await recoverKeyBackup('HKCU', 'Software/Valve/Steam', 'Software/Valve/Steam.AW.BKP');
+            await recoverKeyBackup('HKLM', 'Software/WOW6432Node/Valve/Steam', 'Software/WOW6432Node/Valve/Steam.AW.BKP');
+        });
+
+        context('With Listing Type = 2', () => {
+            const steam = new Steam(achievementWatcherTestRootPath, 2);
+
+            it('Scan throws SteamPublicUsersNotFoundError', (done) => {
+                steam.scan().catch((error) => {
+                    if (error instanceof SteamPublicUsersNotFoundError) {
+                        done();
+                    }
+                })
+            });
+        });
+    });
+
+    context('Steam installed, non public users', () => {
+        before('Set registry to the desired states', async () => {
+            await createKeyBackup('HKCU', 'Software/Valve/Steam', 'Software/Valve/Steam.AW.BKP');
+            await createKeyBackup('HKLM', 'Software/WOW6432Node/Valve/Steam', 'Software/WOW6432Node/Valve/Steam.AW.BKP');
+            await regedit.promises.RegDeleteKeyIncludingSubkeys('HKCU', 'Software/Valve/Steam/');
+            await regedit.promises.RegWriteStringValue('HKCU', 'Software/Valve/Steam/', 'SteamPath', steamWithoutUsersSamplePath);
+            await regedit.promises.RegWriteKey('HKCU', 'Software/Valve/Steam/Users/' + steamPrivateUserId);
+        });
+
+        after('Set registry to the default states', async () => {
+            await recoverKeyBackup('HKCU', 'Software/Valve/Steam', 'Software/Valve/Steam.AW.BKP');
+            await recoverKeyBackup('HKLM', 'Software/WOW6432Node/Valve/Steam', 'Software/WOW6432Node/Valve/Steam.AW.BKP');
+        });
+
+        context('With Listing Type = 2', () => {
+            const steam = new Steam(achievementWatcherTestRootPath, 2);
+
+            it('Scan throws SteamPublicUsersNotFoundError', (done) => {
+                steam.scan().catch((error) => {
+                    if (error instanceof SteamPublicUsersNotFoundError) {
+                        done();
+                    }
+                })
+            });
+        });
+    });
+
+    context('Steam installed', () => {
+        before('Set registry to the desired states', async () => {
+            await createKeyBackup('HKCU', 'Software/Valve/Steam', 'Software/Valve/Steam.AW.BKP');
+            await createKeyBackup('HKLM', 'Software/WOW6432Node/Valve/Steam', 'Software/WOW6432Node/Valve/Steam.AW.BKP');
+            await regedit.promises.RegDeleteKeyIncludingSubkeys('HKCU', 'Software/Valve/Steam/');
+            await regedit.promises.RegWriteDwordValue('HKCU', 'Software/Valve/Steam/Apps/' + steamSampleInstalledGameId, 'Installed', 1);
+            await regedit.promises.RegWriteStringValue('HKCU', 'Software/Valve/Steam/', 'SteamPath', steamSamplePath);
+            await regedit.promises.RegWriteStringValue('HKCU', 'Software/Valve/Steam/Users/', steamSampleUser, 'true');
+        });
+
+        after('Set registry to the default states', async () => {
+            await recoverKeyBackup('HKCU', 'Software/Valve/Steam', 'Software/Valve/Steam.AW.BKP');
+            await recoverKeyBackup('HKLM', 'Software/WOW6432Node/Valve/Steam', 'Software/WOW6432Node/Valve/Steam.AW.BKP');
+        });
+
+        context('With Listing Type = 1', () => {
+            const steam = new Steam(achievementWatcherTestRootPath, 1);
+
+            it('Scan returns installed games', async () => {
+                const listOfGames: ScanResult[] = await steam.scan();
+                expect(listOfGames.length).to.be.equal(1);
+                expect(listOfGames.filter((game: ScanResult) => {
+                    return game.appId === steamSampleInstalledGameId;
+                }))
             });
         });
 
-        context('Steam installed', () => {
-            const installedGameId = '76561198058952831';
+        context('With Listing Type = 2', () => {
+            const steam = new Steam(achievementWatcherTestRootPath, 2);
+            let listOfGames: ScanResult[];
 
-            before('Set registry to the desired states', () => {
-                windows.registry('HKCU/Software/Valve/Steam').add('SteamPath', steamSamplePath);
-                windows.registry('HKCU/Software/Valve/Steam/Apps/1069740').add('Installed', 1);
-                windows.registry('HKCU/Software/Valve/Steam/Users').add(installedGameId, 1);
-                windows.registry('HKLM/Software/WOW6432Node/Valve/Steam').add('InstallPath', 'D:\\Games\\Sparrow\\Oxygen Not Included\\Steam');
+            before('Remove user cache if existent', () => {
+                const cacheFile = path.join(achievementWatcherTestRootPath, 'steam_cache/user', steamSampleUserId, `${steamSampleInstalledGameId}.db`);
+                if (existsSync(cacheFile)) {
+                    unlinkSync(cacheFile);
+                }
             });
 
-            context('With Listing Type = 1', () => {
-                const steam = new Steam(achievementWatcherTestRootPath, 1);
-
-                it('Scan returns installed games', async () => {
-                    const listOfGames: ScanResult[] = await steam.scan();
-                    expect(listOfGames.length).to.be.equal(1);
-                    expect(listOfGames.filter((game: ScanResult) => {
-                        return game.appId === installedGameId;
-                    }))
-                });
+            step('Scan works', async () => {
+                listOfGames = await steam.scan();
+                expect(listOfGames.length).to.be.greaterThan(0);
             });
 
-            context('With Listing Type = 2', () => {
-                const steam = new Steam(achievementWatcherTestRootPath, 2);
-                let listOfGames: ScanResult[];
-
-                step('Scan works', async () => {
-                    listOfGames = await steam.scan();
-                    expect(listOfGames.length).to.be.greaterThan(0);
-                });
-
-                step('Get schemas', async () => {
-                    for (const game of listOfGames) {
-
-                        try {
-                            await steam.getGameSchema(game.appId, 'english');
-                        } catch (error) {
-                            // TODO BlacklistedIdError is not thrown anymore. Now its InternalError
-                            if (!(error instanceof InternalError)) {
-                                throw error;
-                            }
+            step('Get schemas works', async () => {
+                for (const game of listOfGames) {
+                    try {
+                        await steam.getGameSchema(game.appId, 'english');
+                    } catch (error) {
+                        // TODO BlacklistedIdError is not thrown anymore. Now its InternalError
+                        if (!(error instanceof InternalError)) {
+                            throw error;
                         }
                     }
-                });
+                }
+            });
 
-                step('Get active achievements', async () => {
-                    for (const game of listOfGames) {
-                        try {
-                            await steam.getUnlockedOrInProgressAchievements(game);
-                        } catch (error) {
-                            if (!(error instanceof WrongSourceDetectedError)) {
-                                throw error;
-                            }
+            step('Get active achievements works', async () => {
+                for (const game of listOfGames) {
+                    try {
+                        await steam.getUnlockedOrInProgressAchievements(game);
+                    } catch (error) {
+                        if (!(error instanceof WrongSourceDetectedError)) {
+                            throw error;
                         }
+                    }
+                }
+            });
+
+            step('Get active achievements again (force cache usage) works', async () => {
+                for (const game of listOfGames) {
+                    try {
+                        await steam.getUnlockedOrInProgressAchievements(game);
+                    } catch (error) {
+                        if (!(error instanceof WrongSourceDetectedError)) {
+                            throw error;
+                        }
+                    }
+                }
+            });
+
+            step('Get active achievements of a wrong game throws SteamGameCacheNotFound', (done) => {
+                steam.getUnlockedOrInProgressAchievements({
+                        appId: '1',
+                        source: 'Steam',
+                        platform: 'Steam',
+                        data: {
+                            userId: { user: '98687103', id: '76561198058952831', name: 'Wolfy' },
+                            cachePath: path.join(steamSamplePath, 'appcache/stats')
+                        }
+                    }
+                ).catch((error) => {
+                    if (error instanceof SteamGameCacheNotFound) {
+                        done()
                     }
                 });
             });
         });
     });
-}
+});

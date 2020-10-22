@@ -8,11 +8,15 @@ import {
     SteamUserData,
     UnlockedOrInProgressAchievement
 } from '../../types';
+import {
+    SteamGameCacheNotFound,
+    SteamNotFoundError,
+    SteamPublicUsersNotFoundError
+} from '../utils/Errors';
 import {existsSync, promises as fs} from 'fs';
 import {AchievementsScraper} from './utils/AchievementsScraper';
 import {CloudClient} from 'cloud-client';
 import {SteamIdUtils} from './utils/SteamIdUtils';
-import {SteamNotFoundError, SteamPublicUsersNotFoundError} from '../utils/Errors';
 import {SteamUtils} from './utils/SteamUtils';
 import glob from 'fast-glob';
 import mkdirp from 'mkdirp';
@@ -30,16 +34,14 @@ class Steam implements AchievementsScraper {
         */ // TODO TURN INTO DOCS
 
         const regHives = [
-            {root: 'HKCU', key: 'Software/Valve/Steam', name: 'SteamPath'},
-            {root: 'HKLM', key: 'Software/WOW6432Node/Valve/Steam', name: 'InstallPath'}
+            {root: 'HKLM', key: 'Software/WOW6432Node/Valve/Steam', name: 'InstallPath'},
+            {root: 'HKCU', key: 'Software/Valve/Steam', name: 'SteamPath'}
         ];
 
         for (const regHive of regHives) {
             const steamPath: string = await regedit.promises.RegQueryStringValue(regHive.root, regHive.key, regHive.name);
-            if (steamPath) {
-                if (existsSync(path.join(steamPath, 'steam.exe'))) {
-                    return steamPath;
-                }
+            if (steamPath && existsSync(path.join(steamPath, 'steam.exe'))) {
+                return steamPath;
             }
         }
 
@@ -50,7 +52,7 @@ class Steam implements AchievementsScraper {
         const steamUsers: SteamUser[] = [];
 
         let users: (string | number)[] = await regedit.promises.RegListAllSubkeys('HKCU', 'Software/Valve/Steam/Users');
-        if (!users) {  // TODO ADD TEST NOT USERS
+        if (!users) {
             users = await glob('*([0-9])', {
                 cwd: path.join(steamPath, 'userdata'),
                 onlyDirectories: true,
@@ -71,11 +73,16 @@ class Steam implements AchievementsScraper {
             }
         }
 
+        if (steamUsers.length === 0) {
+            throw new SteamPublicUsersNotFoundError();
+        }
+
         return steamUsers;
     }
 
     private readonly achievementWatcherRootPath: string;
     private readonly listingType: 0 | 1 | 2;
+    private readonly platform: Platform = 'Steam';
     private readonly source: Source = 'Steam';
 
     constructor(achievementWatcherRootPath: string, listingType: 0 | 1 | 2) {
@@ -84,7 +91,7 @@ class Steam implements AchievementsScraper {
     }
 
     getPlatform(): Platform {
-        return 'Steam';
+        return this.platform;
     }
 
     getSource(): Source {
@@ -92,12 +99,8 @@ class Steam implements AchievementsScraper {
     }
 
     async getUnlockedOrInProgressAchievements(game: ScanResult): Promise<UnlockedOrInProgressAchievement[]> {
+        const steamUser: string = (<SteamUser>game.data.userId).user;
         let activeAchievements: UnlockedOrInProgressAchievement[] = [];
-
-        let steamUser = '';
-        if (game.data.userId !== undefined && game.data.userId.user !== undefined) {
-            steamUser = game.data.userId.user;
-        }
 
         const cachePaths = {
             local: path.join(this.achievementWatcherRootPath, 'steam_cache/user', steamUser, `${game.appId}.db`),
@@ -111,29 +114,23 @@ class Steam implements AchievementsScraper {
 
         try {
             const localCacheStats = await fs.stat(cachePaths.local);
-            if (Object.keys(localCacheStats).length > 0) {
-                cacheTime.local = moment(localCacheStats.mtime).valueOf();
-            }
+            cacheTime.local = moment(localCacheStats.mtime).valueOf();
         } catch (error) {
+            /* istanbul ignore next */
             if (error.code !== 'ENOENT') {
                 throw error;
             }
         }
 
-        const steamCacheStats = await fs.stat(cachePaths.steam);
-        if (Object.keys(steamCacheStats).length > 0) {
+        try {
+            const steamCacheStats = await fs.stat(cachePaths.steam);
             cacheTime.steam = moment(steamCacheStats.mtime).valueOf();
-        } else {
-            throw 'No Steam cache file found';  // TODO ADD TEST AND PROPER ERROR
+        } catch(error) {
+            throw new SteamGameCacheNotFound(game.appId);
         }
 
         if (cacheTime.steam > cacheTime.local) {
-            try {
-                activeAchievements = await CloudClient.getSteamUserStats(steamUser, game.appId);
-            } catch (e) {
-                console.log('ERROR', game.appId, ':', e.message);  // TODO NOT FOUND ERROR?
-                // throw e;
-            }
+            activeAchievements = await CloudClient.getSteamUserStats(steamUser, game.appId);
             await mkdirp(path.dirname(cachePaths.local));
             await fs.writeFile(cachePaths.local, JSON.stringify(activeAchievements, null, 2));
         } else {
@@ -184,7 +181,6 @@ class Steam implements AchievementsScraper {
                         source: 'Steam',
                         platform: 'Steam',
                         data: {
-                            type: 'steamAPI',
                             userId: user,
                             cachePath: steamCachePath
                         }

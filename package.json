@@ -14,6 +14,7 @@
     "test:fast": "mocha -r ts-node/register 'tests/**/*.test.ts' --timeout 2000 --require mocha-steps",
     "test:coverage": "nyc npm run test",
     "test:coverage:html": "nyc --reporter=html --reporter=text npm run test",
+    "test:coverage:lcov": "nyc --reporter=lcovonly npm run test",
     "test:fast:coverage:html": "nyc --reporter=html --reporter=text npm run test:fast"
   },
   "contributors": [
@@ -47,7 +48,7 @@
     "normalize-path": "^3.0.0",
     "regedit": "^3.0.3",
     "registry-js": "^1.12.0",
-    "regodit": "^1.0.1",
+    "regodit": "git+https://github.com/xan105/node-cgo-regodit.git",
     "steamid": "^1.1.3",
     "windows": "0.0.9",
     "xml2js": "^0.4.23"
@@ -61,6 +62,7 @@
     "@typescript-eslint/eslint-plugin": "^4.4.1",
     "@typescript-eslint/parser": "^4.4.1",
     "chai": "^4.2.0",
+    "codecov": "^3.8.0",
     "eslint": "^7.11.0",
     "eslint-plugin-sort-class-members": "^1.8.0",
     "mocha": "^8.1.3",

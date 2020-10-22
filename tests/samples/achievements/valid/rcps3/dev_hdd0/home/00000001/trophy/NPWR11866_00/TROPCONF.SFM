@@ -1,0 +1,204 @@
+<!--Sce-Np-Trophy-Signature: 4c39b98c010000000000000025819cfb098412f76041cf34587176a89e3cfb600260f1b0856d64f352a0826b6fa52019f1f447b52ada035ad1d2428bdb2f95a37d9fcc85e1d27c68d87e27b7f6e2a302903d949d5f255126b9b0db3626e279f0a890561384cf087cd377ea78b2c05bb95cd3ac6c9e162e9ea6bf24521ee47c7ea1d7301eedcd8ea23a9f220519560830455570ccb3fcd98f45d2b8490f9da800-->
+<trophyconf version="1.1" platform="ps3,ps4" policy="large">
+ <npcommid>NPWR11866_00</npcommid>
+ <trophyset-version>01.00</trophyset-version>
+ <parental-level license-area="default">0</parental-level>
+ <title-name>Persona 5</title-name>
+ <title-detail>Persona 5 Trophy Pack</title-detail>
+ <trophy id="000" hidden="no" ttype="P" pid="-1">
+  <name>Legendary Phantom Thief</name>
+  <detail>Earn all trophies.</detail>
+ </trophy>
+ <trophy id="001" hidden="yes" ttype="B" pid="000">
+  <name>Castle of Lust Falls</name>
+  <detail>Complete the Castle Palace.</detail>
+ </trophy>
+ <trophy id="002" hidden="yes" ttype="B" pid="000">
+  <name>Museum of Vanity Closes</name>
+  <detail>Complete the Museum Palace.</detail>
+ </trophy>
+ <trophy id="003" hidden="yes" ttype="B" pid="000">
+  <name>Bank of Gluttony Goes Bankrupt</name>
+  <detail>Complete the Bank Palace.</detail>
+ </trophy>
+ <trophy id="004" hidden="yes" ttype="B" pid="000">
+  <name>Pyramid of Wrath Collapses</name>
+  <detail>Complete the Pyramid Palace.</detail>
+ </trophy>
+ <trophy id="005" hidden="yes" ttype="B" pid="000">
+  <name>Spaceport of Greed Destroyed</name>
+  <detail>Complete the Spaceport Palace.</detail>
+ </trophy>
+ <trophy id="006" hidden="yes" ttype="B" pid="000">
+  <name>Casino of Jealousy Shut Down</name>
+  <detail>Complete the Casino Palace.</detail>
+ </trophy>
+ <trophy id="007" hidden="yes" ttype="B" pid="000">
+  <name>Cruiser of Pride Sinks</name>
+  <detail>Complete the Cruiser Palace.</detail>
+ </trophy>
+ <trophy id="008" hidden="yes" ttype="B" pid="000">
+  <name>The True Trickster</name>
+  <detail>Complete Mementos.</detail>
+ </trophy>
+ <trophy id="009" hidden="yes" ttype="G" pid="000">
+  <name>A New Journey</name>
+  <detail>See the ending.</detail>
+ </trophy>
+ <trophy id="010" hidden="no" ttype="B" pid="000">
+  <name>Phantom Thieves Formed</name>
+  <detail>Form the Phantom Thieves.</detail>
+ </trophy>
+ <trophy id="011" hidden="no" ttype="B" pid="000">
+  <name>Merciless Executioner</name>
+  <detail>Perform 50 Persona fusions.</detail>
+ </trophy>
+ <trophy id="012" hidden="no" ttype="B" pid="000">
+  <name>Execution Leading to Rebirth</name>
+  <detail>Perform a Guillotine execution.</detail>
+ </trophy>
+ <trophy id="013" hidden="no" ttype="S" pid="000">
+  <name>Passionate Listener</name>
+  <detail>Hear 250 of Futaba's navigation lines.</detail>
+ </trophy>
+ <trophy id="014" hidden="no" ttype="B" pid="000">
+  <name>The Ultimate Strike</name>
+  <detail>Deal over 999 damage in a single attack.</detail>
+ </trophy>
+ <trophy id="015" hidden="no" ttype="B" pid="000">
+  <name>Perfect Combination</name>
+  <detail>Perform 50 All-out Attacks.</detail>
+ </trophy>
+ <trophy id="016" hidden="no" ttype="B" pid="000">
+  <name>Precise Insight</name>
+  <detail>Exploit enemy weaknesses 100 times.</detail>
+ </trophy>
+ <trophy id="017" hidden="no" ttype="B" pid="000">
+  <name>A Phantom Thief's Duty</name>
+  <detail>Obtain a Treasure Demon.</detail>
+ </trophy>
+ <trophy id="018" hidden="yes" ttype="G" pid="000">
+  <name>Beyond Rehabilitation</name>
+  <detail>Defeat the twins.</detail>
+ </trophy>
+ <trophy id="019" hidden="no" ttype="B" pid="000">
+  <name>My Best Partner</name>
+  <detail>Enter a special relationship with someone.</detail>
+ </trophy>
+ <trophy id="020" hidden="no" ttype="B" pid="000">
+  <name>Soul of Rebellion</name>
+  <detail>Obtain the Persona Arsene.</detail>
+ </trophy>
+ <trophy id="021" hidden="no" ttype="S" pid="000">
+  <name>Mask Collector</name>
+  <detail>Complete the Persona Compendium.</detail>
+ </trophy>
+ <trophy id="022" hidden="no" ttype="B" pid="000">
+  <name>Mask of an Honor Student</name>
+  <detail>Rank first place on your exams.</detail>
+ </trophy>
+ <trophy id="023" hidden="no" ttype="B" pid="000">
+  <name>A True Confidant</name>
+  <detail>Max out one Confidant.</detail>
+ </trophy>
+ <trophy id="024" hidden="no" ttype="G" pid="000">
+  <name>Great Phantom Thieves Convene</name>
+  <detail>Max out all Confidants.</detail>
+ </trophy>
+ <trophy id="025" hidden="no" ttype="B" pid="000">
+  <name>Power That Connects</name>
+  <detail>Perform a Baton Pass 3 times in a single turn.</detail>
+ </trophy>
+ <trophy id="026" hidden="no" ttype="B" pid="000">
+  <name>I Am Thou</name>
+  <detail>Obtain a Persona through negotiation.</detail>
+ </trophy>
+ <trophy id="027" hidden="no" ttype="B" pid="000">
+  <name>Countless Masks</name>
+  <detail>Obtain 30 Personas through negotiation.</detail>
+ </trophy>
+ <trophy id="028" hidden="no" ttype="B" pid="000">
+  <name>The Sneaking One</name>
+  <detail>Ambush the enemy 50 times.</detail>
+ </trophy>
+ <trophy id="029" hidden="no" ttype="S" pid="000">
+  <name>A Unique Rebel</name>
+  <detail>Defeat the Reaper.</detail>
+ </trophy>
+ <trophy id="030" hidden="no" ttype="B" pid="000">
+  <name>Drink Fanatic</name>
+  <detail>Buy every kind of drink from vending machines.</detail>
+ </trophy>
+ <trophy id="031" hidden="no" ttype="B" pid="000">
+  <name>True Talent</name>
+  <detail>Max out all social stats.</detail>
+ </trophy>
+ <trophy id="032" hidden="no" ttype="B" pid="000">
+  <name>Nominating the Twins</name>
+  <detail>Perform a Group Guillotine execution.</detail>
+ </trophy>
+ <trophy id="033" hidden="no" ttype="B" pid="000">
+  <name>Atop Countless Sacrifices</name>
+  <detail>Perform a Gallows execution.</detail>
+ </trophy>
+ <trophy id="034" hidden="no" ttype="B" pid="000">
+  <name>A Sublime Experiment</name>
+  <detail>Perform an Electric Chair execution.</detail>
+ </trophy>
+ <trophy id="035" hidden="no" ttype="B" pid="000">
+  <name>Through One's Sentence</name>
+  <detail>Learn a new Persona skill through Lockdown.</detail>
+ </trophy>
+ <trophy id="036" hidden="no" ttype="B" pid="000">
+  <name>Competent Negotiator</name>
+  <detail>Successfully rescue a hostage from an enemy's threat.</detail>
+ </trophy>
+ <trophy id="037" hidden="no" ttype="B" pid="000">
+  <name>Skilled Gunman</name>
+  <detail>Defeat 3 or more enemies at once with a single round of bullets.</detail>
+ </trophy>
+ <trophy id="038" hidden="no" ttype="B" pid="000">
+  <name>Beginner Phantom Thieves</name>
+  <detail>Complete 5 requests.</detail>
+ </trophy>
+ <trophy id="039" hidden="no" ttype="S" pid="000">
+  <name>A Perfect Job</name>
+  <detail>Complete all requests.</detail>
+ </trophy>
+ <trophy id="040" hidden="no" ttype="B" pid="000">
+  <name>My Backyard</name>
+  <detail>Unlock all hangout spots.</detail>
+ </trophy>
+ <trophy id="041" hidden="no" ttype="B" pid="000">
+  <name>Guardian of the Pond</name>
+  <detail>Catch the Guardian of the fishing pond.</detail>
+ </trophy>
+ <trophy id="042" hidden="no" ttype="B" pid="000">
+  <name>Aggressive Searcher</name>
+  <detail>Obtain 150 items from searchable objects in Palaces.</detail>
+ </trophy>
+ <trophy id="043" hidden="no" ttype="B" pid="000">
+  <name>Under-the-Table Goods</name>
+  <detail>Customize a gun.</detail>
+ </trophy>
+ <trophy id="044" hidden="no" ttype="B" pid="000">
+  <name>Craftworker</name>
+  <detail>Create all types of infiltration tools.</detail>
+ </trophy>
+ <trophy id="045" hidden="no" ttype="B" pid="000">
+  <name>Bookworm</name>
+  <detail>Read all books.</detail>
+ </trophy>
+ <trophy id="046" hidden="yes" ttype="S" pid="000">
+  <name>One Who Rebels Against a God</name>
+  <detail>Create Satanael.</detail>
+ </trophy>
+ <trophy id="047" hidden="no" ttype="B" pid="000">
+  <name>Golden Finger</name>
+  <detail>Complete all video games.</detail>
+ </trophy>
+ <trophy id="048" hidden="no" ttype="B" pid="000">
+  <name>The City's Hard Hitter</name>
+  <detail>Hit a home run at the batting cages.</detail>
+ </trophy>
+</trophyconf>

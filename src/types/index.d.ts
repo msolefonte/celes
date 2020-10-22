@@ -134,7 +134,7 @@ export interface NormalizedProgress {
     maximProgress: number
 }
 
-export type Platform = 'Steam';
+export type Platform = 'PS3' | 'Steam';
 
 export interface ReloadedAchievementData {
     State: number;
@@ -150,7 +150,6 @@ export interface ScanResult {
     source: Source;
     platform: Platform;
     data: {
-        type: 'file' | 'steamAPI';
         cachePath?: string;
         path?: string;
         userId?: SteamUser;
@@ -176,7 +175,7 @@ export interface SkidrowAchievementList {
 }
 
 export type Source = '3DM' | 'Ali213' | 'Codex' | 'CreamAPI' | 'Darksiders' | 'Goldberg' | 'Merge' | 'Reloaded' |
-    'Skidrow' | 'SmartSteamEmu' | 'Steam';
+    'RPCS3' | 'Skidrow' | 'SmartSteamEmu' | 'Steam';
 
 export interface SourceStats {
     source: Source;

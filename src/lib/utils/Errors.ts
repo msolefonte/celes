@@ -16,6 +16,12 @@ class PlatformNotAvailableError extends Error {
     }
 }
 
+class SteamGameCacheNotFound extends Error {
+    constructor(appId: string) {
+        super('Steam not found for game ' + appId);
+    }
+}
+
 class SteamNotFoundError extends Error {
     constructor() {
         super('Steam path not found. Is it installed?');
@@ -38,6 +44,7 @@ export {
     InvalidApiVersionError,
     FileNotFoundError,
     PlatformNotAvailableError,
+    SteamGameCacheNotFound,
     SteamNotFoundError,
     SteamPublicUsersNotFoundError,
     WrongSourceDetectedError

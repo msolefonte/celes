@@ -120,7 +120,7 @@ class Celes {
             data: mergedData
         }
 
-        if (scrapResult.error) {
+        if (scrapResult.error !== undefined) {
             result.error = scrapResult.error;
         }
 

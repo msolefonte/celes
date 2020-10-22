@@ -43,7 +43,6 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
             const gameMetadata: ScanResult = {
                 appId: path.parse(dir).name.toString(),
                 data: {
-                    type: 'file',
                     path: dir
                 },
                 source: this.source,
@@ -74,8 +73,7 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
     }
 
     protected async getFoldersToScan(specificFolders: string[], additionalFolders: string[]): Promise<string[]> {
-        // let foldersToScan: string[] = [];
-        let foldersToScan: string[] = specificFolders; // FIXME FOR RELEASE
+        let foldersToScan: string[] = [];
 
         if (additionalFolders.length > 0) {
             foldersToScan = foldersToScan.concat(additionalFolders);
