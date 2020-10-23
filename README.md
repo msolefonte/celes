@@ -1,11 +1,11 @@
-# Celes
-
 [![Node version](https://img.shields.io/node/v/celes.svg)](http://nodejs.org/download/)
 [![NodeJS CI Actions Status](https://img.shields.io/github/workflow/status/achievement-watcher/celes/nodejs-ci)](https://github.com/achievement-watcher/celes/workflows/nodejs-ci/action)
 [![Codecov](https://codecov.io/gh/achievement-watcher/celes/branch/master/graph/badge.svg)](https://codecov.io/gh/achievement-watcher/celes)
 [![Maintainability](https://api.codeclimate.com/v1/badges/8e48291929dd5190e908/maintainability)](https://codeclimate.com/github/achievement-watcher/celes/maintainability)
 [![License](https://img.shields.io/github/license/achievement-watcher/celes)](LICENSE)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/dwyl/esta/issues)
+
+# Celes
 
 Celes is an Open Source file and registry scraper that obtains and stores game achievements, whatever the origin. 
 
@@ -57,7 +57,7 @@ TBD
 
 ## Contributing
 
-Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
+Contributions are welcome. See [CONTRIBUTING](CONTRIBUTING.md) for more information.
 
 ## License
 
