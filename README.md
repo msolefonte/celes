@@ -53,7 +53,90 @@ npm install celes --save
 
 ### API
 
-TBD
+#### Import
+
+```typescript
+import {Celes} from 'celes'
+```
+
+#### The Celes Object
+
+Celes is the main class exported and the one that has to be used principaly. If can be widely configured as presented
+below:
+
+```typescript
+class Celes {
+    constructor(
+        achievementWatcherRootPath: string, 
+        additionalFoldersToScan?: string[], 
+        enabledPlugins?: string[], 
+        steamPluginMode?: 0 | 1 | 2, 
+        systemLanguage?: string, 
+        useOldestUnlockTime?: boolean
+    ) {}
+}
+```
+
+##### Constructor parameters explanation
+
+* **achievementWatcherRootPath:** _string_: Root path of the data folder of the Achievement Watcher project. It should
+    be created in the installation of Achievement Watcher and, usually, it defaults to `%APPDATA%/Achievement Watcher`.
+    Inside of it, caches and schemas and user stats are stored.
+* **additionalFoldersToScan?:** _string[]_: List of folders defined by the user to scan. Used by some plugins to try
+    to scrap achievement data from there.
+* **enabledPlugins?:** _string[]_: List of plugin names that have to be used. The plugin names are defined by the name
+    of the files stored under (src/lib/plugins)[src/lib/plugins]. By deafault, all of them are enabled.
+* **steamPluginMode?:** _0 | 1 | 2_: Work mode of the Steam plugin:
+    * 0 -> Disabled. 
+    * 1 -> Enabled. Only Installed games are shown.
+    * 2 -> Enabled. All games are shown.
+* **systemLanguage?:** _string_: User defined language. Defaults to english.
+* **useOldestUnlockTime?:** _boolean_: Method to be used when merging same achievements from different sources. By
+  default, oldest unlock time is used, which means that, under collision, the unlock time stored is the most ancient 
+  one.
+  
+#### Celes API
+
+This is the list of public methods available at Celes. An always-updated explanation can be found inside of the 
+[src/lib/Celes.ts](src/lib/Celes.ts) file. In the case of the NPM package, the detailed explanation should be instead
+at [dist/lib/Celes.d.ts](dist/lib/Celes.d.ts).
+
+##### Pull
+
+```
+async pull(callbackProgress?: (progress: number) => void): Promise<ScrapResult> {};
+```
+
+##### Load
+
+```
+async load(callbackProgress?: (progress: number) => void): Promise<GameData[]> {};
+``` 
+
+##### Export
+
+```
+async export(filePath: string): Promise<void> {};
+```
+
+##### Import
+
+```
+async import(filePath: string, force?: boolean): Promise<GameData[]> {};
+```   
+
+##### Set Achievement Unlock Time
+
+```
+async setAchievementUnlockTime(appId: string, source: Source, platform: Platform, achievementId: string, 
+                               unlockTime: number): Promise<void> {};
+```
+
+##### Add Game Playtime
+
+```
+async addGamePlaytime(appId: string, platform: Platform, playtime: number, force?: boolean): Promise<void> {};
+```
 
 ## Contributing
 
