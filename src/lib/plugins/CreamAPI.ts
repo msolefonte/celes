@@ -7,8 +7,8 @@ import {
     Source,
     UnlockedOrInProgressAchievement
 } from '../../types';
-import {generateActiveAchievement} from './utils/Common';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
+import {generateActiveAchievement} from './utils/Common';
 
 class CreamAPI extends SteamEmulatorScraper {
     readonly source: Source = 'CreamAPI';

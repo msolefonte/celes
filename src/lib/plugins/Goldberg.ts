@@ -10,10 +10,9 @@ import {
     Source,
     UnlockedOrInProgressAchievement
 } from '../../types';
-import {generateActiveAchievement} from './utils/Common';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
 import {WrongSourceDetectedError} from '../utils/Errors';
-
+import {generateActiveAchievement} from './utils/Common';
 
 class Goldberg extends SteamEmulatorScraper {
     readonly source: Source = 'Goldberg';

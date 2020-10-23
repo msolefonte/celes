@@ -8,15 +8,15 @@ import {
     TDMAchievementList2,
     UnlockedOrInProgressAchievement
 } from '../../types';
+import {generateActiveAchievement, normalizeTimestamp} from './utils/Common';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
 import {WrongSourceDetectedError} from '../utils/Errors';
-import {generateActiveAchievement, normalizeTimestamp} from './utils/Common';
 
 class Reloaded extends SteamEmulatorScraper {
     readonly source: Source = '3DM';
     readonly achievementWatcherRootPath: string;
     readonly achievementLocationFiles: string[] = [
-        'stats/achievements.ini', // TODO CHECK (STATS/*) ?
+        'stats/achievements.ini',
         'RemoteStorage/steam_achievement.ini'
     ];
 

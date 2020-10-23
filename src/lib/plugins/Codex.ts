@@ -9,9 +9,9 @@ import {
     Source,
     UnlockedOrInProgressAchievement
 } from '../../types';
+import {generateActiveAchievement, normalizeProgress} from './utils/Common';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
 import {WrongSourceDetectedError} from '../utils/Errors';
-import {generateActiveAchievement, normalizeProgress} from './utils/Common';
 import {omit} from 'lodash';
 
 class Codex extends SteamEmulatorScraper {

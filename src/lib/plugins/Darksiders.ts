@@ -5,8 +5,8 @@ import {
     Source,
     UnlockedOrInProgressAchievement
 } from '../../types';
-import {generateActiveAchievement} from './utils/Common';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
+import {generateActiveAchievement} from './utils/Common';
 
 class Darksiders extends SteamEmulatorScraper {
     readonly source: Source = 'Darksiders';
@@ -36,9 +36,7 @@ class Darksiders extends SteamEmulatorScraper {
     }
 
     getSpecificFoldersToScan(): string[] {
-        return [
-            // TODO CHECK
-        ];
+        return [];
     }
 }
 

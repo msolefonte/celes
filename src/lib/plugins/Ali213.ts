@@ -6,8 +6,8 @@ import {
     Source,
     UnlockedOrInProgressAchievement
 } from '../../types';
-import {generateActiveAchievement} from './utils/Common';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
+import {generateActiveAchievement} from './utils/Common';
 
 class Ali213 extends SteamEmulatorScraper {
     readonly source: Source = 'Ali213';
@@ -38,9 +38,7 @@ class Ali213 extends SteamEmulatorScraper {
     }
 
     getSpecificFoldersToScan(): string[] {
-        return [
-            // TODO CHECK
-        ];
+        return [];
     }
 }
 

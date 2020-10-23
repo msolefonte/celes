@@ -8,8 +8,8 @@
     "esModuleInterop": true,
     "noImplicitReturns": true,
     "pretty": true,
-    "noUnusedLocals": true,  // TODO FIX PRE PUSH
-    "noUnusedParameters": true,  // TODO FIX PRE PUSH
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "alwaysStrict": true,
     "strict": true
   },
