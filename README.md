@@ -79,19 +79,19 @@ class Celes {
 
 ##### Constructor parameters explanation
 
-* **achievementWatcherRootPath:** _string_: Root path of the data folder of the Achievement Watcher project. It should
+* *achievementWatcherRootPath:* __string__: Root path of the data folder of the Achievement Watcher project. It should
     be created in the installation of Achievement Watcher and, usually, it defaults to `%APPDATA%/Achievement Watcher`.
     Inside of it, caches and schemas and user stats are stored.
-* **additionalFoldersToScan?:** _string[]_: List of folders defined by the user to scan. Used by some plugins to try
+* *additionalFoldersToScan?:* __string[]__: List of folders defined by the user to scan. Used by some plugins to try
     to scrap achievement data from there.
-* **enabledPlugins?:** _string[]_: List of plugin names that have to be used. The plugin names are defined by the name
+* *enabledPlugins?:* __string[]__: List of plugin names that have to be used. The plugin names are defined by the name
     of the files stored under (src/lib/plugins)[src/lib/plugins]. By deafault, all of them are enabled.
-* **steamPluginMode?:** _0 | 1 | 2_: Work mode of the Steam plugin:
-    * 0 -> Disabled. 
-    * 1 -> Enabled. Only Installed games are shown.
-    * 2 -> Enabled. All games are shown.
-* **systemLanguage?:** _string_: User defined language. Defaults to english.
-* **useOldestUnlockTime?:** _boolean_: Method to be used when merging same achievements from different sources. By
+* *steamPluginMode?:* __0 | 1 | 2__: Work mode of the Steam plugin:
+    * __0__ -> Disabled. 
+    * __1__ -> Enabled. Only Installed games are shown.
+    * __2__ -> Enabled. All games are shown.
+* *systemLanguage?:* __string__: User defined language. Defaults to english.
+* *useOldestUnlockTime?:* __boolean__: Method to be used when merging same achievements from different sources. By
   default, oldest unlock time is used, which means that, under collision, the unlock time stored is the most ancient 
   one.
   
@@ -135,7 +135,8 @@ async setAchievementUnlockTime(appId: string, source: Source, platform: Platform
 ##### Add Game Playtime
 
 ```
-async addGamePlaytime(appId: string, platform: Platform, playtime: number, force?: boolean): Promise<void> {};
+async addGamePlaytime(appId: string, platform: Platform, playtime: number, 
+                      force?: boolean): Promise<void> {};
 ```
 
 ## Contributing
