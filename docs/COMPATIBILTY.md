@@ -10,7 +10,7 @@ This is the list of emulators/clients supported sorted alphabetically.
 | ALI213 | ✔ | ✔ | ❌ | Ali213 | Only Custom Dirs |
 | Codex | ✔ | ✔ | ⚠<sup>3</sup> | Codex | `%PUBLIC%\Documents\Steam\CODEX`, `%appdata%\Steam\CODEX` |
 | Plaza | ✔ | ✔ | ⚠<sup>3</sup> | Codex | Only Custom Dirs |
-| CreamAPI | ✔ | ⚠<sup>2</sup> | CreamAPI | CreamAPI | `%appdata%\CreamAPI` |
+| CreamAPI | ✔ | ⚠<sup>2</sup> | ❌ | CreamAPI | `%appdata%\CreamAPI` |
 | DARKSiDERS | ✔ | ✔ | ❌ | Darksiders | Only Custom Dirs |
 | Goldberg Steam Emu | ✔ | ✔ | ⚠<sup>3</sup> | Goldberg | `%appdata%\Goldberg SteamEmu Saves` |
 | EMPRESS (Q4 2020) | ✔ | ✔ | ⚠<sup>3</sup> | Goldberg | Only Custom Dirs |
