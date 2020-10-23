@@ -1,11 +1,11 @@
-# Celes
-
 [![Node version](https://img.shields.io/node/v/celes.svg)](http://nodejs.org/download/)
 [![NodeJS CI Actions Status](https://img.shields.io/github/workflow/status/achievement-watcher/celes/nodejs-ci)](https://github.com/achievement-watcher/celes/workflows/nodejs-ci/action)
 [![Codecov](https://codecov.io/gh/achievement-watcher/celes/branch/master/graph/badge.svg)](https://codecov.io/gh/achievement-watcher/celes)
 [![Maintainability](https://api.codeclimate.com/v1/badges/8e48291929dd5190e908/maintainability)](https://codeclimate.com/github/achievement-watcher/celes/maintainability)
 [![License](https://img.shields.io/github/license/achievement-watcher/celes)](LICENSE)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/dwyl/esta/issues)
+
+# Celes
 
 Celes is an Open Source file and registry scraper that obtains and stores game achievements, whatever the origin. 
 
@@ -53,11 +53,95 @@ npm install celes --save
 
 ### API
 
-TBD
+#### Import
+
+```typescript
+import {Celes} from 'celes'
+```
+
+#### The Celes Object
+
+Celes is the main class exported and the one that has to be used principaly. If can be widely configured as presented
+below:
+
+```typescript
+class Celes {
+    constructor(
+        achievementWatcherRootPath: string, 
+        additionalFoldersToScan?: string[], 
+        enabledPlugins?: string[], 
+        steamPluginMode?: 0 | 1 | 2, 
+        systemLanguage?: string, 
+        useOldestUnlockTime?: boolean
+    ) {}
+}
+```
+
+##### Constructor parameters explanation
+
+* *achievementWatcherRootPath:* __string__: Root path of the data folder of the Achievement Watcher project. It should
+    be created in the installation of Achievement Watcher and, usually, it defaults to `%APPDATA%/Achievement Watcher`.
+    Inside of it, caches and schemas and user stats are stored.
+* *additionalFoldersToScan?:* __string[]__: List of folders defined by the user to scan. Used by some plugins to try
+    to scrap achievement data from there.
+* *enabledPlugins?:* __string[]__: List of plugin names that have to be used. The plugin names are defined by the name
+    of the files stored under (src/lib/plugins)[src/lib/plugins]. By deafault, all of them are enabled.
+* *steamPluginMode?:* __0 | 1 | 2__: Work mode of the Steam plugin:
+    * __0__ -> Disabled. 
+    * __1__ -> Enabled. Only Installed games are shown.
+    * __2__ -> Enabled. All games are shown.
+* *systemLanguage?:* __string__: User defined language. Defaults to english.
+* *useOldestUnlockTime?:* __boolean__: Method to be used when merging same achievements from different sources. By
+  default, oldest unlock time is used, which means that, under collision, the unlock time stored is the most ancient 
+  one.
+  
+#### Celes API
+
+This is the list of public methods available at Celes. An always-updated explanation can be found inside of the 
+[src/lib/Celes.ts](src/lib/Celes.ts) file. In the case of the NPM package, the detailed explanation should be instead
+at [dist/lib/Celes.d.ts](dist/lib/Celes.d.ts).
+
+##### Pull
+
+```
+async pull(callbackProgress?: (progress: number) => void): Promise<ScrapResult> {};
+```
+
+##### Load
+
+```
+async load(callbackProgress?: (progress: number) => void): Promise<GameData[]> {};
+``` 
+
+##### Export
+
+```
+async export(filePath: string): Promise<void> {};
+```
+
+##### Import
+
+```
+async import(filePath: string, force?: boolean): Promise<GameData[]> {};
+```   
+
+##### Set Achievement Unlock Time
+
+```
+async setAchievementUnlockTime(appId: string, source: Source, platform: Platform, achievementId: string, 
+                               unlockTime: number): Promise<void> {};
+```
+
+##### Add Game Playtime
+
+```
+async addGamePlaytime(appId: string, platform: Platform, playtime: number, 
+                      force?: boolean): Promise<void> {};
+```
 
 ## Contributing
 
-Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
+Contributions are welcome. See [CONTRIBUTING](CONTRIBUTING.md) for more information.
 
 ## License
 

@@ -73,6 +73,24 @@ class Celes {
 
     private readonly apiVersion: string = 'v1';
 
+    /**
+     * Celes constructor.
+     *
+     * @param achievementWatcherRootPath - Root path of the data folder of the Achievement Watcher project. It should
+     * be created in the installation of Achievement Watcher and, usually, it defaults to
+     * `%APPDATA%/Achievement Watcher`. Inside of it, caches and schemas and user stats are stored.
+     * @param additionalFoldersToScan - List of folders defined by the user to scan. Used by some plugins to try to
+     * scrap achievement data from there.
+     * @param enabledPlugins - List of plugin names that have to be used. The plugin names are defined by the name of
+     * the files stored under `src/lib/plugins`. By deafault, all of them are enabled.
+     * @param steamPluginMode - Work mode of the Steam plugin:
+     *    0 -> Disabled.
+     *    1 -> Enabled. Only Installed games are shown.
+     *    2 -> Enabled. All games are shown.
+     * @param systemLanguage - User defined language. Defaults to english.
+     * @param useOldestUnlockTime - Method to be used when merging same achievements from different sources. By default,
+     * oldest unlock time is used, which means that, under collision, the unlock time stored is the most ancient one.
+     */
     constructor(
         achievementWatcherRootPath: string,
         additionalFoldersToScan: string[] = [],
@@ -110,7 +128,7 @@ class Celes {
      *
      * A collection of games, formed by schemas and unlocked achievements, result from the merge, is returned.
      *
-     * @param callbackProgress
+     * @param callbackProgress - Function to be invoked every time there is a change in the progress.
      */
     async pull(callbackProgress?: (progress: number) => void): Promise<ScrapResult> {
         let mergedData: GameData[] = [];
@@ -146,7 +164,7 @@ class Celes {
      *
      * Note that this call does not detect any filesystem changes.
      *
-     * @param callbackProgress
+     * @param callbackProgress - Function to be invoked every time there is a change in the progress.
      */
     async load(callbackProgress?: (progress: number) => void): Promise<GameData[]> {
         const celesDbConnector = new CelesDbConnector(this.achievementWatcherRootPath);
@@ -158,7 +176,7 @@ class Celes {
      *
      * Note that schemas are not exported.
      *
-     * @param filePath
+     * @param filePath - Path of the file to export to.
      */
     async export(filePath: string): Promise<void> {
         const gameDataCollection: GameData[] = await this.load();
@@ -191,8 +209,8 @@ class Celes {
      * A collection of games, formed by schemas and unlocked achievements, result from the merge or the push, is
      * returned.
      *
-     * @param filePath
-     * @param force
+     * @param filePath - Path of the file to import from.
+     * @param force - If false, imported dats is merged with the existent one. Else, existent data is replaced.
      */
     async import(filePath: string, force = false): Promise<GameData[]> {
         const celesDbConnector = new CelesDbConnector(this.achievementWatcherRootPath);
@@ -251,6 +269,17 @@ class Celes {
         return newData;
     }
 
+    /**
+     * Sets the achievement unlock time for one game. The game has to exist in the Celes Database.
+     *
+     * If achievement already has unlock time set, it is replaced.
+     *
+     * @param appId - Identifier of the game.
+     * @param source - Source of the game.
+     * @param platform - Platform of the game.
+     * @param achievementId - Identifier of the achievmeent.
+     * @param unlockTime - Unlock time to be set.
+     */
     async setAchievementUnlockTime(appId: string, source: Source, platform: Platform, achievementId: string,
                                    unlockTime: number): Promise<void> {
         const celesDbConnector = new CelesDbConnector(this.achievementWatcherRootPath);
@@ -274,6 +303,15 @@ class Celes {
         }
     }
 
+    /**
+     * Given a game, adds or sets playtime to it. Game has to exist in the database.
+     *
+     * @param appId - Identifier of the game.
+     * @param platform - Platform of the game.
+     * @param playtime - Playtime to be set or increased.
+     * @param force - If true, existent playtime is replaced. Else, the result is the sum of the existent and the new
+     * value.
+     */
     async addGamePlaytime(appId: string, platform: Platform, playtime: number, force = false): Promise<void> {
         const celesDbConnector = new CelesDbConnector(this.achievementWatcherRootPath);
 
