@@ -8,6 +8,7 @@ import {
     UnlockedOrInProgressAchievement
 } from '../../types';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
+import {generateActiveAchievement} from './utils/Common';
 
 class CreamAPI extends SteamEmulatorScraper {
     readonly source: Source = 'CreamAPI';
@@ -28,13 +29,12 @@ class CreamAPI extends SteamEmulatorScraper {
 
         Object.keys(achievementList).forEach((achievementName: string) => {
             const achievementData: CreamApiAchievementData = achievementList[achievementName];
-            activeAchievements.push({
-                name: achievementName,
-                achieved: 1,
-                currentProgress: 0,
-                maxProgress: 0,
-                unlockTime: achievementData.unlocktime * 1000000,
-            });
+            activeAchievements.push(
+                generateActiveAchievement(
+                    achievementName,
+                    achievementData.unlocktime * 1000000
+                )
+            );
         });
 
         return activeAchievements;

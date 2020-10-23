@@ -23,7 +23,7 @@ import mkdirp from 'mkdirp';
 import moment from 'moment';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import regedit from 'regodit'; // TODO LOOK FOR ALTERNATIVES
+import regedit from 'regodit';
 
 class Steam implements AchievementsScraper {
     private static async getSteamPath(): Promise<string> {

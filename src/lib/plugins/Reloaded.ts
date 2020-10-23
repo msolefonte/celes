@@ -7,7 +7,7 @@ import {
     Source,
     UnlockedOrInProgressAchievement
 } from '../../types';
-import {normalizeProgress, normalizeTimestamp} from './utils/Common';
+import {generateActiveAchievement, normalizeProgress, normalizeTimestamp} from './utils/Common';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
 import {WrongSourceDetectedError} from '../utils/Errors';
 import {omit} from 'lodash';
@@ -45,21 +45,25 @@ class Reloaded extends SteamEmulatorScraper {
             const normalizedProgress = normalizeProgress(achievementData.CurProgress.toString(), achievementData.MaxProgress.toString());
 
             if (achievementData.State.toString() === '100000001') {
-                activeAchievements.push({
-                    name: achievementName,
-                    achieved: 1,
-                    currentProgress: normalizedProgress.currentProgress, // Waiting for samples
-                    maxProgress: normalizedProgress.maximProgress,
-                    unlockTime: normalizeTimestamp(achievementData.Time.toString())
-                });
+                activeAchievements.push(
+                    generateActiveAchievement(
+                        achievementName,
+                        normalizeTimestamp(achievementData.Time.toString()),
+                        1,
+                        normalizedProgress.currentProgress,
+                        normalizedProgress.maximProgress
+                    )
+                );
             } else if (normalizedProgress.maximProgress > 0) {
-                activeAchievements.push({
-                    name: achievementName,
-                    achieved: 0,
-                    currentProgress: normalizedProgress.currentProgress,
-                    maxProgress: normalizedProgress.maximProgress,
-                    unlockTime: normalizeTimestamp(achievementData.Time.toString())
-                });
+                activeAchievements.push(
+                    generateActiveAchievement(
+                        achievementName,
+                        normalizeTimestamp(achievementData.Time.toString()),
+                        0,
+                        normalizedProgress.currentProgress,
+                        normalizedProgress.maximProgress
+                    )
+                );
             }
         });
 

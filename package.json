@@ -1,7 +1,7 @@
 {
   "name": "celes",
-  "version": "0.1.0",
-  "description": "Celes is an open source file scraper that obtains and stores game achievements, whatever the origin",
+  "version": "1.0.0",
+  "description": "File and registry scraper that obtains and stores game achievements, whatever the origin",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc && ncp src/types dist/types",

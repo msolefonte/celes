@@ -3,9 +3,10 @@
 import * as path from 'path';
 import {SkidrowAchievementList, Source, UnlockedOrInProgressAchievement} from '../../types';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
+import {generateActiveAchievement} from './utils/Common';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import regedit from 'regodit'; // TODO LOOK FOR ALTERNATIVES
+import regedit from 'regodit';
 
 class Skidrow extends SteamEmulatorScraper {
     readonly source: Source = 'Skidrow';
@@ -28,13 +29,7 @@ class Skidrow extends SteamEmulatorScraper {
             const achievementIsUnlocked: boolean = achievementList.ACHIEVE_DATA[achievementName] === 1;
 
             if (achievementIsUnlocked) {
-                activeAchievements.push({
-                    name: achievementName,
-                    achieved: 1,
-                    currentProgress: 0,
-                    maxProgress: 0,
-                    unlockTime: 0,
-                });
+                activeAchievements.push(generateActiveAchievement(achievementName));
             }
         });
 
@@ -42,7 +37,7 @@ class Skidrow extends SteamEmulatorScraper {
     }
 
     protected async getFoldersToScan(specificFolders: string[], additionalFolders: string[]): Promise<string[]> {
-        const docsFolderPath: string = await regedit.promises.RegQueryStringValue('HKCU', // TODO REGEDIT SUS
+        const docsFolderPath: string = await regedit.promises.RegQueryStringValue('HKCU',
             'Software/Microsoft/Windows/CurrentVersion/Explorer/User Shell Folders', 'Personal');
 
         /* istanbul ignore next */
