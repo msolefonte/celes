@@ -11,7 +11,7 @@ import {
 } from '../../types';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
 import {WrongSourceDetectedError} from '../utils/Errors';
-import {normalizeProgress} from './utils/Common';
+import {generateActiveAchievement, normalizeProgress} from './utils/Common';
 import {omit} from 'lodash';
 
 class Codex extends SteamEmulatorScraper {
@@ -45,30 +45,36 @@ class Codex extends SteamEmulatorScraper {
             const normalizedProgress = normalizeProgress(achievementData.CurProgress, achievementData.MaxProgress);
 
             if (achievementData.Achieved == '1') {
-                activeAchievements.push({
-                    name: achievementName,
-                    achieved: 1,
-                    currentProgress: normalizedProgress.currentProgress,
-                    maxProgress: normalizedProgress.maximProgress,
-                    unlockTime: parseInt(achievementData.UnlockTime) * 1000,
-                });
+                activeAchievements.push(
+                    generateActiveAchievement(
+                        achievementName,
+                        parseInt(achievementData.UnlockTime) * 1000,
+                        1,
+                        normalizedProgress.currentProgress,
+                        normalizedProgress.maximProgress
+                    )
+                );
             } else if (normalizedProgress.maximProgress > 0) {
                 if (normalizedProgress.currentProgress == normalizedProgress.maximProgress) {
-                    activeAchievements.push({
-                        name: achievementName,
-                        achieved: 1,
-                        currentProgress: normalizedProgress.currentProgress,
-                        maxProgress: normalizedProgress.maximProgress,
-                        unlockTime: parseInt(achievementData.UnlockTime) * 1000,
-                    });
+                    activeAchievements.push(
+                        generateActiveAchievement(
+                            achievementName,
+                            parseInt(achievementData.UnlockTime) * 1000,
+                            1,
+                            normalizedProgress.currentProgress,
+                            normalizedProgress.maximProgress
+                        )
+                    );
                 } else {
-                    activeAchievements.push({
-                        name: achievementName,
-                        achieved: 0,
-                        currentProgress: normalizedProgress.currentProgress,
-                        maxProgress: normalizedProgress.maximProgress,
-                        unlockTime: parseInt(achievementData.UnlockTime) * 1000,
-                    });
+                    activeAchievements.push(
+                        generateActiveAchievement(
+                            achievementName,
+                            parseInt(achievementData.UnlockTime) * 1000,
+                            0,
+                            normalizedProgress.currentProgress,
+                            normalizedProgress.maximProgress
+                        )
+                    );
                 }
             }
         });

@@ -2,6 +2,7 @@
 
 import * as path from 'path';
 import {SkidrowAchievementList, Source, UnlockedOrInProgressAchievement} from '../../types';
+import {generateActiveAchievement} from './utils/Common';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -28,13 +29,7 @@ class Skidrow extends SteamEmulatorScraper {
             const achievementIsUnlocked: boolean = achievementList.ACHIEVE_DATA[achievementName] === 1;
 
             if (achievementIsUnlocked) {
-                activeAchievements.push({
-                    name: achievementName,
-                    achieved: 1,
-                    currentProgress: 0,
-                    maxProgress: 0,
-                    unlockTime: 0,
-                });
+                activeAchievements.push(generateActiveAchievement(achievementName));
             }
         });
 

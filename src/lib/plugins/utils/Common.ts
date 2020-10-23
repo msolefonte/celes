@@ -1,4 +1,4 @@
-import {NormalizedProgress} from '../../../types';
+import {NormalizedProgress, UnlockedOrInProgressAchievement} from '../../../types';
 import {promises as fs} from 'fs';
 import moment from 'moment';
 
@@ -13,6 +13,17 @@ async function existsAndIsYoungerThan(path: string, time = 7, timeUnit: moment.u
         }
     } catch (e) {
         return false;
+    }
+}
+
+function generateActiveAchievement(name: string, unlockTime = 0, achieved: 1 | 0 = 1, currentProgress = 0,
+                                   maxProgress = 0): UnlockedOrInProgressAchievement {
+    return {
+        name: name,
+        achieved: achieved,
+        currentProgress: currentProgress,
+        maxProgress: maxProgress,
+        unlockTime: unlockTime
     }
 }
 
@@ -37,4 +48,4 @@ function normalizeTimestamp(hexadecimalTime: string): number {
     }
 }
 
-export {existsAndIsYoungerThan, normalizeProgress, normalizeTimestamp};
+export {existsAndIsYoungerThan, generateActiveAchievement, normalizeProgress, normalizeTimestamp};

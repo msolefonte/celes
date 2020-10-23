@@ -10,6 +10,7 @@ import {
     Source,
     UnlockedOrInProgressAchievement
 } from '../../types';
+import {generateActiveAchievement} from './utils/Common';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
 import {WrongSourceDetectedError} from '../utils/Errors';
 
@@ -39,22 +40,14 @@ class Goldberg extends SteamEmulatorScraper {
                 if ('CurProgress' in achievementData || 'MaxProgress' in achievementData) {
                     throw new WrongSourceDetectedError();
                 } else {
-                    activeAchievements.push({
-                        name: achievementName,
-                        achieved: 1,
-                        currentProgress: 0,
-                        maxProgress: 0,
-                        unlockTime: parseInt(achievementData.UnlockTime) * 1000,
-                    });
+                    activeAchievements.push(
+                        generateActiveAchievement(achievementName, parseInt(achievementData.UnlockTime) * 1000)
+                    );
                 }
             } else if ('earned' in achievementData) {
-                activeAchievements.push({
-                    name: achievementName,
-                    achieved: 1,
-                    currentProgress: 0,
-                    maxProgress: 0,
-                    unlockTime: achievementData.earned_time * 1000,
-                });
+                activeAchievements.push(
+                    generateActiveAchievement(achievementName, achievementData.earned_time * 1000)
+                );
             }
         });
 

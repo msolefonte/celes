@@ -5,6 +5,7 @@ import {
     Source,
     UnlockedOrInProgressAchievement
 } from '../../types';
+import {generateActiveAchievement} from './utils/Common';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
 
 class Darksiders extends SteamEmulatorScraper {
@@ -23,13 +24,12 @@ class Darksiders extends SteamEmulatorScraper {
         const activeAchievements: UnlockedOrInProgressAchievement[] = [];
 
         Object.keys(achievementList.Achievements).forEach((achievementName: string) => {
-            activeAchievements.push({
-                name: achievementName,
-                achieved: 1,
-                currentProgress: 0,
-                maxProgress: 0,
-                unlockTime: parseInt(achievementList.AchievementsUnlockTimes[achievementName]) * 1000
-            });
+            activeAchievements.push(
+                generateActiveAchievement(
+                    achievementName,
+                    parseInt(achievementList.AchievementsUnlockTimes[achievementName]) * 1000
+                )
+            );
         });
 
         return activeAchievements;

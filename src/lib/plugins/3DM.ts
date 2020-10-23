@@ -10,7 +10,7 @@ import {
 } from '../../types';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
 import {WrongSourceDetectedError} from '../utils/Errors';
-import {normalizeTimestamp} from './utils/Common';
+import {generateActiveAchievement, normalizeTimestamp} from './utils/Common';
 
 class Reloaded extends SteamEmulatorScraper {
     readonly source: Source = '3DM';
@@ -32,27 +32,19 @@ class Reloaded extends SteamEmulatorScraper {
 
         if ('State' in achievementList) {
             Object.keys(achievementList.State).forEach((achievementName: string) => {
-                activeAchievements.push({
-                    name: achievementName,
-                    achieved: 1,
-                    currentProgress: 0,
-                    maxProgress: 0,
-                    unlockTime: normalizeTimestamp((<TDMAchievementList1> achievementList).Time[achievementName])
-                });
+                activeAchievements.push(
+                    generateActiveAchievement(
+                        achievementName,
+                        normalizeTimestamp((<TDMAchievementList1> achievementList).Time[achievementName])
+                    )
+                );
             });
         } else {
             Object.keys(achievementList.Steam).forEach((achievementName: string) => {
                 if(achievementName === 'ACHCount') {
                     throw new WrongSourceDetectedError();
                 }
-
-                activeAchievements.push({
-                    name: achievementName,
-                    achieved: 1,
-                    currentProgress: 0,
-                    maxProgress: 0,
-                    unlockTime: 0
-                });
+                activeAchievements.push(generateActiveAchievement(achievementName));
             });
         }
 

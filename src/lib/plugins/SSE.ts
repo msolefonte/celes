@@ -12,6 +12,7 @@ import {
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
 import {SteamUtils} from './utils/SteamUtils';
 import crc32 from 'crc-32';
+import {generateActiveAchievement} from './utils/Common';
 
 class SSE extends SteamEmulatorScraper {
     readonly source: Source = 'SmartSteamEmu';
@@ -56,15 +57,13 @@ class SSE extends SteamEmulatorScraper {
         for (let i = 0; i < wronglyNormalizedAchievementList.length; i++) {
             for (let j = 0; j < achievementIds.length; j++) {
                 if (crc32.str(achievementIds[j]).toString(16) === wronglyNormalizedAchievementList[i].name) {
-                    const activeAchievement: UnlockedOrInProgressAchievement = {
-                        name: achievementIds[j],
-                        achieved: wronglyNormalizedAchievementList[i].achieved,
-                        currentProgress: wronglyNormalizedAchievementList[i].currentProgress,
-                        maxProgress: wronglyNormalizedAchievementList[i].maxProgress,
-                        unlockTime: wronglyNormalizedAchievementList[i].unlockTime
-                    }
-
-                    correctlyNormalizedAchievementList.push(activeAchievement);
+                    correctlyNormalizedAchievementList.push(generateActiveAchievement(
+                        achievementIds[j],
+                        wronglyNormalizedAchievementList[i].unlockTime,
+                        wronglyNormalizedAchievementList[i].achieved,
+                        wronglyNormalizedAchievementList[i].currentProgress,
+                        wronglyNormalizedAchievementList[i].maxProgress
+                    ));
                     break;
                 }
             }

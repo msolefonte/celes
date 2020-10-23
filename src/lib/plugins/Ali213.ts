@@ -6,6 +6,7 @@ import {
     Source,
     UnlockedOrInProgressAchievement
 } from '../../types';
+import {generateActiveAchievement} from './utils/Common';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
 
 class Ali213 extends SteamEmulatorScraper {
@@ -25,13 +26,12 @@ class Ali213 extends SteamEmulatorScraper {
 
         Object.keys(achievementList).forEach((achievementName: string) => {
             const achievementData: Ali213AchievementData = achievementList[achievementName];
-            activeAchievements.push({
-                name: achievementName,
-                achieved: 1,
-                currentProgress: 0,
-                maxProgress: 0,
-                unlockTime: parseInt(achievementData.HaveAchievedTime) * 1000,
-            });
+            activeAchievements.push(
+                generateActiveAchievement(
+                    achievementName,
+                    parseInt(achievementData.HaveAchievedTime) * 1000
+                )
+            );
         });
 
         return activeAchievements;
