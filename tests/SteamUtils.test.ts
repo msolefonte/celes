@@ -1,4 +1,4 @@
-import {BlacklistedIdError, InternalError} from 'cloud-client'
+import {InternalError} from 'cloud-client'
 import {SteamUtils} from '../src/lib/plugins/utils/SteamUtils';
 import path from 'path';
 

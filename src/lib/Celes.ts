@@ -14,8 +14,7 @@ import {
 } from '../types';
 import {
     FileNotFoundError,
-    InvalidApiVersionError,
-    WrongSourceDetectedError
+    InvalidApiVersionError
 } from './utils/Errors';
 import {AchievementsScraper} from './plugins/utils/AchievementsScraper';
 import {CelesDbConnector} from './utils/CelesDbConnector';
@@ -26,11 +25,12 @@ import {getGameSchema} from './utils/utils';
 import mkdirp from 'mkdirp';
 
 class Celes {
-    private static generateScrapError(error: Error, pluginName?: string, platform?: Platform, source?: Source, appId?: string): ScrapError {
+    private static generateScrapError(error: Error, pluginName?: string, platform?: Platform, source?: Source,
+                                      appId?: string): ScrapError {
         const scrapError: ScrapError = {
             message: error.message,
             type: error.constructor.name
-        }
+        };
 
         if (pluginName !== undefined) {
             scrapError.plugin = pluginName;
@@ -49,6 +49,18 @@ class Celes {
         }
 
         return scrapError;
+    }
+
+    private static generateScrapResult(gameDataCollection: GameData[], scrapErrors: ScrapError[]): ScrapResult {
+        const scrapResult: ScrapResult = {
+            data: gameDataCollection
+        };
+
+        if (scrapErrors.length > 0) {
+            scrapResult.error = scrapErrors;
+        }
+
+        return scrapResult;
     }
 
     private readonly achievementWatcherRootPath: string;
@@ -109,8 +121,10 @@ class Celes {
 
         const lockId: number = await this.celesMutex.lock();
         try {
-            const databaseData: GameData[] = await celesDbConnector.getAll(this.systemLanguage, callbackProgress, 50, 50);
-            mergedData = Merger.mergeGameDataCollections([scrapedData, databaseData], this.useOldestUnlockTime);
+            const databaseData: GameData[] = await celesDbConnector.getAll(this.systemLanguage, callbackProgress,
+                50, 50);
+            mergedData = Merger.mergeGameDataCollections([scrapedData, databaseData],
+                this.useOldestUnlockTime);
             await celesDbConnector.updateAll(mergedData);
         } finally {
             this.celesMutex.unlock(lockId);
@@ -118,7 +132,7 @@ class Celes {
 
         const result: ScrapResult = {
             data: mergedData
-        }
+        };
 
         if (scrapResult.error !== undefined) {
             result.error = scrapResult.error;
@@ -225,7 +239,8 @@ class Celes {
         try {
             if (!force) {
                 const localData: GameData[] = await celesDbConnector.getAll(this.systemLanguage);
-                newData = Merger.mergeGameDataCollections([localData, newData], this.useOldestUnlockTime);
+                newData = Merger.mergeGameDataCollections([localData, newData],
+                    this.useOldestUnlockTime);
             }
 
             await celesDbConnector.updateAll(newData);
@@ -236,7 +251,8 @@ class Celes {
         return newData;
     }
 
-    async setAchievementUnlockTime(appId: string, source: Source, platform: Platform, achievementId: string, unlockTime: number): Promise<void> {
+    async setAchievementUnlockTime(appId: string, source: Source, platform: Platform, achievementId: string,
+                                   unlockTime: number): Promise<void> {
         const celesDbConnector = new CelesDbConnector(this.achievementWatcherRootPath);
 
         const lockId: number = await this.celesMutex.lock();
@@ -277,75 +293,101 @@ class Celes {
         }
     }
 
-    private async scrap(maxProgress: number, baseProgress: number, callbackProgress?: (progress: number) => void): Promise<ScrapResult> {
+    private generateGameData(gameSchema: GameSchema, source: Source,
+                             activeAchievements: UnlockedOrInProgressAchievement[]): GameData {
+        return {
+            apiVersion: this.apiVersion,
+            appId: gameSchema.appId,
+            platform: gameSchema.platform,
+            schema: {
+                name: gameSchema.name,
+                img: gameSchema.img,
+                achievements: gameSchema.achievement
+            },
+            stats: {
+                sources: [
+                    {
+                        source: source,
+                        achievements: {
+                            active: activeAchievements
+                        }
+                    }
+                ],
+                playtime: 0
+            }
+        };
+    }
+
+    private async scrapPluginGame(scraper: AchievementsScraper, scanResult: ScanResult, pluginsProgress: number,
+                                  gamesProgress: number, maxProgress: number, baseProgress: number, callbackProgress?: (progress: number) => void
+    ): Promise<GameData | ScrapError> {
+        const platform: Platform = scraper.getPlatform();
+        const source: Source = scraper.getSource();
+        let gameSchema: GameSchema;
+        let activeAchievements: UnlockedOrInProgressAchievement[];
+
+        try {
+            gameSchema = await scraper.getGameSchema(scanResult.appId, this.systemLanguage);
+        } catch (error) {
+            // if (!(error instanceof InternalError)) { // TODO ADD BLACKLISTED I.E. 17515
+            //     scrapErrors.push(Celes.generateScrapError(error, undefined, platform, source, listOfGames[j].appId));
+            // }
+            return Celes.generateScrapError(error, undefined, platform, source, scanResult.appId);
+        }
+
+        try {
+            activeAchievements = await scraper.getUnlockedOrInProgressAchievements(scanResult);
+
+            typeof callbackProgress === 'function' && callbackProgress(baseProgress +
+                Math.floor((pluginsProgress * gamesProgress * maxProgress)));
+            return this.generateGameData(gameSchema, source, activeAchievements);
+        } catch (error) {
+            return Celes.generateScrapError(error, undefined, platform, source, scanResult.appId);
+        }
+    }
+
+    private async scrapPlugin(pluginName: string, pluginsProgress: number, maxProgress: number, baseProgress: number,
+                              callbackProgress?: (progress: number) => void): Promise<ScrapResult> {
         const gameDataCollection: GameData[] = [];
         const scrapErrors: ScrapError[] = [];
 
+        const plugin = await import('./plugins/' + pluginName);
+        let scraper: AchievementsScraper;
+        if (pluginName === 'Steam') {
+            scraper = new plugin[Object.keys(plugin)[0]](this.achievementWatcherRootPath, this.steamPluginMode);
+        } else {
+            scraper = new plugin[Object.keys(plugin)[0]](this.achievementWatcherRootPath);
+        }
+        const listOfGames: ScanResult[] = await scraper.scan(this.additionalFoldersToScan);
+
+        for (let j = 0; j < listOfGames.length; j++) {
+            const scrapGameResult: GameData | ScrapError = await this.scrapPluginGame(scraper, listOfGames[j],
+                pluginsProgress,(j + 1) / listOfGames.length, maxProgress, baseProgress, callbackProgress);
+
+            if ('apiVersion' in scrapGameResult && scrapGameResult.apiVersion !== undefined) {
+                gameDataCollection.push(scrapGameResult);
+            } else {
+                if ((<ScrapError>scrapGameResult).type !== 'WrongSourceDetectedError') {
+                    scrapErrors.push(<ScrapError>scrapGameResult);
+                }
+            }
+        }
+
+        return Celes.generateScrapResult(gameDataCollection, scrapErrors);
+    }
+
+    private async scrap(maxProgress: number, baseProgress: number, callbackProgress?: (progress: number) => void):
+        Promise<ScrapResult> {
+        let gameDataCollection: GameData[] = [];
+        let scrapErrors: ScrapError[] = [];
+
         for (let i = 0; i < this.enabledPlugins.length; i++) {
             try {
-                const plugin = await import('./plugins/' + this.enabledPlugins[i]);
-                let scraper: AchievementsScraper
-                if (this.enabledPlugins[i] === 'Steam') {
-                    scraper = new plugin[Object.keys(plugin)[0]](this.achievementWatcherRootPath, this.steamPluginMode);
-                } else {
-                    scraper = new plugin[Object.keys(plugin)[0]](this.achievementWatcherRootPath);
-                }
-
-                const platform: Platform = scraper.getPlatform();
-                const source: Source = scraper.getSource();
-                const listOfGames: ScanResult[] = await scraper.scan(this.additionalFoldersToScan);
-
-                for (let j = 0; j < listOfGames.length; j++) {
-                    const progressPercentage: number = baseProgress + Math.floor(((i + 1) / this.enabledPlugins.length) * ((j + 1) / listOfGames.length) * maxProgress);
-                    let gameSchema: GameSchema;
-                    let activeAchievements: UnlockedOrInProgressAchievement[];
-
-                    try {
-                        gameSchema = await scraper.getGameSchema(listOfGames[j].appId, this.systemLanguage);
-                    } catch (error) {
-                        // if (!(error instanceof InternalError)) { // TODO ADD BLACKLISTED I.E. 17515
-                        //     scrapErrors.push(Celes.generateScrapError(error, undefined, platform, source, listOfGames[j].appId));
-                        // }
-                        scrapErrors.push(Celes.generateScrapError(error, undefined, platform, source, listOfGames[j].appId));
-                        continue;
-                    }
-
-                    try {
-                        activeAchievements = await scraper.getUnlockedOrInProgressAchievements(listOfGames[j]);
-                    } catch (error) {
-                        if (!(error instanceof WrongSourceDetectedError)) {
-                            scrapErrors.push(Celes.generateScrapError(error, undefined, platform, source, listOfGames[j].appId));
-                        }
-                        continue;
-                    }
-
-                    const gameData: GameData = {
-                        apiVersion: this.apiVersion,
-                        appId: gameSchema.appId,
-                        platform: gameSchema.platform,
-                        schema: {
-                            name: gameSchema.name,
-                            img: gameSchema.img,
-                            achievements: gameSchema.achievement
-                        },
-                        stats: {
-                            sources: [
-                                {
-                                    source: source,
-                                    achievements: {
-                                        active: activeAchievements
-                                    }
-                                }
-                            ],
-                            playtime: 0
-                        }
-                    };
-
-                    gameDataCollection.push(gameData);
-
-                    if (typeof callbackProgress === 'function') {
-                        callbackProgress(progressPercentage);
-                    }
+                const pluginScrapResult: ScrapResult = await this.scrapPlugin(this.enabledPlugins[i],
+                    (i + 1) / this.enabledPlugins.length, maxProgress, baseProgress, callbackProgress);
+                gameDataCollection = gameDataCollection.concat(pluginScrapResult.data);
+                if (pluginScrapResult.error !== undefined) {
+                    scrapErrors = scrapErrors.concat(pluginScrapResult.error);
                 }
             } catch (error) {
                 scrapErrors.push(Celes.generateScrapError(error, this.enabledPlugins[i]));
@@ -355,19 +397,8 @@ class Celes {
                 callbackProgress(baseProgress + maxProgress);
             }
         }
-
-        const scrapResult: ScrapResult = {
-            data: gameDataCollection
-        }
-
-        if (scrapErrors.length > 0) {
-            scrapResult.error = scrapErrors;
-        }
-
-        return scrapResult;
+        return Celes.generateScrapResult(gameDataCollection, scrapErrors);
     }
-
-    
 }
 
 export {Celes};

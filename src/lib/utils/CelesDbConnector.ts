@@ -28,18 +28,14 @@ class CelesDbConnector {
                 const platformGames: string[] = await fs.readdir(path.join(this.celesDatabasePath, localDatabasePlatforms[i]));
 
                 for (let j = 0; j < platformGames.length; j++) {
-                    try {
-                        const progressPercentage: number = baseProgress + Math.floor(((i + 1) / localDatabasePlatforms.length) * ((j + 1) / platformGames.length) * maxProgress);
-                        const appId = platformGames[j].split('.').slice(0, -1).join('.');
+                    const progressPercentage: number = baseProgress + Math.floor(((i + 1) / localDatabasePlatforms.length) * ((j + 1) / platformGames.length) * maxProgress);
+                    const appId = platformGames[j].split('.').slice(0, -1).join('.');
 
-                        const gameData: GameData = await this.getGame(appId, localDatabasePlatforms[i], schemaLanguage);
+                    const gameData: GameData = await this.getGame(appId, localDatabasePlatforms[i], schemaLanguage);
 
-                        gameDataCollection.push(gameData);
+                    gameDataCollection.push(gameData);
 
-                        typeof callbackProgress === 'function' && callbackProgress(progressPercentage);
-                    } catch (error) {
-                        throw error;
-                    }
+                    typeof callbackProgress === 'function' && callbackProgress(progressPercentage);
                 }
             }
         } catch (error) {

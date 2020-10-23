@@ -12,7 +12,7 @@ import {
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
 import {WrongSourceDetectedError} from '../utils/Errors';
 import {normalizeProgress} from './utils/Common';
-import omit from 'lodash.omit';
+import {omit} from 'lodash';
 
 class Codex extends SteamEmulatorScraper {
     readonly source: Source = 'Codex';

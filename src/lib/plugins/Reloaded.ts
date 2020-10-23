@@ -10,7 +10,7 @@ import {
 import {normalizeProgress, normalizeTimestamp} from './utils/Common';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
 import {WrongSourceDetectedError} from '../utils/Errors';
-import omit from 'lodash.omit';
+import {omit} from 'lodash';
 
 class Reloaded extends SteamEmulatorScraper {
     private static is3dmAchievementList(achievementList: ReloadedAchievementList) {

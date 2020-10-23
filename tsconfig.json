@@ -6,11 +6,10 @@
     "outDir": "./dist",
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "noImplicitAny": true,
     "noImplicitReturns": true,
     "pretty": true,
-//    "noUnusedLocals": true,
-//    "noUnusedParameters": true,
+    "noUnusedLocals": true,  // TODO FIX PRE PUSH
+    "noUnusedParameters": true,  // TODO FIX PRE PUSH
     "alwaysStrict": true,
     "strict": true
   },

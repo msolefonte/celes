@@ -54,8 +54,6 @@ class SSE extends SteamEmulatorScraper {
         });
 
         for (let i = 0; i < wronglyNormalizedAchievementList.length; i++) {
-            let achievementHasBeenNormalized = false;
-
             for (let j = 0; j < achievementIds.length; j++) {
                 if (crc32.str(achievementIds[j]).toString(16) === wronglyNormalizedAchievementList[i].name) {
                     const activeAchievement: UnlockedOrInProgressAchievement = {
@@ -67,7 +65,6 @@ class SSE extends SteamEmulatorScraper {
                     }
 
                     correctlyNormalizedAchievementList.push(activeAchievement);
-                    achievementHasBeenNormalized = true;
                     break;
                 }
             }

@@ -10,9 +10,6 @@ import glob from 'fast-glob';
 import normalize from 'normalize-path';
 import {parse as parseIni} from 'js-ini';
 
-// TODO CHECK LOGS / THROWS
-// TODO PASS LOGGER TO PLUGINS
-
 abstract class SteamEmulatorScraper implements AchievementsScraper {
     protected abstract readonly achievementWatcherRootPath: string;
     protected abstract readonly achievementLocationFiles: string[];
@@ -73,7 +70,7 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
     }
 
     protected async getFoldersToScan(specificFolders: string[], additionalFolders: string[]): Promise<string[]> {
-        let foldersToScan: string[] = [];
+        let foldersToScan: string[] = specificFolders;
 
         if (additionalFolders.length > 0) {
             foldersToScan = foldersToScan.concat(additionalFolders);

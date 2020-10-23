@@ -1,10 +1,10 @@
-import {existsSync, unlinkSync} from 'fs';
 import {
     SteamGameCacheNotFound,
     SteamNotFoundError,
     SteamPublicUsersNotFoundError,
     WrongSourceDetectedError
 } from '../src/lib/utils/Errors';
+import {existsSync, unlinkSync} from 'fs';
 import {InternalError} from 'cloud-client';
 import {ScanResult} from '../src/types';
 import {Steam} from '../src/lib/plugins/Steam';
@@ -30,7 +30,6 @@ const achievementWatcherTestRootPath: string = path.join(__dirname, 'tmp/appData
 const steamPrivateUserId = '76561198160327197';
 const steamSampleInstalledGameId = '1069740';
 const steamSamplePath: string = path.join(__dirname, 'samples/steam');
-const steamSampleUser = '76561198058952831';
 const steamSampleUserId = '98687103';
 const steamWithoutUsersSamplePath: string = path.join(__dirname, 'samples/steam-wu');
 
@@ -52,6 +51,14 @@ describe('Testing Steam Plugin', () => {
             const steam = new Steam(achievementWatcherTestRootPath, 0);
             it('Scan returns an empty list', async () => {
                 expect(await steam.scan()).to.be.empty;
+            });
+
+            it('Platform is returned', async () => {
+                expect(await steam.getPlatform()).to.be.equal('Steam');
+            });
+
+            it('Source is returned', async () => {
+                expect(await steam.getSource()).to.be.equal('Steam');
             });
         });
 
