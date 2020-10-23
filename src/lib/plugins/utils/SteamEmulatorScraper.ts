@@ -1,7 +1,7 @@
 'use strict';
 
 import * as path from 'path';
-import {GameSchema, ScanResult, Source, UnlockedOrInProgressAchievement} from '../../../types';
+import {GameSchema, Platform, ScanResult, Source, UnlockedOrInProgressAchievement} from '../../../types';
 import {existsSync, promises as fs} from 'fs';
 import {AchievementsScraper} from './AchievementsScraper';
 import {SSEConfigParser} from './SSEConfigParser';
@@ -9,9 +9,6 @@ import {SteamUtils} from './SteamUtils';
 import glob from 'fast-glob';
 import normalize from 'normalize-path';
 import {parse as parseIni} from 'js-ini';
-
-// TODO CHECK LOGS / THROWS
-// TODO PASS LOGGER TO PLUGINS
 
 abstract class SteamEmulatorScraper implements AchievementsScraper {
     protected abstract readonly achievementWatcherRootPath: string;
@@ -22,7 +19,7 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
 
     abstract getSpecificFoldersToScan(): string[];
 
-    async scan(additionalFoldersToScan: string[] = []): Promise<ScanResult[]> {
+    async scan(additionalFoldersToScan: string[]): Promise<ScanResult[]> {
         const specificFoldersToScan: string[] = this.getSpecificFoldersToScan();
         const foldersToScan: string[] = await this.getFoldersToScan(specificFoldersToScan, additionalFoldersToScan);
 
@@ -43,7 +40,6 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
             const gameMetadata: ScanResult = {
                 appId: path.parse(dir).name.toString(),
                 data: {
-                    type: 'file',
                     path: dir
                 },
                 source: this.source,
@@ -65,13 +61,16 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
         return this.normalizeActiveAchievements(achievementList);
     }
 
+    getPlatform(): Platform {
+        return 'Steam';
+    }
+
     getSource(): Source {
         return this.source;
     }
 
     protected async getFoldersToScan(specificFolders: string[], additionalFolders: string[]): Promise<string[]> {
-        // let foldersToScan: string[] = [];
-        let foldersToScan: string[] = specificFolders; // FIXME FOR RELEASE
+        let foldersToScan: string[] = specificFolders;
 
         if (additionalFolders.length > 0) {
             foldersToScan = foldersToScan.concat(additionalFolders);

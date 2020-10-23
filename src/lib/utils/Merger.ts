@@ -50,14 +50,14 @@ class Merger {
                 if (!(achievement.name in mergedActiveAchievements)) {
                     mergedActiveAchievements[achievement.name] = achievement;
                 } else {
-                    if (achievement.currentProgress > mergedActiveAchievements[achievement.name].currentProgress) { // TODO ADD TEST MULTIPLE SOURCES DIFFERENT PROGRESS
+                    if (achievement.currentProgress > mergedActiveAchievements[achievement.name].currentProgress) {
                         mergedActiveAchievements[achievement.name] = achievement;
                     } else if (useOldestUnlockTime) {
                         if (achievement.unlockTime < mergedActiveAchievements[achievement.name].unlockTime) {
                             mergedActiveAchievements[achievement.name] = achievement;
                         }
                     } else {
-                        if (achievement.unlockTime > mergedActiveAchievements[achievement.name].unlockTime) { // TODO ADD TEST MULTIPLE SOURCES DIFFERENT PROGRESS (DIFFERENT ORDER)
+                        if (achievement.unlockTime > mergedActiveAchievements[achievement.name].unlockTime) {
                             mergedActiveAchievements[achievement.name] = achievement;
                         }
                     }
@@ -118,7 +118,7 @@ class Merger {
                 }
             }
 
-            if (gameData.schema.achievements.total > mergedAchievementsTotal) {  // TODO ADD TEST DELETE ACHIEVEMENTS FROM ONE SCHEMA
+            if (gameData.schema.achievements.total > mergedAchievementsTotal) {
                 mergedAchievementsTotal = gameData.schema.achievements.total;
                 mergedAchievementsList = gameData.schema.achievements.list;
             }
@@ -148,8 +148,8 @@ class Merger {
             }
         };
 
-        if ('binary' in gd1.schema) {
-            mergedGameData.schema.binary = gd1.schema.binary; // TODO WHY THIS THO
+        if (gd1.schema.binary !== undefined) {
+            mergedGameData.schema.binary = gd1.schema.binary;
         }
 
         return mergedGameData;

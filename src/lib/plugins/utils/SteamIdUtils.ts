@@ -15,11 +15,9 @@ class SteamIdUtils {
       const serverResponse = (await got(url)).body;
       return xml2js.parseStringPromise(serverResponse, options);
     }
-
-    static async isProfilePublic(steamId64: string): Promise<boolean> {
-        const user = await this.getUserData(steamId64);
-        return user.privacyState === 'public';
-    }
 }
 
 export {SteamIdUtils}
+
+// 76561198160327197
+// http://steamcommunity.com/profiles/76561198160327197/?xml=1

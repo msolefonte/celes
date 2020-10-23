@@ -2,6 +2,12 @@
 
 import {SSEAchievement} from '../../../types';
 
+class UnexpectedFileContentError extends Error {
+    constructor() {
+        super('Unexpected file content');
+    }
+}
+
 class SSEConfigParser {
     static parse(buffer: Buffer): SSEAchievement[] {
         const header = buffer.slice(0, 4);
@@ -9,7 +15,7 @@ class SSEConfigParser {
 
         const data = SSEConfigParser.bufferSplit(buffer.slice(header.length, buffer.length), 24);
         if (data.length !== entryCount) {
-            throw 'Unexpected file content';
+            throw new UnexpectedFileContentError();
         }
 
         const achievements: SSEAchievement[] = [];
@@ -17,13 +23,11 @@ class SSEConfigParser {
         for (const entry of data) {
             const achieved: number = parseInt(entry.slice(20, 21).toString('hex'), 16);
 
-            if (achieved === 1) {
-                achievements.push({
-                    crc: entry.slice(0, 4).reverse().toString('hex'),
-                    Achieved: achieved,
-                    UnlockTime: parseInt(entry.slice(8, 12).reverse().toString('hex'), 16)
-                });
-            }
+            achievements.push({
+                crc: entry.slice(0, 4).reverse().toString('hex'),
+                Achieved: achieved,
+                UnlockTime: parseInt(entry.slice(8, 12).reverse().toString('hex'), 16)
+            });
         }
 
         return achievements;
@@ -38,4 +42,4 @@ class SSEConfigParser {
     }
 }
 
-export {SSEConfigParser};
+export {UnexpectedFileContentError, SSEConfigParser};

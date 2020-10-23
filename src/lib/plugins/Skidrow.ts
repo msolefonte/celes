@@ -25,7 +25,7 @@ class Skidrow extends SteamEmulatorScraper {
         const activeAchievements: UnlockedOrInProgressAchievement[] = [];
 
         Object.keys(achievementList.ACHIEVE_DATA).forEach((achievementName: string) => {
-            const achievementIsUnlocked: boolean = achievementList.ACHIEVE_DATA[achievementName] === '1';
+            const achievementIsUnlocked: boolean = achievementList.ACHIEVE_DATA[achievementName] === 1;
 
             if (achievementIsUnlocked) {
                 activeAchievements.push({
@@ -45,7 +45,7 @@ class Skidrow extends SteamEmulatorScraper {
         const docsFolderPath: string = await regedit.promises.RegQueryStringValue('HKCU', // TODO REGEDIT SUS
             'Software/Microsoft/Windows/CurrentVersion/Explorer/User Shell Folders', 'Personal');
 
-        /* istanbul ignore else */
+        /* istanbul ignore next */
         if (docsFolderPath) {
             additionalFolders = additionalFolders.concat([
                 path.join(docsFolderPath, 'Skidrow')

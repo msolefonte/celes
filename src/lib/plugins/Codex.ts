@@ -12,7 +12,7 @@ import {
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
 import {WrongSourceDetectedError} from '../utils/Errors';
 import {normalizeProgress} from './utils/Common';
-import omit from 'lodash.omit';
+import {omit} from 'lodash';
 
 class Codex extends SteamEmulatorScraper {
     readonly source: Source = 'Codex';
@@ -44,7 +44,7 @@ class Codex extends SteamEmulatorScraper {
 
             const normalizedProgress = normalizeProgress(achievementData.CurProgress, achievementData.MaxProgress);
 
-            if (achievementData.Achieved === '1') {
+            if (achievementData.Achieved == '1') {
                 activeAchievements.push({
                     name: achievementName,
                     achieved: 1,

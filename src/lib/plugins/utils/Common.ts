@@ -22,17 +22,17 @@ function normalizeProgress(curProgress: string, maxProgress: string): Normalized
         currentProgress = 0;
         maximProgress = 0;
     } else {
-        currentProgress = Math.floor(Number.parseFloat(curProgress) / Number.parseFloat(maxProgress) * 100); // TODO ADD TEST GAME WITH PROGRESS
+        currentProgress = Math.floor(Number.parseFloat(curProgress) / Number.parseFloat(maxProgress) * 100);
         maximProgress = 100;
     }
 
     return {currentProgress: currentProgress, maximProgress: maximProgress};
 }
 
-function normalizeTimestamp(time: string): number {
+function normalizeTimestamp(hexadecimalTime: string): number {
     try {
-        return new DataView(new Uint8Array(Buffer.from(time, 'hex')).buffer).getUint32(0, true) * 1000;
-    }catch (error) {
+        return new DataView(new Uint8Array(Buffer.from(hexadecimalTime, 'hex')).buffer).getUint32(0, true) * 1000;
+    } catch (error) {
         return 0;
     }
 }

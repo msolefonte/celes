@@ -28,26 +28,19 @@ class CelesDbConnector {
                 const platformGames: string[] = await fs.readdir(path.join(this.celesDatabasePath, localDatabasePlatforms[i]));
 
                 for (let j = 0; j < platformGames.length; j++) {
-                    try {
-                        const progressPercentage: number = baseProgress + Math.floor(((i + 1) / localDatabasePlatforms.length) * ((j + 1) / platformGames.length) * maxProgress);
-                        const appId = platformGames[j].split('.').slice(0, -1).join('.');
+                    const progressPercentage: number = baseProgress + Math.floor(((i + 1) / localDatabasePlatforms.length) * ((j + 1) / platformGames.length) * maxProgress);
+                    const appId = platformGames[j].split('.').slice(0, -1).join('.');
 
-                        const gameData: GameData = await this.getGame(appId, localDatabasePlatforms[i], schemaLanguage);
+                    const gameData: GameData = await this.getGame(appId, localDatabasePlatforms[i], schemaLanguage);
 
-                        gameDataCollection.push(gameData);
+                    gameDataCollection.push(gameData);
 
-                        typeof callbackProgress === 'function' && callbackProgress(progressPercentage);
-                    } catch (error) {
-                        if (!(error instanceof InvalidApiVersionError)) {
-                            throw error;
-                        }
-                    }
+                    typeof callbackProgress === 'function' && callbackProgress(progressPercentage);
                 }
             }
         } catch (error) {
             if (error.code === 'ENOENT') {
                 typeof callbackProgress === 'function' && callbackProgress(baseProgress + maxProgress);
-
                 return [];
             } else {
                 throw error
@@ -60,14 +53,10 @@ class CelesDbConnector {
     }
 
     async updateAll(gameData: GameData[]): Promise<void> {
-        try {
-            await mkdirp(this.celesDatabasePath);
+        await mkdirp(this.celesDatabasePath);
 
-            for (let i = 0; i < gameData.length; i++) {
-                await this.updateGame(gameData[i]);
-            }
-        } catch (error) {
-            console.debug(error);
+        for (let i = 0; i < gameData.length; i++) {
+            await this.updateGame(gameData[i]);
         }
     }
 
@@ -93,8 +82,6 @@ class CelesDbConnector {
     }
 
     async updateGame(gameData: GameData): Promise<void> {
-        // TODO PATCH WHAT IF appId NOT VALID
-        // TODO PATCH WHAT IF GAME PLATFORM NOT VALID
         const gamePlatform: Platform = gameData.platform;
         const gameStats: GameStats = {
             apiVersion: this.apiVersion,

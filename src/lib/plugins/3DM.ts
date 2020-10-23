@@ -40,7 +40,7 @@ class Reloaded extends SteamEmulatorScraper {
                     unlockTime: normalizeTimestamp((<TDMAchievementList1> achievementList).Time[achievementName])
                 });
             });
-        } else if ('Steam' in achievementList) {
+        } else {
             Object.keys(achievementList.Steam).forEach((achievementName: string) => {
                 if(achievementName === 'ACHCount') {
                     throw new WrongSourceDetectedError();
