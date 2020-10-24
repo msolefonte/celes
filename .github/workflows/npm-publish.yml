@@ -22,7 +22,7 @@ jobs:
       run: npm run build
     - name: Run test just in case
       run: npm run test
-    - name: Publish if version has been updated
-      run: npm publish --access public
+    - name: Publish, if version has been updated
+      uses: JS-DevTools/npm-publish@v1
       env:
-        NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+        token: ${{ secrets.NPM_AUTH_TOKEN }}
