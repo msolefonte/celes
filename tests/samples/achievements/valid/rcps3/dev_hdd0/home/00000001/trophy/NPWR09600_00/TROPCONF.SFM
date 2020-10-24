@@ -1,0 +1,88 @@
+<!--Sce-Np-Trophy-Signature: 4c39b98c0100000000000000ff089717926a76a64c624aefc64fe26bc5d3058f352559479bd4444c9590241400659388854b0786541fc1479c23e0798793bd322196a7709becb8c48bb38b80eb1fcfd1d200c24705e5397fa6ec014b7381e79c7717ad57ca21fbda1249f497e4ee1d47afb541230667cad715db7e4a4f559bfea7262cbfe9c8fb8bd56288f686102960e82c705f89c5440ebd3e72e0505193b6-->
+<trophyconf version="1.1" platform="ps3,psp2,ps4" policy="large">
+ <npcommid>NPWR09600_00</npcommid>
+ <trophyset-version>01.00</trophyset-version>
+ <parental-level license-area="default">0</parental-level>
+ <title-name>ドラゴンクエストビルダーズ</title-name>
+ <title-detail>ドラゴンクエストビルダーズ</title-detail>
+ <trophy id="000" hidden="no" ttype="P" pid="-1">
+  <name>全トロフィー獲得</name>
+  <detail>全てのトロフィーを獲得した</detail>
+ </trophy>
+ <trophy id="001" hidden="no" ttype="B" pid="000">
+  <name>旅のはじまり</name>
+  <detail>穴から脱出し、冒険がはじまった</detail>
+ </trophy>
+ <trophy id="002" hidden="no" ttype="B" pid="000">
+  <name>新米ビルダー</name>
+  <detail>はじめて部屋をつくった</detail>
+ </trophy>
+ <trophy id="003" hidden="no" ttype="S" pid="000">
+  <name>メルキド編クリア</name>
+  <detail>メルキド編をクリアした</detail>
+ </trophy>
+ <trophy id="004" hidden="no" ttype="S" pid="000">
+  <name>リムルダール編クリア</name>
+  <detail>リムルダール編をクリアした</detail>
+ </trophy>
+ <trophy id="005" hidden="no" ttype="S" pid="000">
+  <name>マイラ・ガライヤ編クリア</name>
+  <detail>マイラ・ガライヤ編をクリアした</detail>
+ </trophy>
+ <trophy id="006" hidden="no" ttype="S" pid="000">
+  <name>ラダトーム編クリア</name>
+  <detail>ラダトーム編をクリアした</detail>
+ </trophy>
+ <trophy id="007" hidden="no" ttype="G" pid="000">
+  <name>メルキド編チャレンジコンプリート</name>
+  <detail>メルキド編のチャレンジをコンプリートした</detail>
+ </trophy>
+ <trophy id="008" hidden="no" ttype="G" pid="000">
+  <name>リムルダール編チャレンジコンプリート</name>
+  <detail>リムルダール編のチャレンジをコンプリートした</detail>
+ </trophy>
+ <trophy id="009" hidden="no" ttype="G" pid="000">
+  <name>マイラ・ガライヤ編チャレンジコンプリート</name>
+  <detail>マイラ・ガライヤ編のチャレンジをコンプリートした</detail>
+ </trophy>
+ <trophy id="010" hidden="no" ttype="G" pid="000">
+  <name>ラダトーム編チャレンジコンプリート</name>
+  <detail>ラダトーム編のチャレンジをコンプリートした</detail>
+ </trophy>
+ <trophy id="011" hidden="no" ttype="S" pid="000">
+  <name>設計図ビルダー</name>
+  <detail>設計図を10枚完成させた</detail>
+ </trophy>
+ <trophy id="012" hidden="no" ttype="S" pid="000">
+  <name>クラフト職人</name>
+  <detail>クラフトを500回おこなった</detail>
+ </trophy>
+ <trophy id="013" hidden="no" ttype="S" pid="000">
+  <name>まものハンター</name>
+  <detail>モンスターを2000匹たおした</detail>
+ </trophy>
+ <trophy id="014" hidden="no" ttype="S" pid="000">
+  <name>オブジェクトブレイカー</name>
+  <detail>オブジェクトを3000個こわした</detail>
+ </trophy>
+ <trophy id="015" hidden="no" ttype="S" pid="000">
+  <name>オブジェクトマスター</name>
+  <detail>オブジェクトを3000個おいた</detail>
+ </trophy>
+ <trophy id="016" hidden="no" ttype="S" pid="000">
+  <name>アクセサリコレクター</name>
+  <detail>アクセサリを8種入手した</detail>
+ </trophy>
+ <trophy id="017" hidden="no" ttype="G" pid="000">
+  <name>ルームコーディネーター</name>
+  <detail>部屋レシピを50種発見した</detail>
+ </trophy>
+ <trophy id="018" hidden="no" ttype="G" pid="000">
+  <name>美食家</name>
+  <detail>食べ物を20種類食べた</detail>
+ </trophy>
+ <trophy id="019" hidden="no" ttype="G" pid="000">
+  <name>爆破テクニシャン</name>
+  <detail>まほうの玉で敵を8体同時にたおした</detail>
+ </trophy>
+</trophyconf>
