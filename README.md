@@ -1,4 +1,4 @@
-[![Node version](https://img.shields.io/node/v/celes.svg)](http://nodejs.org/download/)
+[![npm version](https://badge.fury.io/js/%40achievement-watcher%2Fceles.svg)](https://badge.fury.io/js/%40achievement-watcher%2Fceles)
 [![NodeJS CI Actions Status](https://img.shields.io/github/workflow/status/achievement-watcher/celes/nodejs-ci)](https://github.com/achievement-watcher/celes/actions)
 [![Codecov](https://codecov.io/gh/achievement-watcher/celes/branch/master/graph/badge.svg)](https://codecov.io/gh/achievement-watcher/celes)
 [![Maintainability](https://api.codeclimate.com/v1/badges/8e48291929dd5190e908/maintainability)](https://codeclimate.com/github/achievement-watcher/celes/maintainability)

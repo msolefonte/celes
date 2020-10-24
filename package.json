@@ -1,6 +1,6 @@
 {
   "name": "@achievement-watcher/celes",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "File and registry scraper that obtains and stores game achievements, whatever the origin",
   "main": "dist/index.js",
   "types": "dist/index.d.js",
