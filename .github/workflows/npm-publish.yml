@@ -16,6 +16,8 @@ jobs:
       uses: actions/setup-node@master
       with:
         node-version: ${{ matrix.node-version }}
+    - name: Install dependencies
+    run: npm ci
     - name: Build the project
       run: npm run build
     - name: Publish if version has been updated
