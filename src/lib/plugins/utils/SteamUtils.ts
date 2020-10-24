@@ -5,7 +5,6 @@ import {
 } from '../../../types';
 import {existsAndIsYoungerThan} from './Common';
 import {promises as fs} from 'fs';
-import mkdirp from 'mkdirp';
 
 class SteamUtils {
     private static readonly steamLanguages: string[] = [
@@ -37,7 +36,7 @@ class SteamUtils {
     }
 
     static async updateGameSchemaCache(gameCachePath: string, gameData: GameSchema): Promise<void> {
-        await mkdirp(path.dirname(gameCachePath));
+        await fs.mkdir(path.dirname(gameCachePath), { recursive: true });
         await fs.writeFile(gameCachePath, JSON.stringify(gameData, null, 2));
     }
 

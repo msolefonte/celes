@@ -152,6 +152,7 @@ export interface ScanResult {
     data: {
         cachePath?: string;
         path?: string;
+        root?: string;
         userId?: SteamUser;
     }
 }
@@ -174,8 +175,8 @@ export interface SkidrowAchievementList {
     ACHIEVE_DATA: { [achievementName: string]: 0 | 1 }
 }
 
-export type Source = '3DM' | 'Ali213' | 'Codex' | 'CreamAPI' | 'Darksiders' | 'Goldberg' | 'Merge' | 'Reloaded' |
-    'RPCS3' | 'Skidrow' | 'SmartSteamEmu' | 'Steam';
+export type Source = '3DM' | 'Ali213' | 'Codex' | 'CreamAPI' | 'Darksiders' | 'Goldberg' | 'GreenLuma' | 'Merge' |
+    'Reloaded' | 'RPCS3' | 'Skidrow' | 'SmartSteamEmu' | 'Steam';
 
 export interface SourceStats {
     source: Source;

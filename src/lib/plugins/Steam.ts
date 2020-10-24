@@ -19,20 +19,22 @@ import {CloudClient} from 'cloud-client';
 import {SteamIdUtils} from './utils/SteamIdUtils';
 import {SteamUtils} from './utils/SteamUtils';
 import glob from 'fast-glob';
-import mkdirp from 'mkdirp';
 import moment from 'moment';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import regedit from 'regodit';
 
 class Steam implements AchievementsScraper {
+    /**
+     * Obtains Steam path from registry.
+     *
+     * By default, the key is HKCU/Software/Valve/Steam/SteamPath, but some Steam Emulators modify it. The solution
+     * is to fallback to Software/WOW6432Node/Valve/Steam/InstallPath if required.
+     *
+     * Steam client can correct the key in the startup.
+     * @private
+     */
     private static async getSteamPath(): Promise<string> {
-        /*
-          Some SteamEmu change HKCU/Software/Valve/Steam/SteamPath to the game's dir
-          Fallback to Software/WOW6432Node/Valve/Steam/InstallPath in this case
-          NB: Steam client correct the key on startup
-        */ // TODO TURN INTO DOCS
-
         const regHives = [
             {root: 'HKLM', key: 'Software/WOW6432Node/Valve/Steam', name: 'InstallPath'},
             {root: 'HKCU', key: 'Software/Valve/Steam', name: 'SteamPath'}
@@ -131,7 +133,7 @@ class Steam implements AchievementsScraper {
 
         if (cacheTime.steam > cacheTime.local) {
             activeAchievements = await CloudClient.getSteamUserStats(steamUser, game.appId);
-            await mkdirp(path.dirname(cachePaths.local));
+            await fs.mkdir(path.dirname(path.dirname(cachePaths.local)), { recursive: true });
             await fs.writeFile(cachePaths.local, JSON.stringify(activeAchievements, null, 2));
         } else {
             activeAchievements = JSON.parse(await fs.readFile(cachePaths.local, 'utf8'));

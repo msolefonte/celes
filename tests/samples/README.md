@@ -43,6 +43,11 @@
 * **883710:** Achievements unlocked (INI format).
 * **1113000:** Achievements unlocked (JSON format).
 
+#### GreenLuma
+
+* **1097840:** Achievements unlocked (GreenLuma2020 format).
+* **228300:** Achievements unlocked (GreenLumaReborn format).
+
 #### CreamAPI
 
 * **883710:** Achievements unlocked.

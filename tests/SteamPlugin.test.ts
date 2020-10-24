@@ -4,6 +4,7 @@ import {
     SteamPublicUsersNotFoundError,
     WrongSourceDetectedError
 } from '../src/lib/utils/Errors';
+import {createKeyBackup, recoverKeyBackup} from './utils/Common';
 import {existsSync, unlinkSync} from 'fs';
 import {InternalError} from 'cloud-client';
 import {ScanResult} from '../src/types';
@@ -14,17 +15,6 @@ import path from 'path';
 // @ts-ignore
 import regedit from 'regodit';
 import {step} from 'mocha-steps';
-
-async function createKeyBackup(root: string, original_key: string, backup_key: string): Promise<void> {
-    const realValue = await regedit.RegExportKey(root, original_key, {absenceError: false});
-    await regedit.RegImportKey(root, backup_key, realValue, {absenceDelete: true});
-}
-
-async function recoverKeyBackup(root: string, original_key: string, backup_key: string): Promise<void> {
-    const backupValue = await regedit.RegExportKey(root, backup_key, {absenceError: false});
-    await regedit.RegImportKey(root, original_key, backupValue, {absenceDelete: true});
-    await regedit.RegDeleteKeyIncludingSubkeys(root, backup_key);
-}
 
 const achievementWatcherTestRootPath: string = path.join(__dirname, 'tmp/appData/Achievement Watcher Test');
 const steamPrivateUserId = '76561198160327197';

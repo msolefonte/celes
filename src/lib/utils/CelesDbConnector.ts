@@ -3,7 +3,6 @@ import {GameData, GameStats, Platform} from '../../types';
 import {InvalidApiVersionError} from './Errors';
 import {promises as fs} from 'fs';
 import {getGameSchema} from './utils';
-import mkdirp from 'mkdirp';
 
 /**
  * Important note: CelesDb is not prepared to prevent concurrency problems. This has to be addressed where used.
@@ -53,7 +52,7 @@ class CelesDbConnector {
     }
 
     async updateAll(gameData: GameData[]): Promise<void> {
-        await mkdirp(this.celesDatabasePath);
+        await fs.mkdir(this.celesDatabasePath, { recursive: true });
 
         for (let i = 0; i < gameData.length; i++) {
             await this.updateGame(gameData[i]);
@@ -90,7 +89,7 @@ class CelesDbConnector {
             playtime: gameData.stats.playtime
         };
 
-        await mkdirp(path.join(this.celesDatabasePath, gamePlatform + '/'));
+        await fs.mkdir(path.join(this.celesDatabasePath, gamePlatform + '/'), { recursive: true });
         await fs.writeFile(path.join(this.celesDatabasePath, gamePlatform + '/' + gameData.appId + '.json'), JSON.stringify(gameStats));
     }
 }

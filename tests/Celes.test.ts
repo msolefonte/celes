@@ -1,11 +1,15 @@
 import * as path from 'path';
 import {FileNotFoundError, InvalidApiVersionError} from '../src/lib/utils/Errors';
 import {GameData, ScrapResult, Source, SourceStats} from '../src/types';
+import {createKeyBackup, recoverKeyBackup} from './utils/Common';
 import {existsSync, unlinkSync} from 'fs';
 import {Celes} from '../src';
 import {Validator} from './utils/Validator';
 import {expect} from 'chai';
-import rimraf from 'rimraf';
+import {promises as fs} from 'fs';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import regedit from 'regodit';
 import {step} from 'mocha-steps';
 
 const achievementWatcherTestRootPath: string = path.join(__dirname, 'tmp/appData/Achievement Watcher Test');
@@ -22,6 +26,7 @@ const codexAppIds: string[] = ['255710', '382900', '1097840', '1184050'];
 const creamApiAppIds: string[] = ['883710'];
 const darksidersApiAppIds: string[] = ['774361'];
 const goldbergAppIds: string[] = ['883710', '1113000'];
+const greenLumaAppIds: string[] = ['228300', '1097840'];
 const reloadedAppIds: string[] = ['311210', '312750'];
 const sseAppIds: string[] = ['45760', '228300'];
 const skidrowAppIds: string[] = ['474960', '584980'];
@@ -65,7 +70,7 @@ describe('Testing Celes API', () => {
         const celes = new Celes(achievementWatcherTestRootPath);
         before('Deleting Celes database if existent', () => {
             if (existsSync(celesDbPath)) {
-                rimraf.sync(celesDbPath);
+                fs.rmdir(celesDbPath, { recursive: true });
             }
         });
 
@@ -154,6 +159,22 @@ describe('Testing Celes API', () => {
             if (existsSync(importExportValidFile)) {
                 unlinkSync(importExportValidFile);
             }
+        });
+
+        before('Set registry to the desired states', async () => {
+            await createKeyBackup('HKCU', 'SOFTWARE/GLR/AppID', 'SOFTWARE/GLR/AppID.AW.BKP');
+            await createKeyBackup('HKCU', 'SOFTWARE/GL2020/AppID', 'SOFTWARE/GL2020/AppID.AW.BKP');
+            await regedit.promises.RegWriteDwordValue('HKCU', 'SOFTWARE/GL2020/AppID/1', 'SkipStatsAndAchievements', '00000001');
+            await regedit.promises.RegWriteDwordValue('HKCU', 'SOFTWARE/GL2020/AppID/1097840', 'SkipStatsAndAchievements', '00000000');
+            await regedit.promises.RegWriteDwordValue('HKCU', 'SOFTWARE/GL2020/AppID/1097840/Achievements', 'CompleteBootCamp', '00000001');
+            await regedit.promises.RegWriteDwordValue('HKCU', 'SOFTWARE/GL2020/AppID/1097840/Achievements', 'CompleteBootCamp_Time', '5e52b974');
+            await regedit.promises.RegWriteDwordValue('HKCU', 'SOFTWARE/GLR/AppID/228300', 'SkipStatsAndAchievements', '00000000');
+            await regedit.promises.RegWriteDwordValue('HKCU', 'SOFTWARE/GLR/AppID/228300/Achievements', 'Achievement_1', '00000001');
+        });
+
+        after('Set registry to the default states', async () => {
+            await recoverKeyBackup('HKCU', 'SOFTWARE/GLR/AppID', 'SOFTWARE/GLR/AppID.AW.BKP');
+            await recoverKeyBackup('HKCU', 'SOFTWARE/GL2020/AppID', 'SOFTWARE/GL2020/AppID.AW.BKP');
         });
 
         describe('Pull', () => {
@@ -286,6 +307,10 @@ describe('Testing Celes API', () => {
                 expect(areAllAppIdsInTheGameDataCollection(goldbergAppIds, scrapResult.data, 'Goldberg')).to.be.true;
             });
 
+            step('All GreenLuma games were scraped', () => {
+                expect(areAllAppIdsInTheGameDataCollection(greenLumaAppIds, scrapResult.data, 'GreenLuma')).to.be.true;
+            });
+
             step('All Reloaded games were scraped', () => {
                 expect(areAllAppIdsInTheGameDataCollection(reloadedAppIds, scrapResult.data, 'Reloaded')).to.be.true;
             });
@@ -347,6 +372,10 @@ describe('Testing Celes API', () => {
 
             step('All Goldberg games were loaded', () => {
                 expect(areAllAppIdsInTheGameDataCollection(goldbergAppIds, gameDataCollection, 'Goldberg')).to.be.true;
+            });
+
+            step('All GreenLuma games were loaded', () => {
+                expect(areAllAppIdsInTheGameDataCollection(greenLumaAppIds, gameDataCollection, 'GreenLuma')).to.be.true;
             });
 
             step('All Reloaded games were loaded', () => {
@@ -415,6 +444,10 @@ describe('Testing Celes API', () => {
 
             step('All Goldberg games were imported', () => {
                 expect(areAllAppIdsInTheGameDataCollection(goldbergAppIds, gameDataCollection, 'Goldberg')).to.be.true;
+            });
+
+            step('All GreenLuma games were imported', () => {
+                expect(areAllAppIdsInTheGameDataCollection(greenLumaAppIds, gameDataCollection, 'GreenLuma')).to.be.true;
             });
 
             step('All Reloaded games were imported', () => {
