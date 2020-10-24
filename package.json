@@ -1,6 +1,6 @@
 {
   "name": "celes",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "File and registry scraper that obtains and stores game achievements, whatever the origin",
   "main": "dist/index.js",
   "types": "dist/index.d.js",
