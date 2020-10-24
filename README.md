@@ -46,7 +46,7 @@ You need NPM to install Celes. If you don't have it, you can download it at
 Celes is available at NPM, so you can install it directly from there:
 
 ```
-npm install celes --save
+npm install --save @achievement-watcher/celes
 ```
 
 ## Usage
@@ -56,7 +56,7 @@ npm install celes --save
 #### Import
 
 ```typescript
-import {Celes} from 'celes'
+import {Celes} from '@achievement-watcher/celes'
 ```
 
 #### The Celes Object
