@@ -13,6 +13,8 @@ This is the list of emulators/clients supported sorted alphabetically.
 | CreamAPI | ✔ | ⚠<sup>2</sup> | ❌ | CreamAPI | `%appdata%\CreamAPI` |
 | DARKSiDERS | ✔ | ✔ | ❌ | Darksiders | Only Custom Dirs |
 | Goldberg Steam Emu | ✔ | ✔ | ⚠<sup>3</sup> | Goldberg | `%appdata%\Goldberg SteamEmu Saves` |
+| GreenLuma2020 | ✔ | ⚠<sup>3</sup> | ⚠<sup>3</sup> | GreenLuma | Windows Registry |
+| GreenLumaReborn | ✔ | ⚠<sup>3</sup> | ⚠<sup>3</sup> | GreenLuma | Windows Registry |
 | EMPRESS (Q4 2020) | ✔ | ✔ | ⚠<sup>3</sup> | Goldberg | Only Custom Dirs |
 | Hoodlum | ✔ | ✔ | ❌ | Darksiders | Only Custom Dirs |
 | Reloaded | ✔ | ✔ | ⚠<sup>4</sup> | Reloaded | `%ProgramData%\Steam\*` |
@@ -28,7 +30,4 @@ This is the list of emulators/clients supported sorted alphabetically.
 4. Should be supported, but we have no samples to test.
 
 ## Emulator/Clients under development
-
-* GreenLuma2020
-* GreenLumaReborn
 * RPCS3

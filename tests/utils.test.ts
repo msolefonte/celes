@@ -87,12 +87,6 @@ describe('Testing Utils', () => {
             expect(mergedGameDatas.length).to.be.equal(1);
             expect(isEqual(mergedGameDatas[0].schema, gdc2[0].schema)).to.be.equal(true);
         });
-
-        // TODO CHECK ACHIEVEMENTS COLLISION OLDEST
-
-        // TODO CHECK ACHIEVEMENTS COLLISION NEWEST
-
-        // TODO CHECK PROGRESS COLLISION
     });
 
     context('CelesDbConnector library', () => {

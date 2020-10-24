@@ -1,7 +1,6 @@
 import * as path from 'path';
+import {closeSync, promises as fs, openSync} from 'fs';
 import {flockSync} from 'fs-ext';
-import fs from 'fs';
-import mkdirp from 'mkdirp';
 
 class CelesMutex {
     private readonly lockPath: string;
@@ -11,15 +10,15 @@ class CelesMutex {
     }
 
     async lock(): Promise<number> {
-        await mkdirp(path.dirname(this.lockPath));
-        const fileDescriptor: number = fs.openSync(this.lockPath, 'w');
+        await fs.mkdir(path.dirname(this.lockPath), { recursive: true });
+        const fileDescriptor: number = openSync(this.lockPath, 'w');
         flockSync(fileDescriptor, 'ex');
 
         return fileDescriptor;
     }
 
     unlock(lockId: number): void {
-        fs.closeSync(lockId);
+        closeSync(lockId);
     }
 }
 

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "File and registry scraper that obtains and stores game achievements, whatever the origin",
   "main": "dist/index.js",
+  "types": "dist/index.d.js",
   "scripts": {
     "build": "tsc && ncp src/types dist/types",
     "build:clean": "rimraf dist && tsc && ncp src/types dist/types",
@@ -11,7 +12,7 @@
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "test": "mocha -r ts-node/register 'tests/**/*.test.ts' --timeout 30000 --require mocha-steps",
-    "test:coverage": "nyc npm --reporter=html --reporter=text run test",
+    "test:coverage": "nyc --reporter=html --reporter=text npm run test",
     "test:coverage:lcov": "nyc --reporter=lcovonly npm run test"
   },
   "contributors": [
@@ -40,7 +41,6 @@
     "got": "^11.8.0",
     "js-ini": "^1.2.0",
     "lodash": "^4.17.20",
-    "mkdirp": "^1.0.4",
     "moment": "^2.29.1",
     "normalize-path": "^3.0.0",
     "regodit": "git+https://github.com/xan105/node-cgo-regodit.git",
@@ -56,7 +56,7 @@
     "@typescript-eslint/eslint-plugin": "^4.5.0",
     "@typescript-eslint/parser": "^4.5.0",
     "chai": "^4.2.0",
-    "eslint": "^7.11.0",
+    "eslint": "^7.12.0",
     "eslint-plugin-sort-class-members": "^1.8.0",
     "mocha": "^8.2.0",
     "mocha-steps": "^1.3.0",

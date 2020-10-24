@@ -22,7 +22,6 @@ import {CelesMutex} from './utils/CelesMutex';
 import {Merger} from './utils/Merger';
 import {promises as fs} from 'fs';
 import {getGameSchema} from './utils/utils';
-import mkdirp from 'mkdirp';
 
 class Celes {
     private static generateScrapError(error: Error, pluginName?: string, platform?: Platform, source?: Source,
@@ -101,6 +100,7 @@ class Celes {
             'CreamAPI',
             'Darksiders',
             'Goldberg',
+            'GreenLuma',
             'Reloaded',
             'Skidrow',
             'Steam',
@@ -195,7 +195,7 @@ class Celes {
             })
         };
 
-        await mkdirp(path.dirname(filePath));
+        await fs.mkdir(path.dirname(filePath), { recursive: true });
         await fs.writeFile(filePath, JSON.stringify(exportableGameData));
     }
 

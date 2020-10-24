@@ -9,7 +9,7 @@ import {
 interface AchievementsScraper {
     getUnlockedOrInProgressAchievements(game: ScanResult): Promise<UnlockedOrInProgressAchievement[]>;
 
-    getGameSchema(appId: string, lang?: string, key?: string): Promise<GameSchema>;
+    getGameSchema(appId: string, lang?: string): Promise<GameSchema>;
 
     scan(additionalFoldersToScan?: string[]): Promise<ScanResult[]>;
 
