@@ -133,7 +133,7 @@ class Steam implements AchievementsScraper {
 
         if (cacheTime.steam > cacheTime.local) {
             activeAchievements = await CloudClient.getSteamUserStats(steamUser, game.appId);
-            await fs.mkdir(path.dirname(path.dirname(cachePaths.local)), { recursive: true });
+            await fs.mkdir(path.dirname(cachePaths.local), { recursive: true });
             await fs.writeFile(cachePaths.local, JSON.stringify(activeAchievements, null, 2));
         } else {
             activeAchievements = JSON.parse(await fs.readFile(cachePaths.local, 'utf8'));
