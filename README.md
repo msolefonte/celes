@@ -1,9 +1,9 @@
-[![npm version](https://badge.fury.io/js/%40achievement-watcher%2Fceles.svg)](https://badge.fury.io/js/%40achievement-watcher%2Fceles)
+[![NPM version](https://badge.fury.io/js/%40achievement-watcher%2Fceles.svg)](https://www.npmjs.com/package/@achievement-watcher/celes)
 [![NodeJS CI Actions Status](https://img.shields.io/github/workflow/status/achievement-watcher/celes/nodejs-ci)](https://github.com/achievement-watcher/celes/actions)
 [![Codecov](https://codecov.io/gh/achievement-watcher/celes/branch/master/graph/badge.svg)](https://codecov.io/gh/achievement-watcher/celes)
 [![Maintainability](https://api.codeclimate.com/v1/badges/8e48291929dd5190e908/maintainability)](https://codeclimate.com/github/achievement-watcher/celes/maintainability)
-[![License](https://img.shields.io/github/license/achievement-watcher/celes)](LICENSE)
-[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/achievement-watcher/celes/blob/master/CONTRIBUTING.md)
+[![License](https://img.shields.io/github/license/achievement-watcher/celes)](https://github.com/achievement-watcher/celes/blob/master/LICENSE)
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](https://github.com/achievement-watcher/celes/blob/master/CONTRIBUTING.md)
 
 # Celes
 
@@ -28,7 +28,8 @@ unlocked achievements, together with import and export features. It also has a b
 store local caches than can also be used by other tools of the 
 [Achievement Watcher](https://www.github.com/achievement-watcher/) project. 
 
-To see the list of compatible sources and platforms, refer to [COMPATIBILITY](docs/COMPATIBILTY.md).
+To see the list of compatible sources and platforms, refer to 
+[COMPATIBILITY](https://github.com/achievement-watcher/celes/blob/master/docs/COMPATIBILTY.md).
 
 ### Built with
 
@@ -98,8 +99,9 @@ class Celes {
 #### Celes API
 
 This is the list of public methods available at Celes. An always-updated explanation can be found inside of the 
-[src/lib/Celes.ts](src/lib/Celes.ts) file. In the case of the NPM package, the detailed explanation should be instead
-at [dist/lib/Celes.d.ts](dist/lib/Celes.d.ts).
+[src/lib/Celes.ts](https://github.com/achievement-watcher/celes/blob/master/src/lib/Celes.ts) file. In the case of the 
+NPM package, the detailed explanation should be instead at 
+[dist/lib/Celes.d.ts](https://github.com/achievement-watcher/celes/blob/master/dist/lib/Celes.d.ts).
 
 ##### Pull
 
@@ -141,11 +143,13 @@ async addGamePlaytime(appId: string, platform: Platform, playtime: number,
 
 ## Contributing
 
-Contributions are welcome. See [CONTRIBUTING](CONTRIBUTING.md) for more information.
+Contributions are welcome. See [CONTRIBUTING](https://github.com/achievement-watcher/celes/blob/master/CONTRIBUTING.md) 
+for more information.
 
 ## License
 
-Distributed under the GPL-3.0 License. See [LICENSE](LICENSE) for more information.
+Distributed under the GPL-3.0 License. See [LICENSE](https://github.com/achievement-watcher/celes/blob/master/LICENSE) 
+for more information.
 
 ## Legal Aspects
 
