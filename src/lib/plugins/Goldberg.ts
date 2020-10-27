@@ -1,5 +1,3 @@
-'use strict';
-
 import * as path from 'path';
 import {
     CodexAchievementData,
@@ -11,10 +9,10 @@ import {
     UnlockedOrInProgressAchievement
 } from '../../types';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
-import {WrongSourceDetectedError} from '../utils/Errors';
-import {generateActiveAchievement} from './utils/Common';
+import {WrongSourceDetectedError} from '../utils/errors';
+import {generateActiveAchievement} from '../utils/generator';
 
-class Goldberg extends SteamEmulatorScraper {
+export class Goldberg extends SteamEmulatorScraper {
     readonly source: Source = 'Goldberg';
     readonly achievementWatcherRootPath: string;
     readonly achievementLocationFiles: string[] = [
@@ -59,5 +57,3 @@ class Goldberg extends SteamEmulatorScraper {
         ];
     }
 }
-
-export {Goldberg};

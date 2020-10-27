@@ -1,5 +1,3 @@
-'use strict';
-
 import * as path from 'path';
 import {
     Achievement,
@@ -10,11 +8,11 @@ import {
     UnlockedOrInProgressAchievement
 } from '../../types';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
-import {SteamUtils} from './utils/SteamUtils';
 import crc32 from 'crc-32';
-import {generateActiveAchievement} from './utils/Common';
+import {generateActiveAchievement} from '../utils/generator';
+import {getGameSchema as getSteamGameSchema} from './utils/steamUtils';
 
-class SSE extends SteamEmulatorScraper {
+export class SSE extends SteamEmulatorScraper {
     readonly source: Source = 'SmartSteamEmu';
     readonly achievementLocationFiles: string[] = [
         'stats.bin'
@@ -49,7 +47,7 @@ class SSE extends SteamEmulatorScraper {
         const wronglyNormalizedAchievementList: UnlockedOrInProgressAchievement[] = await super.getUnlockedOrInProgressAchievements(game);
         const correctlyNormalizedAchievementList: UnlockedOrInProgressAchievement[] = [];
 
-        const gameSchema: GameSchema = await SteamUtils.getGameSchema(this.achievementWatcherRootPath, game.appId, 'english');
+        const gameSchema: GameSchema = await getSteamGameSchema(this.achievementWatcherRootPath, game.appId, 'english');
         const achievementIds = gameSchema.achievement.list.map((achievement: Achievement) => {
             return achievement.name;
         });
@@ -78,5 +76,3 @@ class SSE extends SteamEmulatorScraper {
         ];
     }
 }
-
-export {SSE};

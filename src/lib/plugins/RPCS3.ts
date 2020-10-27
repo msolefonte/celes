@@ -11,7 +11,7 @@
 // import {AchievementsScraper} from './utils/AchievementsScraper';
 // import glob from 'fast-glob';
 //
-// class RPCS3 implements AchievementsScraper {
+// export class RPCS3 implements AchievementsScraper {
 //     private readonly binary: string = 'rpcs3.exe';
 //     private readonly platform: Platform = 'PS3';
 //     private readonly source: Source = 'RPCS3';

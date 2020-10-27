@@ -1,5 +1,5 @@
 import {InternalError} from 'cloud-client'
-import {SteamUtils} from '../src/lib/plugins/utils/SteamUtils';
+import {getGameSchema} from '../src/lib/plugins/utils/steamUtils';
 import path from 'path';
 
 const achievementWatcherTestRootPath: string = path.join(__dirname, 'tmp/appData/Achievement Watcher Test');
@@ -18,7 +18,7 @@ describe('Testing Steam Utils', () => {
         // });
         //
         it('Invalid request throws InternalError', (done) => {
-            SteamUtils.getGameSchema( achievementWatcherTestRootPath, 'invalid', 'english').catch((error) => {
+            getGameSchema( achievementWatcherTestRootPath, 'invalid', 'english').catch((error) => {
                 if (error instanceof InternalError) {
                     done();
                 } else {
@@ -28,7 +28,7 @@ describe('Testing Steam Utils', () => {
         });
 
         it('Invalid language is fixed to English', (done) => {
-            SteamUtils.getGameSchema( achievementWatcherTestRootPath, '382900', 'invalid').catch((error) => {
+            getGameSchema( achievementWatcherTestRootPath, '382900', 'invalid').catch((error) => {
                 console.error(error);
             });
             done();

@@ -111,6 +111,11 @@ export interface GameStats {
     playtime: number;
 }
 
+export interface GameStatsBody {
+    sources: SourceStats[];
+    playtime: number;
+}
+
 export interface GoldbergAchievementDataIni {
     Achieved: 1,
     UnlockTime: string
@@ -195,6 +200,9 @@ export interface SteamGameMetadata {
     appId: string;
     userId: string;
 }
+
+export type SteamPluginMode = 0 | 1 | 2;
+
 export interface SteamUser {
     user: string;
     id: string;

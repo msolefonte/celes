@@ -1,16 +1,13 @@
-'use strict';
-
 import * as path from 'path';
-import {GameSchema, Platform, ScanResult, Source, UnlockedOrInProgressAchievement} from '../../../types';
+import {Platform, ScanResult, Source, UnlockedOrInProgressAchievement} from '../../../types';
 import {existsSync, promises as fs} from 'fs';
-import {AchievementsScraper} from './AchievementsScraper';
-import {SSEConfigParser} from './SSEConfigParser';
-import {SteamUtils} from './SteamUtils';
+import {SteamScraper} from './SteamScraper';
 import glob from 'fast-glob';
 import normalize from 'normalize-path';
 import {parse as parseIni} from 'js-ini';
+import {parse as parseSse} from './sseConfigParser';
 
-abstract class SteamEmulatorScraper implements AchievementsScraper {
+abstract class SteamEmulatorScraper extends SteamScraper {
     protected abstract readonly achievementWatcherRootPath: string;
     protected abstract readonly achievementLocationFiles: string[];
     protected abstract readonly source: Source;
@@ -52,10 +49,6 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
         return gamesMetadata;
     }
 
-    async getGameSchema(appId: string, language: string): Promise<GameSchema> {
-        return SteamUtils.getGameSchema(this.achievementWatcherRootPath, appId, language);
-    }
-
     async getUnlockedOrInProgressAchievements(game: ScanResult): Promise<UnlockedOrInProgressAchievement[]> {
         const achievementList: unknown = await this.getAchievementListFromGameFolder(<string>game.data.path);
         return this.normalizeActiveAchievements(achievementList);
@@ -91,7 +84,7 @@ abstract class SteamEmulatorScraper implements AchievementsScraper {
                 const achievementFilePath: string = path.join(gameFolder, file);
 
                 if (this.source == 'SmartSteamEmu' && file === 'stats.bin') {
-                    achievementList = SSEConfigParser.parse(await fs.readFile(achievementFilePath));
+                    achievementList = parseSse(await fs.readFile(achievementFilePath));
                 } else if (path.parse(file).ext == '.json') {
                     achievementList = JSON.parse(await fs.readFile(achievementFilePath, 'utf8'));
                 } else {

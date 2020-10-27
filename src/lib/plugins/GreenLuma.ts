@@ -1,25 +1,22 @@
-'use strict';
-
 import {
-    GameSchema,
     Platform,
     ScanResult,
     Source,
     UnlockedOrInProgressAchievement
 } from '../../types';
-import {AchievementsScraper} from './utils/AchievementsScraper';
-import {SteamUtils} from './utils/SteamUtils';
-import {generateActiveAchievement} from './utils/Common';
+import {SteamScraper} from './utils/SteamScraper';
+import {generateActiveAchievement} from '../utils/generator';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import regedit from 'regodit';
 
-class GreenLuma implements AchievementsScraper {
+export class GreenLuma extends SteamScraper {
     readonly source: Source = 'GreenLuma';
     readonly platform: Platform = 'Steam';
     readonly achievementWatcherRootPath: string;
 
     constructor(achievementWatcherRootPath: string) {
+        super();
         this.achievementWatcherRootPath = achievementWatcherRootPath;
     }
 
@@ -57,10 +54,6 @@ class GreenLuma implements AchievementsScraper {
         return scanResults;
     }
 
-    async getGameSchema(appId: string, language: string): Promise<GameSchema> {
-        return SteamUtils.getGameSchema(this.achievementWatcherRootPath, appId, language);
-    }
-
     async getUnlockedOrInProgressAchievements(game: ScanResult): Promise<UnlockedOrInProgressAchievement[]> {
         const achievementRegistries = await regedit.promises.RegListAllValues(game.data.root, game.data.path);
         const activeAchievements: UnlockedOrInProgressAchievement[] = [];
@@ -88,5 +81,3 @@ class GreenLuma implements AchievementsScraper {
         return this.source;
     }
 }
-
-export {GreenLuma};
