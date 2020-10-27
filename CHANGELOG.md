@@ -16,3 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.2] Minor patch - 24/10/2020
 
 - For testing purposes
+
+## [1.0.3] - TBA
+
+- Update README.md to use absolute links
