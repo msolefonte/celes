@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.3] - TBA
 
+- Update README.md to use absolute links
 - Minor refactoring 
     - Turn classes with only static methods into collections of independent functions
     - Add mantainability
