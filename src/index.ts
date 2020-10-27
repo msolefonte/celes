@@ -1,2 +1,1 @@
-import {Celes} from './lib/Celes';
-export {Celes};
+export {Celes} from './lib/Celes';

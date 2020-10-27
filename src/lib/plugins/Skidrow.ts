@@ -1,14 +1,12 @@
-'use strict';
-
 import * as path from 'path';
 import {SkidrowAchievementList, Source, UnlockedOrInProgressAchievement} from '../../types';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
-import {generateActiveAchievement} from './utils/Common';
+import {generateActiveAchievement} from '../utils/generator';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import regedit from 'regodit';
 
-class Skidrow extends SteamEmulatorScraper {
+export class Skidrow extends SteamEmulatorScraper {
     readonly source: Source = 'Skidrow';
     readonly achievementWatcherRootPath: string;
     readonly achievementLocationFiles: string[] = [
@@ -56,5 +54,3 @@ class Skidrow extends SteamEmulatorScraper {
         ];
     }
 }
-
-export {Skidrow};

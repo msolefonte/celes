@@ -6,7 +6,7 @@ import {
     UnlockedOrInProgressAchievement
 } from '../../../types';
 
-interface AchievementsScraper {
+export interface AchievementsScraper {
     getUnlockedOrInProgressAchievements(game: ScanResult): Promise<UnlockedOrInProgressAchievement[]>;
 
     getGameSchema(appId: string, lang?: string): Promise<GameSchema>;
@@ -17,5 +17,3 @@ interface AchievementsScraper {
 
     getSource(): Source;
 }
-
-export {AchievementsScraper};

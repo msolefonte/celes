@@ -1,5 +1,3 @@
-'use strict';
-
 import {
     Ali213AchievementData,
     Ali213AchievementList,
@@ -7,9 +5,9 @@ import {
     UnlockedOrInProgressAchievement
 } from '../../types';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
-import {generateActiveAchievement} from './utils/Common';
+import {generateActiveAchievement} from '../utils/generator';
 
-class Ali213 extends SteamEmulatorScraper {
+export class Ali213 extends SteamEmulatorScraper {
     readonly source: Source = 'Ali213';
     readonly achievementWatcherRootPath: string;
     readonly achievementLocationFiles: string[] = [
@@ -41,5 +39,3 @@ class Ali213 extends SteamEmulatorScraper {
         return [];
     }
 }
-
-export {Ali213};

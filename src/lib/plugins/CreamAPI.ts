@@ -1,5 +1,3 @@
-'use strict';
-
 import * as path from 'path';
 import {
     CreamApiAchievementData,
@@ -8,9 +6,9 @@ import {
     UnlockedOrInProgressAchievement
 } from '../../types';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
-import {generateActiveAchievement} from './utils/Common';
+import {generateActiveAchievement} from '../utils/generator';
 
-class CreamAPI extends SteamEmulatorScraper {
+export class CreamAPI extends SteamEmulatorScraper {
     readonly source: Source = 'CreamAPI';
     readonly achievementWatcherRootPath: string;
     readonly achievementLocationFiles: string[] = [
@@ -46,5 +44,3 @@ class CreamAPI extends SteamEmulatorScraper {
         ];
     }
 }
-
-export {CreamAPI};

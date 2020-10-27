@@ -1,5 +1,3 @@
-'use strict';
-
 import * as path from 'path';
 import {
     CodexAchievementData,
@@ -9,9 +7,10 @@ import {
     Source,
     UnlockedOrInProgressAchievement
 } from '../../types';
-import {generateActiveAchievement, normalizeProgress} from './utils/Common';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
-import {WrongSourceDetectedError} from '../utils/Errors';
+import {WrongSourceDetectedError} from '../utils/errors';
+import {generateActiveAchievement} from '../utils/generator';
+import {normalizeProgress} from './utils/common';
 import {omit} from 'lodash';
 
 class Codex extends SteamEmulatorScraper {
