@@ -1,13 +1,13 @@
 import * as path from 'path';
 import {GameData, GameStats, Platform} from '../../types';
-import {InvalidApiVersionError} from './Errors';
+import {InvalidApiVersionError} from './errors';
 import {promises as fs} from 'fs';
 import {getGameSchema} from './utils';
 
 /**
  * Important note: CelesDb is not prepared to prevent concurrency problems. This has to be addressed where used.
  */
-class CelesDbConnector {
+export class CelesDbConnector {
     private readonly apiVersion: string = 'v1';
     private readonly achievementWatcherRootPath: string;
     private readonly celesDatabasePath: string;
@@ -93,5 +93,3 @@ class CelesDbConnector {
         await fs.writeFile(path.join(this.celesDatabasePath, gamePlatform + '/' + gameData.appId + '.json'), JSON.stringify(gameStats));
     }
 }
-
-export {CelesDbConnector};

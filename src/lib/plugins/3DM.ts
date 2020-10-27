@@ -1,5 +1,3 @@
-'use strict';
-
 import * as path from 'path';
 import {
     ReloadedAchievementList,
@@ -8,11 +6,12 @@ import {
     TDMAchievementList2,
     UnlockedOrInProgressAchievement
 } from '../../types';
-import {generateActiveAchievement, normalizeTimestamp} from './utils/Common';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
-import {WrongSourceDetectedError} from '../utils/Errors';
+import {WrongSourceDetectedError} from '../utils/errors';
+import {generateActiveAchievement} from '../utils/generator';
+import {normalizeTimestamp} from './utils/common';
 
-class Reloaded extends SteamEmulatorScraper {
+export class Reloaded extends SteamEmulatorScraper {
     readonly source: Source = '3DM';
     readonly achievementWatcherRootPath: string;
     readonly achievementLocationFiles: string[] = [
@@ -57,5 +56,3 @@ class Reloaded extends SteamEmulatorScraper {
         ];
     }
 }
-
-export {Reloaded};

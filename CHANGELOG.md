@@ -5,18 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] Initial Commit - 24/10/2020
+## [1.0.0] - 24/10/2020
 
 - Initial commit
 
-## [1.0.1] Minor patch - 24/10/2020
+## [1.0.1] - 24/10/2020
 
 - For testing purposes
 
-## [1.0.2] Minor patch - 24/10/2020
+## [1.0.2] - 24/10/2020
 
 - For testing purposes
 
 ## [1.0.3] - TBA
 
 - Update README.md to use absolute links
+- Minor refactoring 
+    - Turn classes with only static methods into collections of independent functions
+    - Add mantainability
+- Add tests
+    - Merge collisions
+        - Achievement progress
+        - Achievement unlock time
+        - Achievement unlock time (with useOldestUnlockTime flag set to false)

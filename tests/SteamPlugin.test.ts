@@ -3,8 +3,8 @@ import {
     SteamNotFoundError,
     SteamPublicUsersNotFoundError,
     WrongSourceDetectedError
-} from '../src/lib/utils/Errors';
-import {createKeyBackup, recoverKeyBackup} from './utils/Common';
+} from '../src/lib/utils/errors';
+import {createKeyBackup, recoverKeyBackup} from './utils/registryBackup';
 import {existsSync, unlinkSync} from 'fs';
 import {InternalError} from 'cloud-client';
 import {ScanResult} from '../src/types';

@@ -1,12 +1,10 @@
-'use strict';
-
 import {
     DarksidersAchievementList,
     Source,
     UnlockedOrInProgressAchievement
 } from '../../types';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
-import {generateActiveAchievement} from './utils/Common';
+import {generateActiveAchievement} from '../utils/generator';
 
 class Darksiders extends SteamEmulatorScraper {
     readonly source: Source = 'Darksiders';
