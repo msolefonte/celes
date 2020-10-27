@@ -1,5 +1,3 @@
-'use strict';
-
 import * as path from 'path';
 import {
     ReloadedAchievementData,
@@ -7,12 +5,13 @@ import {
     Source,
     UnlockedOrInProgressAchievement
 } from '../../types';
-import {generateActiveAchievement, normalizeProgress, normalizeTimestamp} from './utils/Common';
+import {normalizeProgress, normalizeTimestamp} from './utils/common';
 import {SteamEmulatorScraper} from './utils/SteamEmulatorScraper';
-import {WrongSourceDetectedError} from '../utils/Errors';
+import {WrongSourceDetectedError} from '../utils/errors';
+import {generateActiveAchievement} from '../utils/generator';
 import {omit} from 'lodash';
 
-class Reloaded extends SteamEmulatorScraper {
+export class Reloaded extends SteamEmulatorScraper {
     private static is3dmAchievementList(achievementList: ReloadedAchievementList) {
         return 'State' in achievementList;
     }
@@ -76,5 +75,3 @@ class Reloaded extends SteamEmulatorScraper {
         ];
     }
 }
-
-export {Reloaded};

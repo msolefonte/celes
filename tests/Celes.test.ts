@@ -1,10 +1,10 @@
 import * as path from 'path';
-import {FileNotFoundError, InvalidApiVersionError} from '../src/lib/utils/Errors';
+import {FileNotFoundError, InvalidApiVersionError} from '../src/lib/utils/errors';
 import {GameData, ScrapResult, Source, SourceStats} from '../src/types';
-import {createKeyBackup, recoverKeyBackup} from './utils/Common';
+import {createKeyBackup, recoverKeyBackup} from './utils/registryBackup';
 import {existsSync, unlinkSync} from 'fs';
 import {Celes} from '../src';
-import {Validator} from './utils/Validator';
+import {isValidGameData} from './utils/validation';
 import {expect} from 'chai';
 import {promises as fs} from 'fs';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -205,7 +205,7 @@ describe('Testing Celes API', () => {
                 let resultIsValid = true;
 
                 for (let i = 0; i < scrapResult.data.length; i++) {
-                    if (!Validator.isValidGameData(scrapResult.data[i])) {
+                    if (!isValidGameData(scrapResult.data[i])) {
                         resultIsValid = false;
                     }
                 }
@@ -342,7 +342,7 @@ describe('Testing Celes API', () => {
                 let resultIsValid = true;
 
                 for (let i = 0; i < gameDataCollection.length; i++) {
-                    if (!Validator.isValidGameData(gameDataCollection[i])) {
+                    if (!isValidGameData(gameDataCollection[i])) {
                         resultIsValid = false;
                     }
                 }
@@ -414,7 +414,7 @@ describe('Testing Celes API', () => {
                 let isValid = true;
 
                 for (let i = 0; i < gameDataCollection.length; i++) {
-                    if (!Validator.isValidGameData(gameDataCollection[i])) {
+                    if (!isValidGameData(gameDataCollection[i])) {
                         isValid = false;
                     }
                 }

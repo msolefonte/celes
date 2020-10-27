@@ -2,7 +2,7 @@ import * as path from 'path';
 import {closeSync, promises as fs, openSync} from 'fs';
 import {flockSync} from 'fs-ext';
 
-class CelesMutex {
+export class CelesMutex {
     private readonly lockPath: string;
 
     constructor(achievementWatcherRootPath: string) {
@@ -21,5 +21,3 @@ class CelesMutex {
         closeSync(lockId);
     }
 }
-
-export {CelesMutex}
