@@ -11,13 +11,6 @@ module.exports = {
     ],
     rules: {
         'quotes': [2, 'single', { 'avoidEscape': true }],
-        'sort-imports': ['error', {
-            'ignoreCase': false,
-            'ignoreDeclarationSort': false,
-            'ignoreMemberSort': false,
-            'memberSyntaxSortOrder': ['none', 'all', 'multiple', 'single'],
-            'allowSeparatedGroups': false
-        }],
         'sort-class-members/sort-class-members': [2, {
             'order': [
                 '[static-properties]',
@@ -29,6 +22,14 @@ module.exports = {
                 '[conventional-private-methods]'
             ],
             'accessorPairPositioning': 'getThenSet',
-        }]
+        }],
+        'sort-imports': ['error', {
+            'ignoreCase': false,
+            'ignoreDeclarationSort': false,
+            'ignoreMemberSort': false,
+            'memberSyntaxSortOrder': ['none', 'all', 'multiple', 'single'],
+            'allowSeparatedGroups': false
+        }],
+        'sort-vars': ['error', {}]
     }
 };

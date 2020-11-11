@@ -6,13 +6,19 @@ import {
     Platform,
     ScrapResult,
     Source,
-    SourceStats,
     SteamPluginMode,
 } from '../types';
 import {
     FileNotFoundError,
     InvalidApiVersionError
 } from './utils/errors';
+import {
+    checkThatAchievementExistsInSchema,
+    generateManualGame,
+    removeManuallyUnlockedGameAchievement,
+    unlockGameAchievement,
+    updateGameAchievementUnlockTime
+} from './utils/gameDataUtils';
 import {CelesDbConnector} from './utils/CelesDbConnector';
 import {CelesMutex} from './utils/CelesMutex';
 import {CelesScraper} from './utils/CelesScraper';
@@ -21,24 +27,6 @@ import {getGameSchema} from './utils/utils';
 import {mergeGameDataCollections} from './utils/merger';
 
 export class Celes {
-    private static updateSourceAchievementUnlockTime(sourceStats: SourceStats, achievementId: string,
-                                                     unlockTime: number): void {
-        for (const achievement of sourceStats.achievements.active) {
-            if (achievement.name === achievementId) {
-                achievement.unlockTime = unlockTime;
-            }
-        }
-    }
-
-    private static updateGameDataAchievementUnlockTime(gameData: GameData, source: Source, achievementId: string,
-                                                       unlockTime: number): void {
-        for (const sourceStats of gameData.stats.sources) {
-            if (sourceStats.source === source) {
-                this.updateSourceAchievementUnlockTime(sourceStats, achievementId, unlockTime)
-            }
-        }
-    }
-
     private readonly achievementWatcherRootPath: string;
     private readonly additionalFoldersToScan: string[];
     private readonly enabledPlugins: string[];
@@ -119,11 +107,10 @@ export class Celes {
 
         const lockId: number = await this.celesMutex.lock();
         try {
-            const databaseData: GameData[] = await celesDbConnector.getAll(this.systemLanguage, callbackProgress,
-                50, 50);
-            mergedData = mergeGameDataCollections([scrapedData, databaseData],
-                this.useOldestUnlockTime);
+            const databaseData: GameData[] = await celesDbConnector.getAll(this.systemLanguage, callbackProgress, 50, 50);
+            mergedData = mergeGameDataCollections([scrapedData, databaseData], this.useOldestUnlockTime);
             await celesDbConnector.updateAll(mergedData);
+            // TODO ADD CATCH -> SOME OF THESE METHODS CAN FAIL
         } finally {
             this.celesMutex.unlock(lockId);
         }
@@ -177,38 +164,6 @@ export class Celes {
 
         await fs.mkdir(path.dirname(filePath), {recursive: true});
         await fs.writeFile(filePath, JSON.stringify(exportableGameData));
-    }
-
-    private async parseImportedData(importedData: ExportableGameStatsCollection) {
-        const gameDataCollection: GameData[] = [];
-
-        if (importedData.apiVersion !== this.apiVersion) {
-            throw new InvalidApiVersionError(this.apiVersion, importedData.apiVersion);
-        }
-
-        for (let i = 0; i < importedData.data.length; i++) {
-            const exportableGameStats: ExportableGameStats = importedData.data[i];
-
-            const gameData: GameData = {
-                apiVersion: this.apiVersion,
-                appId: exportableGameStats.appId,
-                platform: exportableGameStats.platform,
-                schema: await getGameSchema(
-                    this.achievementWatcherRootPath,
-                    exportableGameStats.appId,
-                    exportableGameStats.platform,
-                    this.systemLanguage
-                ),
-                stats: {
-                    sources: exportableGameStats.stats.sources,
-                    playtime: exportableGameStats.stats.playtime
-                }
-            };
-
-            gameDataCollection.push(gameData);
-        }
-
-        return gameDataCollection;
     }
 
     /**
@@ -275,7 +230,88 @@ export class Celes {
         const lockId: number = await this.celesMutex.lock();
         try {
             const gameData: GameData = await celesDbConnector.getGame(appId, platform, this.systemLanguage);
-            Celes.updateGameDataAchievementUnlockTime(gameData, source, achievementId, unlockTime);
+            updateGameAchievementUnlockTime(gameData, source, achievementId, unlockTime);
+            await celesDbConnector.updateGame(gameData);
+        } finally {
+            this.celesMutex.unlock(lockId);
+        }
+    }
+
+    /**
+     * Adds a game manually. A default source 'Manual' is created.
+     *
+     * @param appId - Identifier of the game.
+     * @param platform - Platform of the game.
+     */
+    async addGame(appId: string, platform: Platform): Promise<void> {
+        const celesDbConnector = new CelesDbConnector(this.achievementWatcherRootPath);
+        const gameData: GameData = await generateManualGame(this.achievementWatcherRootPath, appId, platform, this.apiVersion, this.systemLanguage);
+
+        const lockId: number = await this.celesMutex.lock();
+        try {
+            await celesDbConnector.updateGame(gameData);
+        } finally {
+            this.celesMutex.unlock(lockId);
+        }
+    }
+
+    /**
+     * Removes a game added manually. If more than one source exists, only 'Manual' source is removed.
+     *
+     * A GameNotInDatabaseError is thrown if the game does not exist.
+     *
+     * @param appId - Identifier of the game.
+     * @param platform - Platform of the game.
+     */
+    async removeManuallAddedGame(appId: string, platform: Platform): Promise<void> {
+        const celesDbConnector = new CelesDbConnector(this.achievementWatcherRootPath);
+
+        const lockId: number = await this.celesMutex.lock();
+        try {
+            await celesDbConnector.removeManuallAddedGame(appId, platform);
+        } finally {
+            this.celesMutex.unlock(lockId);
+        }
+    }
+
+    /**
+     * Marks a game achievement as unlocked. The game has to exist in the Celes Database.
+     *
+     *
+     * @param appId - Identifier of the game.
+     * @param platform - Platform of the game.
+     * @param achievementId - Identifier of the achievmeent.
+     * @param unlockTime - Unlock time to be set. Defaults to 0.
+     */
+    async unlockAchievement(appId: string, platform: Platform, achievementId: string, unlockTime = 0): Promise<void> {
+        const celesDbConnector = new CelesDbConnector(this.achievementWatcherRootPath);
+
+        const lockId: number = await this.celesMutex.lock();
+        try {
+            const gameData: GameData = await celesDbConnector.getGame(appId, platform, this.systemLanguage);
+            checkThatAchievementExistsInSchema(gameData, appId, platform, achievementId);
+
+            unlockGameAchievement(gameData, achievementId, unlockTime);
+            await celesDbConnector.updateGame(gameData);
+        } finally {
+            this.celesMutex.unlock(lockId);
+        }
+    }
+
+    /**
+     * Removes a manually unlocked achievement from a game. The game has to exist in the Celes Database.
+     *
+     * @param appId - Identifier of the game.
+     * @param platform - Platform of the game.
+     * @param achievementId - Identifier of the achievmeent.
+     */
+    async removeManuallyUnlockedAchievement(appId: string, platform: Platform, achievementId: string): Promise<void> {
+        const celesDbConnector = new CelesDbConnector(this.achievementWatcherRootPath);
+
+        const lockId: number = await this.celesMutex.lock();
+        try {
+            const gameData: GameData = await celesDbConnector.getGame(appId, platform, this.systemLanguage);
+            removeManuallyUnlockedGameAchievement(gameData, achievementId);
             await celesDbConnector.updateGame(gameData);
         } finally {
             this.celesMutex.unlock(lockId);
@@ -308,5 +344,37 @@ export class Celes {
         } finally {
             this.celesMutex.unlock(lockId);
         }
+    }
+
+    private async parseImportedData(importedData: ExportableGameStatsCollection) {
+        const gameDataCollection: GameData[] = [];
+
+        if (importedData.apiVersion !== this.apiVersion) {
+            throw new InvalidApiVersionError(this.apiVersion, importedData.apiVersion);
+        }
+
+        for (let i = 0; i < importedData.data.length; i++) {
+            const exportableGameStats: ExportableGameStats = importedData.data[i];
+
+            const gameData: GameData = {
+                apiVersion: this.apiVersion,
+                appId: exportableGameStats.appId,
+                platform: exportableGameStats.platform,
+                schema: await getGameSchema(
+                    this.achievementWatcherRootPath,
+                    exportableGameStats.appId,
+                    exportableGameStats.platform,
+                    this.systemLanguage
+                ),
+                stats: {
+                    sources: exportableGameStats.stats.sources,
+                    playtime: exportableGameStats.stats.playtime
+                }
+            };
+
+            gameDataCollection.push(gameData);
+        }
+
+        return gameDataCollection;
     }
 }
