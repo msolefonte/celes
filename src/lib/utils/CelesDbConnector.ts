@@ -1,6 +1,6 @@
 import * as path from 'path';
-import {GameData, GameStats, Platform} from '../../types';
-import {InvalidApiVersionError} from './errors';
+import {GameData, GameStats, Platform, SourceStats} from '../../types';
+import {GameNotInDatabaseError, InvalidApiVersionError} from './errors';
 import {promises as fs} from 'fs';
 import {getGameSchema} from './utils';
 
@@ -17,6 +17,23 @@ export class CelesDbConnector {
         this.celesDatabasePath = path.join(achievementWatcherRootPath, 'celes/db/');
     }
 
+    private async removeGameStatsFromDb(appId: string, platform: Platform): Promise<void> {
+        await fs.unlink(path.join(this.celesDatabasePath, platform + '/' + appId + '.json'));
+    }
+
+    private async readGameStatsFromDb(appId: string, platform: Platform): Promise<GameStats> {
+        try {
+            return JSON.parse(await fs.readFile(path.join(this.celesDatabasePath, platform + '/' + appId + '.json'), 'utf8'));
+        } catch (e) {
+            throw new GameNotInDatabaseError(appId, platform)
+        }
+    }
+
+    private async writeGameStatsToDb(appId: string, platform: Platform, gameStats: GameStats): Promise<void> {
+        await fs.mkdir(path.join(this.celesDatabasePath, platform + '/'), { recursive: true });
+        await fs.writeFile(path.join(this.celesDatabasePath, platform + '/' + appId + '.json'), JSON.stringify(gameStats));
+    }
+
     async getAll(schemaLanguage: string, callbackProgress?: (progress:number) => void, maxProgress = 100, baseProgress = 0): Promise<GameData[]> {
         const gameDataCollection: GameData[] = [];
 
@@ -30,11 +47,12 @@ export class CelesDbConnector {
                     const progressPercentage: number = baseProgress + Math.floor(((i + 1) / localDatabasePlatforms.length) * ((j + 1) / platformGames.length) * maxProgress);
                     const appId = platformGames[j].split('.').slice(0, -1).join('.');
 
-                    const gameData: GameData = await this.getGame(appId, localDatabasePlatforms[i], schemaLanguage);
-
-                    gameDataCollection.push(gameData);
-
-                    typeof callbackProgress === 'function' && callbackProgress(progressPercentage);
+                    try {
+                        const gameData: GameData = await this.getGame(appId, localDatabasePlatforms[i], schemaLanguage);
+                        gameDataCollection.push(gameData);
+                    } finally {
+                        typeof callbackProgress === 'function' && callbackProgress(progressPercentage);
+                    }
                 }
             }
         } catch (error) {
@@ -60,15 +78,13 @@ export class CelesDbConnector {
     }
 
     async getGame(appId: string, platform: Platform, schemaLanguage: string): Promise<GameData> {
-        const gameStats: GameStats = JSON.parse(
-            await fs.readFile(path.join(this.celesDatabasePath, platform + '/' + appId + '.json'), 'utf8')
-        );
+        const gameStats: GameStats = await this.readGameStatsFromDb(appId, platform);
 
         if (gameStats.apiVersion !== this.apiVersion) {
             throw new InvalidApiVersionError(this.apiVersion, gameStats.apiVersion);
         }
 
-        return <GameData> {
+        return <GameData>{
             apiVersion: this.apiVersion,
             appId: gameStats.appId,
             platform: platform,
@@ -80,8 +96,29 @@ export class CelesDbConnector {
         }
     }
 
+    async removeManuallAddedGame(appId: string, platform: Platform): Promise<void> {
+        const gameStats: GameStats = await this.readGameStatsFromDb(appId, platform);
+
+        const newSources: SourceStats[] = [];
+        for (const sourceStats of gameStats.sources) {
+            if (sourceStats.source !== 'Manual') {
+                newSources.push(sourceStats);
+            }
+        }
+
+        if (newSources.length === 0) {
+            await this.removeGameStatsFromDb(appId, platform);
+        } else {
+            await this.writeGameStatsToDb(appId, platform, {
+                apiVersion: gameStats.apiVersion,
+                appId: appId,
+                sources: newSources,
+                playtime: gameStats.playtime
+            });
+        }
+    }
+
     async updateGame(gameData: GameData): Promise<void> {
-        const gamePlatform: Platform = gameData.platform;
         const gameStats: GameStats = {
             apiVersion: this.apiVersion,
             appId: gameData.appId,
@@ -89,7 +126,6 @@ export class CelesDbConnector {
             playtime: gameData.stats.playtime
         };
 
-        await fs.mkdir(path.join(this.celesDatabasePath, gamePlatform + '/'), { recursive: true });
-        await fs.writeFile(path.join(this.celesDatabasePath, gamePlatform + '/' + gameData.appId + '.json'), JSON.stringify(gameStats));
+        await this.writeGameStatsToDb(gameData.appId, gameData.platform, gameStats);
     }
 }

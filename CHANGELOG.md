@@ -28,3 +28,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         - Achievement progress
         - Achievement unlock time
         - Achievement unlock time (with useOldestUnlockTime flag set to false)
+
+## [1.1.0] - 13/11/2020
+
+- Remove fs-ext and reflect the new concurrency problem
+- Fix a bug that happend when a database game with invalid values was loaded
+- Add methods to the API of Celes
+    - addGame()
+    - removeManaullyAddedGame()
+    - unlockAchievement()
+    - removeManuallyUnlockedAchievement()
+- Add tests for the new methods
+- Minor fixes

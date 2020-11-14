@@ -1,12 +1,17 @@
 import * as path from 'path';
-import {FileNotFoundError, InvalidApiVersionError} from '../src/lib/utils/errors';
+import {
+    AchievementNotInSchemaError,
+    FileNotFoundError,
+    GameNotInDatabaseError,
+    InvalidApiVersionError
+} from '../src/lib/utils/errors';
 import {GameData, ScrapResult, Source, SourceStats} from '../src/types';
 import {createKeyBackup, recoverKeyBackup} from './utils/registryBackup';
 import {existsSync, unlinkSync} from 'fs';
 import {Celes} from '../src';
-import {isValidGameData} from './utils/validation';
 import {expect} from 'chai';
 import {promises as fs} from 'fs';
+import {isValidGameData} from './utils/validation';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import regedit from 'regodit';
@@ -460,6 +465,106 @@ describe('Testing Celes API', () => {
 
             step('All Skidrow games were imported', () => {
                 expect(areAllAppIdsInTheGameDataCollection(skidrowAppIds, gameDataCollection, 'Skidrow')).to.be.true;
+            });
+        });
+
+        describe('Add/remove games manually', () => {
+            const manuallyAddedGameId = '1049410';
+            const alreadyExistentGameId = '382900';
+
+            step('Add game works', async () => {
+                await celes.addGame(manuallyAddedGameId, 'Steam');
+            });
+
+            step('Game was added correctly', async () => {
+                const gameDataCollection: GameData[] = await celes.load();
+                let itWorked = false;
+
+                for (let i = 0; i < gameDataCollection.length; i++) {
+                    if (gameDataCollection[i].appId === manuallyAddedGameId) {
+                        itWorked = true;
+                        break;
+                    }
+                }
+
+                expect(itWorked).to.be.true;
+            });
+
+            step('Adding a game already added manually does not return any error', async () => {
+                await celes.addGame(manuallyAddedGameId, 'Steam');
+            });
+
+            step('Adding a game already added from scrapping does not return any error', async () => {
+                await celes.addGame(alreadyExistentGameId, 'Steam');
+            })
+
+            step('Delete game works', async () => {
+                await celes.removeManuallAddedGame(manuallyAddedGameId, 'Steam');
+            });
+
+            step('Game was deleted correctly', async () => {
+                const gameDataCollection: GameData[] = await celes.load();
+                let itWorked = true;
+
+                for (let i = 0; i < gameDataCollection.length; i++) {
+                    if (gameDataCollection[i].appId === manuallyAddedGameId) {
+                        itWorked = false;
+                        break;
+                    }
+                }
+
+                expect(itWorked).to.be.true;
+            });
+
+            step('Delete game not in database throws GameNotInDatabaseError', (done ) => {
+                celes.removeManuallAddedGame(manuallyAddedGameId, 'Steam').catch((error) => {
+                    if (error instanceof GameNotInDatabaseError) done();
+                });
+            });
+
+            step('Delete game with other sources only deletes the source', async () => {
+                await celes.removeManuallAddedGame(alreadyExistentGameId, 'Steam');
+                const gameDataCollection: GameData[] = await celes.load();
+                let itWorked = false;
+
+                for (let i = 0; i < gameDataCollection.length; i++) {
+                    if (gameDataCollection[i].appId === alreadyExistentGameId) {
+                        itWorked = true;
+                        for (const sourceStats of gameDataCollection[i].stats.sources) {
+                            if (sourceStats.source === 'Manual') {
+                                itWorked = false;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                expect(itWorked).to.be.true;
+            });
+        });
+
+        describe('Add/remove unlocked achievements manually', () => {
+            const testGameId = '382900';
+            const invalidAchievementId = 'invalid';
+            const validAchievementId = 'CgkI287L0pcOEAIQFw';
+
+            step('Unlock achievement works', async () => {
+                await celes.unlockAchievement(testGameId, 'Steam', validAchievementId, 0);
+            });
+
+            step('Unlock the same achievement twice is ignored', async () => {
+                await celes.unlockAchievement(testGameId, 'Steam', validAchievementId);
+            });
+
+            step('Unlock invalid achievement throws AchievementNotInSchemaError', (done) => {
+                celes.unlockAchievement(testGameId, 'Steam', invalidAchievementId).catch((error) => {
+                    if (error instanceof AchievementNotInSchemaError) done();
+                });
+            });
+
+            step('Remove unlocked achievement works', async () => {
+                await celes.removeManuallyUnlockedAchievement(testGameId, 'Steam', validAchievementId);
             });
         });
 
