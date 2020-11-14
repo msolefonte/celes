@@ -24,6 +24,7 @@ export class GreenLuma extends SteamScraper {
         const scanResults: ScanResult[] = [];
         const subkeys = await regedit.promises.RegListAllSubkeys(root, key);
 
+        /* istanbul ignore else */
         if (subkeys !== null) {
             for (const subkey of subkeys) {
                 const skipStatsAndAchievements: number = parseInt(await regedit.promises.RegQueryIntegerValue(root,

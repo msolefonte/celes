@@ -1,3 +1,11 @@
+import {Platform} from '../../types';
+
+export class AchievementNotInSchemaError extends Error {
+    constructor(appId: string, platform: Platform, achievementId: string) {
+        super('Achievement ' + achievementId + ' does not exist in game ' + appId + ' of platform ' + platform);
+    }
+}
+
 export class InvalidApiVersionError extends Error {
     constructor(expected: string, found: string) {
         super('API version not valid. Expected ' + expected + ', found ' + found);
@@ -7,6 +15,12 @@ export class InvalidApiVersionError extends Error {
 export class FileNotFoundError extends Error {
     constructor(filePath: string) {
         super('File ' + filePath + ' not found');
+    }
+}
+
+export class GameNotInDatabaseError extends Error {
+    constructor(appId: string, platform: Platform) {
+        super('Game ' + appId + ' of platform ' + platform + ' not found in database');
     }
 }
 

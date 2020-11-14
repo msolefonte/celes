@@ -127,6 +127,30 @@ async export(filePath: string): Promise<void> {};
 async import(filePath: string, force?: boolean): Promise<GameData[]> {};
 ```   
 
+##### Add Game
+
+```
+async addGame(appId: string, platform: Platform): Promise<void> {};
+```    
+
+##### Remove manually added Game
+
+```
+async removeManuallAddedGame(appId: string, platform: Platform): Promise<void> {};
+```    
+
+##### Unlock Achievement
+
+```
+async unlockAchievement(appId: string, platform: Platform, achievementId: string, unlockTime = 0): Promise<void> {};
+```    
+
+##### Remove Manually Unlocked Achievement
+
+```
+async removeManuallyUnlockedAchievement(appId: string, platform: Platform, achievementId: string): Promise<void> {};
+```  
+
 ##### Set Achievement Unlock Time
 
 ```
