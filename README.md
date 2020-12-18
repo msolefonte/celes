@@ -1,9 +1,9 @@
 [![NPM version](https://badge.fury.io/js/%40achievement-watcher%2Fceles.svg)](https://www.npmjs.com/package/@achievement-watcher/celes)
-[![NodeJS CI Actions Status](https://img.shields.io/github/workflow/status/achievement-watcher/celes/nodejs-ci)](https://github.com/achievement-watcher/celes/actions)
-[![Codecov](https://codecov.io/gh/achievement-watcher/celes/branch/master/graph/badge.svg)](https://codecov.io/gh/achievement-watcher/celes)
-[![Maintainability](https://api.codeclimate.com/v1/badges/8e48291929dd5190e908/maintainability)](https://codeclimate.com/github/achievement-watcher/celes/maintainability)
-[![License](https://img.shields.io/github/license/achievement-watcher/celes)](https://github.com/achievement-watcher/celes/blob/master/LICENSE)
-[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](https://github.com/achievement-watcher/celes/blob/master/CONTRIBUTING.md)
+[![NodeJS CI Actions Status](https://img.shields.io/github/workflow/status/msolefonte/celes/nodejs-ci)](https://github.com/msolefonte/celes/actions)
+[![Codecov](https://codecov.io/gh/msolefonte/celes/branch/master/graph/badge.svg)](https://codecov.io/gh/msolefonte/celes)
+[![Maintainability](https://api.codeclimate.com/v1/badges/8e48291929dd5190e908/maintainability)](https://codeclimate.com/github/msolefonte/celes/maintainability)
+[![License](https://img.shields.io/github/license/msolefonte/celes)](https://github.com/msolefonte/celes/blob/master/LICENSE)
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](https://github.com/msolefonte/celes/blob/master/CONTRIBUTING.md)
 
 # Celes
 
@@ -23,13 +23,16 @@ Celes is an Open Source file and registry scraper that obtains and stores game a
 ## About the project
 
 Celes is a Typescript library that allows other tools to scrap files and registries to obtain user achievements from
-multiple sources. It includes multiples funcionalities like detecting games, loading schemas and generating a list of
+multiple sources. It includes multiples functionalities like detecting games, loading schemas and generating a list of
 unlocked achievements, together with import and export features. It also has a built-in database, which allows it to 
-store local caches than can also be used by other tools of the 
-[Achievement Watcher](https://www.github.com/achievement-watcher/) project. 
+store local caches than can also be used by other tools.
+ 
+Initially part of the *Achievement Watcher* project, now it has been released as an independent tool due to the 
+organization being closed. The repository is going to be keep as an Open Source archive to facilitate and guide
+future developments in the same field.
 
 To see the list of compatible sources and platforms, refer to 
-[COMPATIBILITY](https://github.com/achievement-watcher/celes/blob/master/docs/COMPATIBILTY.md).
+[COMPATIBILITY](https://github.com/msolefonte/celes/blob/master/docs/COMPATIBILTY.md).
 
 ### Built with
 
@@ -62,8 +65,8 @@ import {Celes} from '@achievement-watcher/celes'
 
 #### The Celes Object
 
-Celes is the main class exported and the one that has to be used principaly. If can be widely configured as presented
-below:
+Celes is the main class exported and the one that has to be used in the majority of cases. If can be widely configured 
+as presented below:
 
 ```typescript
 class Celes {
@@ -86,7 +89,7 @@ class Celes {
 * *additionalFoldersToScan?:* __string[]__: List of folders defined by the user to scan. Used by some plugins to try
     to scrap achievement data from there.
 * *enabledPlugins?:* __string[]__: List of plugin names that have to be used. The plugin names are defined by the name
-    of the files stored under (src/lib/plugins)[src/lib/plugins]. By deafault, all of them are enabled.
+    of the files stored under (src/lib/plugins)[src/lib/plugins]. By default, all of them are enabled.
 * *steamPluginMode?:* __0 | 1 | 2__: Work mode of the Steam plugin:
     * __0__ -> Disabled. 
     * __1__ -> Enabled. Only Installed games are shown.
@@ -99,9 +102,9 @@ class Celes {
 #### Celes API
 
 This is the list of public methods available at Celes. An always-updated explanation can be found inside of the 
-[src/lib/Celes.ts](https://github.com/achievement-watcher/celes/blob/master/src/lib/Celes.ts) file. In the case of the 
+[src/lib/Celes.ts](https://github.com/msolefonte/celes/blob/master/src/lib/Celes.ts) file. In the case of the 
 NPM package, the detailed explanation should be instead at 
-[dist/lib/Celes.d.ts](https://github.com/achievement-watcher/celes/blob/master/dist/lib/Celes.d.ts).
+[dist/lib/Celes.d.ts](https://github.com/msolefonte/celes/blob/master/dist/lib/Celes.d.ts).
 
 ##### Pull
 
@@ -167,14 +170,24 @@ async addGamePlaytime(appId: string, platform: Platform, playtime: number,
 
 ## Contributing
 
-Contributions are welcome. See [CONTRIBUTING](https://github.com/achievement-watcher/celes/blob/master/CONTRIBUTING.md) 
+Contributions are welcome. See [CONTRIBUTING](https://github.com/msolefonte/celes/blob/master/CONTRIBUTING.md) 
 for more information.
 
 ## License
 
-Distributed under the GPL-3.0 License. See [LICENSE](https://github.com/achievement-watcher/celes/blob/master/LICENSE) 
+Distributed under the GPL-3.0 License. See [LICENSE](https://github.com/msolefonte/celes/blob/master/LICENSE) 
 for more information.
 
 ## Legal Aspects
 
-For legal aspects, see [legal](https://github.com/achievement-watcher/legal).
+Celes is a technology able to connect and scrap achievements from both legal and non-legal sources. These sources,
+in the second cases, are related to games installed locally using cracks, emulators or any other technologies that
+may be related to cases of intellectual property being robbed or damaged. In any case, while this is a technical
+possibility, we do not enforce or support these practises and do not want to be associated with them. 
+
+As a matter of fact, any issue related to piracy is going to be removed and no support is going to be given in relation
+to obtaining games or roms from non-legal sources. Following this, any user is responsible of the content placed in its
+own issues, commentaries, code, pull requests or other additions.
+
+Finally, in relation to the Achievement Watcher project. This component has been separated from it and there is no
+association between both. Any legal issue related to this project should not be reflected there and vice verse.

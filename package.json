@@ -1,6 +1,10 @@
 {
   "name": "@achievement-watcher/celes",
-  "author": "Achievement Watcher Team",
+  "author": {
+    "name": "Marc Solé",
+    "email": "msolefonte@gmail.com",
+    "url": "https://github.com/msolefonte"
+  },
   "version": "1.1.0",
   "license": "GPL-3.0",
   "description": "File and registry scraper that obtains and stores game achievements, whatever the origin",
@@ -12,11 +16,11 @@
     "trophies"
   ],
   "bugs": {
-    "url": "https://github.com/achievement-watcher/celes/issues"
+    "url": "https://github.com/msolefonte/celes/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/achievement-watcher/celes"
+    "url": "https://github.com/msolefonte/celes"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.js",
@@ -40,7 +44,7 @@
     "@types/rimraf": "^3.0.0",
     "@types/steamid": "^1.1.0",
     "@types/xml2js": "^0.4.5",
-    "cloud-client": "git://github.com/achievement-watcher/cloud-nodejs-client.git#alpha",
+    "cloud-client": "git://github.com/msolefonte/cloud-nodejs-client.git#alpha",
     "crc-32": "^1.2.0",
     "fast-glob": "^3.2.4",
     "got": "^11.8.0",
