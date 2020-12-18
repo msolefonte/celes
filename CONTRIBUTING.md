@@ -3,8 +3,8 @@
 When contributing to this repository, please first discuss the change you wish to make via issue,
 email, or any other method with the Achievement Watcher Team before making a change. 
 
-Please note we have some [legal](https://github.com/achievement-watcher/legal) aspects to cover, so follow them in all 
-your interactions with the project. If you add a pull request, you are responsable for the content.
+Please note we have some [legal](https://github.com/msolefonte/celes#legal-aspects) aspects to cover, so follow them in 
+all your interactions with the project. If you add a pull request, you are responsible of the content.
 
 ## Pull Request Process
 
