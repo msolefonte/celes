@@ -11,8 +11,7 @@ coverage:
         threshold: 0%
         branches:
           - master
-          - alpha
-          - beta/*
+          - dev
         if_ci_failed: error
 comment:
   layout: "diff,files"
